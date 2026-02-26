@@ -19,7 +19,6 @@ struct MyAppApp: App {
             ContentView()
                 .environment(settings)
                 .environment(stockRefresh)
-                .preferredColorScheme(settings.colorScheme.resolvedColorScheme)
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active {
                         Task { await stockRefresh.refreshStaleStocks() }

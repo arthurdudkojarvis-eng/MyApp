@@ -6,6 +6,9 @@ struct ContentView: View {
 
     var body: some View {
         MainTabView()
+            // preferredColorScheme must live here (not in App.body) so that
+            // @Observable change tracking fires reliably when colorScheme mutates.
+            .preferredColorScheme(settings.colorScheme.resolvedColorScheme)
             .fullScreenCover(isPresented: Binding(
                 get: { !settings.hasCompletedOnboarding },
                 set: { _ in }   // dismissal is driven only by setting the flag
