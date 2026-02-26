@@ -1,0 +1,27 @@
+# Xcode
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+*.xcworkspace/*
+!*.xcworkspace/contents.xcworkspacedata
+!*.xcworkspace/xcshareddata/
+
+# Build
+DerivedData/
+build/
+*.o
+*.d
+
+# macOS
+.DS_Store
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Secrets — never commit these
+.env
+*.xcconfig
+Secrets.swift
+GoogleService-Info.plist
+AuthKey_*.p8
