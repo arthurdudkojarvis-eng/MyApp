@@ -172,4 +172,25 @@ final class AddHoldingTests: XCTestCase {
     func testIsValidFalseWhenCostBasisNegative() {
         XCTAssertFalse(isValid(ticker: "AAPL", sharesText: "10", costBasisText: "-10"))
     }
+
+    // MARK: - Delete by sorted index
+
+    func testDeleteBySnapshotIndexRemovesCorrectHolding() throws {
+        // Insert in reverse alpha order to ensure sort matters.
+        try simulateSave(ticker: "VZ",   shares: 10, costBasis: 40)
+        try simulateSave(ticker: "AAPL", shares: 5,  costBasis: 150)
+        try simulateSave(ticker: "MSFT", shares: 3,  costBasis: 400)
+
+        let all = try context.fetch(FetchDescriptor<Holding>())
+        let snapshot = all.sorted { ($0.stock?.ticker ?? "") < ($1.stock?.ticker ?? "") }
+        // snapshot[0] = AAPL, [1] = MSFT, [2] = VZ
+
+        context.delete(snapshot[0]) // delete AAPL
+
+        let remaining = try context.fetch(FetchDescriptor<Holding>())
+        XCTAssertEqual(remaining.count, 2)
+        XCTAssertFalse(remaining.contains { $0.stock?.ticker == "AAPL" })
+        XCTAssertTrue(remaining.contains { $0.stock?.ticker == "MSFT" })
+        XCTAssertTrue(remaining.contains { $0.stock?.ticker == "VZ" })
+    }
 }
