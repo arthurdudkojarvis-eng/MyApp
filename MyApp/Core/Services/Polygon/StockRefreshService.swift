@@ -25,21 +25,32 @@ final class StockRefreshService {
     private let polygon: any PolygonFetching
     private let settings: SettingsStore
     private let container: ModelContainer
+    /// Delay inserted between consecutive ticker refreshes to stay within
+    /// Polygon's free-tier rate limit (5 requests / minute, 3 calls per ticker).
+    private let interTickerDelay: Duration
 
     init(
         settings: SettingsStore,
         container: ModelContainer = .app,
-        polygon: any PolygonFetching = PolygonService()
+        polygon: any PolygonFetching = PolygonService(),
+        interTickerDelay: Duration = .seconds(2)
     ) {
         self.settings = settings
         self.container = container
         self.polygon = polygon
+        self.interTickerDelay = interTickerDelay
     }
 
     // MARK: - Public API
 
     /// Refresh a single ticker. Call after adding a new holding.
+    /// No-ops if a bulk refresh is already in progress to avoid concurrent
+    /// writes from two independent ModelContext instances.
     func refresh(ticker: String) async {
+        guard !isRefreshing else {
+            logger.info("Skipping single-ticker refresh for \(ticker): bulk refresh in progress.")
+            return
+        }
         guard settings.hasPolygonAPIKey else {
             logger.info("Skipping refresh for \(ticker): API key not configured.")
             return
@@ -48,25 +59,46 @@ final class StockRefreshService {
     }
 
     /// Refresh all stale stocks. Call when the app returns to foreground.
+    /// Tickers are refreshed sequentially with `interTickerDelay` between each
+    /// to stay within Polygon's free-tier rate limit (5 requests / minute).
     func refreshStaleStocks() async {
         guard !isRefreshing else { return }
         guard settings.hasPolygonAPIKey else { return }
         lastRefreshError = nil   // clear previous error on every new refresh attempt
         let apiKey = settings.polygonAPIKey
+
+        // Push the staleness filter into SwiftData instead of fetching all stocks
+        // and filtering in Swift — avoids loading every Stock into memory.
+        guard let cutoff = Calendar.current.date(
+            byAdding: .hour, value: Stock.staleThresholdHours, to: .now
+        ) else {
+            logger.error("Date arithmetic failed computing staleness cutoff — skipping refresh.")
+            return
+        }
         let context = ModelContext(container)
         let staleStocks: [Stock]
         do {
-            staleStocks = try context.fetch(FetchDescriptor<Stock>()).filter { $0.isStale }
+            let descriptor = FetchDescriptor<Stock>(
+                predicate: #Predicate<Stock> { $0.lastUpdated < cutoff }
+            )
+            staleStocks = try context.fetch(descriptor)
         } catch {
-            logger.error("Failed to fetch stocks: \(error.localizedDescription)")
+            logger.error("Failed to fetch stale stocks: \(error.localizedDescription)")
             return
         }
         guard !staleStocks.isEmpty else { return }
         isRefreshing = true
         defer { isRefreshing = false }
-        await withTaskGroup(of: Void.self) { group in
-            for stock in staleStocks {
-                group.addTask { await self.refreshTicker(stock.ticker, apiKey: apiKey) }
+        for (index, stock) in staleStocks.enumerated() {
+            await refreshTicker(stock.ticker, apiKey: apiKey)
+            // Sleep between tickers (not after the last one).
+            // Propagate cancellation so the loop stops when the parent task is cancelled.
+            if index < staleStocks.count - 1 {
+                do {
+                    try await Task.sleep(for: interTickerDelay)
+                } catch {
+                    break   // CancellationError — stop processing remaining tickers.
+                }
             }
         }
     }
@@ -84,6 +116,8 @@ final class StockRefreshService {
             let (details, price, dividends) = try await (detailsTask, priceTask, dividendsTask)
 
             // Find or create the Stock.
+            // NOTE: `stock` and its relationships are live objects from this same
+            // `context`; all mutations below must target the same context.
             let descriptor = FetchDescriptor<Stock>(predicate: #Predicate<Stock> { $0.ticker == ticker })
             guard let stock = try context.fetch(descriptor).first else {
                 logger.warning("No Stock found for ticker \(ticker) — skipping update.")
@@ -101,7 +135,8 @@ final class StockRefreshService {
 
         } catch {
             logger.error("Failed to refresh \(ticker): \(error.localizedDescription)")
-            // Report the first failure only; last-writer-wins is non-deterministic under concurrent refresh.
+            // Report the first failure; subsequent failures are logged but not shown
+            // to the user to avoid overwriting a message the user hasn't seen yet.
             if lastRefreshError == nil {
                 lastRefreshError = "Could not refresh \(ticker). Check your connection or API key."
             }
@@ -113,9 +148,17 @@ final class StockRefreshService {
         dividends: [PolygonDividend],
         context: ModelContext
     ) {
-        // Delete existing schedules; payments survive via .nullify delete rule.
-        for schedule in stock.dividendSchedules { context.delete(schedule) }
-        stock.dividendSchedules = []
+        // Build a lookup of existing schedules keyed by ex-date string so we can
+        // update them in place instead of delete-and-reinsert. Updating in place
+        // preserves DividendPayment.dividendSchedule links — the delete rule is
+        // .nullify, so delete-and-reinsert would orphan any logged payments.
+        var existingByExDate: [String: DividendSchedule] = [:]
+        for schedule in stock.dividendSchedules {
+            existingByExDate[dateFormatter.string(from: schedule.exDate)] = schedule
+        }
+
+        // Tracks which ex-dates were present in this API response (for cleanup).
+        var touchedExDates: Set<String> = []
 
         for div in dividends {
             guard div.dividendType == "CD",
@@ -123,20 +166,46 @@ final class StockRefreshService {
                   let freq = div.frequency.flatMap({ DividendFrequency(polygonFrequency: $0) })
             else { continue }
 
+            let exDateKey = div.exDividendDate
+
+            // Guard against duplicate ex-dates in the same API response (e.g., a
+            // data anomaly or two distributions on the same date). Keep the first.
+            guard !touchedExDates.contains(exDateKey) else {
+                logger.warning("Duplicate ex-date \(exDateKey) for \(stock.ticker) — skipping.")
+                continue
+            }
+
             let payDate      = div.payDate.flatMap { dateFormatter.date(from: $0) } ?? exDate
             let declaredDate = div.declarationDate.flatMap { dateFormatter.date(from: $0) }
             let status: DividendScheduleStatus = declaredDate != nil ? .declared : .estimated
 
-            let schedule = DividendSchedule(
-                frequency: freq,
-                amountPerShare: div.cashAmount,
-                exDate: exDate,
-                payDate: payDate,
-                declaredDate: declaredDate ?? .now,
-                status: status
-            )
-            schedule.stock = stock
-            context.insert(schedule)
+            if let existing = existingByExDate[exDateKey] {
+                // Update in place — keeps payment links intact.
+                existing.frequency      = freq
+                existing.amountPerShare = div.cashAmount
+                existing.payDate        = payDate
+                existing.declaredDate   = declaredDate ?? existing.declaredDate
+                existing.status         = status
+            } else {
+                let schedule = DividendSchedule(
+                    frequency: freq,
+                    amountPerShare: div.cashAmount,
+                    exDate: exDate,
+                    payDate: payDate,
+                    // .distantPast signals "no declaration date known" for estimated records;
+                    // avoids falsely stamping the current time as a declared date.
+                    declaredDate: declaredDate ?? .distantPast,
+                    status: status
+                )
+                schedule.stock = stock
+                context.insert(schedule)
+            }
+            touchedExDates.insert(exDateKey)
+        }
+
+        // Delete schedules whose ex-date no longer appears in the API response.
+        for (exDateKey, schedule) in existingByExDate where !touchedExDates.contains(exDateKey) {
+            context.delete(schedule)
         }
     }
 }

@@ -52,7 +52,8 @@ final class StockRefreshServiceTests: XCTestCase {
         )
         settings.polygonAPIKey = "test-api-key"
         mockPolygon = MockPolygonService()
-        sut = StockRefreshService(settings: settings, container: container, polygon: mockPolygon)
+        sut = StockRefreshService(settings: settings, container: container, polygon: mockPolygon,
+                                  interTickerDelay: .zero)
     }
 
     override func tearDown() async throws {
@@ -328,6 +329,186 @@ final class StockRefreshServiceTests: XCTestCase {
 
         sut.dismissRefreshError()
         XCTAssertNil(sut.lastRefreshError)
+    }
+
+    // MARK: - Performance & Data Integrity (STORY-018)
+
+    func testRefreshStaleStocksRefreshesAllStaleTickersSequentially() async throws {
+        let context = ModelContext(container)
+        let stock1 = Stock(ticker: "AAPL")
+        let stock2 = Stock(ticker: "MSFT")
+        stock1.lastUpdated = .distantPast
+        stock2.lastUpdated = .distantPast
+        context.insert(stock1)
+        context.insert(stock2)
+        try context.save()
+
+        mockPolygon.tickerDetailsResult = PolygonTickerDetails(
+            ticker: "AAPL", name: "Updated", sicDescription: nil
+        )
+
+        await sut.refreshStaleStocks()
+
+        // Both tickers must have been fetched (sequential, not skipped).
+        XCTAssertEqual(mockPolygon.fetchDetailsCallCount, 2)
+        XCTAssertEqual(mockPolygon.fetchPreviousCloseCallCount, 2)
+        XCTAssertEqual(mockPolygon.fetchDividendsCallCount, 2)
+    }
+
+    func testFreshStocksAreNotRefreshedByStaleQuery() async throws {
+        let context = ModelContext(container)
+        let freshStock = Stock(ticker: "FRESH")
+        freshStock.lastUpdated = .now   // not stale
+        let staleStock = Stock(ticker: "STALE")
+        staleStock.lastUpdated = .distantPast
+        context.insert(freshStock)
+        context.insert(staleStock)
+        try context.save()
+
+        await sut.refreshStaleStocks()
+
+        // Predicate must filter server-side; only one ticker should be refreshed.
+        XCTAssertEqual(mockPolygon.fetchDetailsCallCount, 1)
+    }
+
+    func testDividendScheduleDiffingUpdatesExistingScheduleInPlace() async throws {
+        // Arrange: pre-populate with a schedule and a payment linked to it.
+        let context = ModelContext(container)
+        let stock = Stock(ticker: "VYM")
+        stock.lastUpdated = .distantPast
+        context.insert(stock)
+
+        let exDateString = "2024-08-09"
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "UTC")
+        let exDate = formatter.date(from: exDateString)!
+
+        let originalSchedule = DividendSchedule(
+            frequency: .quarterly, amountPerShare: Decimal(string: "0.90")!,
+            exDate: exDate, payDate: exDate, declaredDate: .now
+        )
+        originalSchedule.stock = stock
+        context.insert(originalSchedule)
+
+        let payment = DividendPayment(sharesAtTime: 10, totalAmount: Decimal(string: "9.00")!)
+        payment.holding = nil
+        payment.dividendSchedule = originalSchedule
+        context.insert(payment)
+
+        try context.save()
+        let originalScheduleID = originalSchedule.id
+
+        // API now returns the same ex-date but a revised amount.
+        mockPolygon.dividendsResult = [
+            PolygonDividend(
+                ticker: "VYM",
+                cashAmount: Decimal(string: "0.95")!,
+                exDividendDate: exDateString,
+                payDate: "2024-08-15",
+                declarationDate: "2024-07-25",
+                frequency: 4,
+                dividendType: "CD"
+            )
+        ]
+
+        await sut.refresh(ticker: "VYM")
+
+        // Schedule should be updated in place (same id), not replaced.
+        let schedules = try context.fetch(FetchDescriptor<DividendSchedule>())
+        XCTAssertEqual(schedules.count, 1)
+        XCTAssertEqual(schedules.first?.id, originalScheduleID)
+        XCTAssertEqual(schedules.first?.amountPerShare, Decimal(string: "0.95")!)
+        XCTAssertEqual(schedules.first?.status, .declared)  // declarationDate was set → .declared
+
+        // The payment's link to the schedule must survive the refresh.
+        let payments = try context.fetch(FetchDescriptor<DividendPayment>())
+        XCTAssertEqual(payments.count, 1)
+        XCTAssertNotNil(payments.first?.dividendSchedule)
+    }
+
+    func testDividendScheduleDiffingDeletesRemovedSchedules() async throws {
+        let context = ModelContext(container)
+        let stock = Stock(ticker: "O")
+        context.insert(stock)
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "UTC")
+
+        let old = DividendSchedule(
+            frequency: .monthly, amountPerShare: Decimal(string: "0.26")!,
+            exDate: formatter.date(from: "2024-01-10")!,
+            payDate: formatter.date(from: "2024-01-15")!,
+            declaredDate: .now
+        )
+        old.stock = stock
+        context.insert(old)
+        try context.save()
+
+        // API returns a completely different ex-date.
+        mockPolygon.tickerDetailsResult = PolygonTickerDetails(
+            ticker: "O", name: "Realty Income Corp.", sicDescription: nil
+        )
+        mockPolygon.dividendsResult = [
+            PolygonDividend(
+                ticker: "O",
+                cashAmount: Decimal(string: "0.26")!,
+                exDividendDate: "2024-02-10",
+                payDate: "2024-02-15",
+                declarationDate: nil,
+                frequency: 12,
+                dividendType: "CD"
+            )
+        ]
+
+        await sut.refresh(ticker: "O")
+
+        let schedules = try context.fetch(FetchDescriptor<DividendSchedule>())
+        XCTAssertEqual(schedules.count, 1)
+        // The old ex-date should be gone; the new one present.
+        XCTAssertEqual(
+            formatter.string(from: schedules.first!.exDate),
+            "2024-02-10"
+        )
+    }
+
+    func testDividendScheduleDiffingIgnoresDuplicateExDatesInAPIResponse() async throws {
+        let context = ModelContext(container)
+        let stock = Stock(ticker: "AAPL")
+        context.insert(stock)
+        try context.save()
+
+        // Two dividends with the same ex-date — only the first should be persisted.
+        mockPolygon.dividendsResult = [
+            PolygonDividend(
+                ticker: "AAPL",
+                cashAmount: Decimal(string: "0.24")!,
+                exDividendDate: "2024-08-09",
+                payDate: "2024-08-15",
+                declarationDate: "2024-07-25",
+                frequency: 4,
+                dividendType: "CD"
+            ),
+            PolygonDividend(
+                ticker: "AAPL",
+                cashAmount: Decimal(string: "0.50")!,  // different amount, same ex-date
+                exDividendDate: "2024-08-09",
+                payDate: "2024-08-15",
+                declarationDate: nil,
+                frequency: 4,
+                dividendType: "CD"
+            )
+        ]
+
+        await sut.refresh(ticker: "AAPL")
+
+        let schedules = try context.fetch(FetchDescriptor<DividendSchedule>())
+        XCTAssertEqual(schedules.count, 1)
+        // First entry wins; second is silently dropped.
+        XCTAssertEqual(schedules.first?.amountPerShare, Decimal(string: "0.24")!)
     }
 
     func testRefreshStaleStocksDoesNotDoubleInvoke() async throws {

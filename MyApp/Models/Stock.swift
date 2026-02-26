@@ -64,7 +64,8 @@ final class Stock {
 
     // MARK: - Staleness
 
-    private static let staleThresholdHours = -24
+    /// Shared by `StockRefreshService` so the threshold stays in one place.
+    static let staleThresholdHours = -24
 
     var isStale: Bool {
         let threshold = Calendar.current.date(
