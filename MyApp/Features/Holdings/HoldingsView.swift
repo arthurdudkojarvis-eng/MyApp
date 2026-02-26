@@ -21,6 +21,9 @@ struct HoldingsView: View {
                         }
                     }
                     .listStyle(.insetGrouped)
+                    .navigationDestination(for: Holding.self) { holding in
+                        HoldingDetailView(holding: holding)
+                    }
                 }
             }
             .navigationTitle("Holdings")
@@ -59,7 +62,9 @@ private struct PortfolioSectionView: View {
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(sortedHoldings) { holding in
-                    HoldingRowView(holding: holding)
+                    NavigationLink(value: holding) {
+                        HoldingRowView(holding: holding)
+                    }
                 }
                 .onDelete { offsets in
                     // Snapshot before mutation — sortedHoldings is computed and
