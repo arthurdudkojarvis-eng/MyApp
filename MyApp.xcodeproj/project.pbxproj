@@ -10,12 +10,18 @@
 		02BAE726E22BFFEDC7EF0414 /* AddPortfolioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */; };
 		0979E0EFC122A65E87B6D040 /* KeychainServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */; };
 		10C70E33FFDEDB066F21DFC4 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39954C69C6016976D6D8707B /* SettingsStore.swift */; };
+		1ED58B5C130C37C017765788 /* PolygonService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC36DA4D1479658B4AC9D33 /* PolygonService.swift */; };
 		2219A3D66CC6A7AE4E870849 /* EditHoldingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8600F9CD4E0ECCF8DA305D42 /* EditHoldingView.swift */; };
+		302708F25D08CD1BCE76FC2D /* CoverageMeterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67CCEAC201176AF06A2EEE86 /* CoverageMeterTests.swift */; };
 		39CE7770F3D82C44F3117BBF /* DividendSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76B968D0039281DB8983FA03 /* DividendSchedule.swift */; };
 		4733A1B96E03A2AE728F9093 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F82B6F194AD4950FEACE8BE /* DashboardView.swift */; };
 		496B5466FBBAB916FEC7CDA4 /* ModelContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11AE850638057BE756C41B92 /* ModelContainerFactory.swift */; };
+		499BBEA3099494FE2D695306 /* DashboardMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C30FC2CD0BC2FBFF38A93D0 /* DashboardMetrics.swift */; };
 		4BFEF93245609B9F162F4F55 /* EditHoldingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14C8CC0191B4D2B353C92812 /* EditHoldingTests.swift */; };
 		532A1BF0FBDA072F48C348BD /* MyAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43AC62307FC0866810DDF20F /* MyAppApp.swift */; };
+		53D1065F0BC685A0EC172A6A /* CoverageMeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A233EDCCF999850598369A /* CoverageMeterView.swift */; };
+		5D5DB28828779CC1549F317F /* IncomeHeroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AC714EC6294F050205D7CBC /* IncomeHeroView.swift */; };
+		6FB33C4BAF790F222558D82D /* PolygonModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047526A7CB59A2CEC408D324 /* PolygonModels.swift */; };
 		7AD4B0A71343166CC8E23389 /* DividendFrequency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C74261CC2EEDEDF87E15DF9 /* DividendFrequency.swift */; };
 		7DA91C0CF5A7B072841A77D8 /* Holding.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDB2A6E31CD31D98D7365571 /* Holding.swift */; };
 		84FCDFFB6F3785483FA427CF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82975EBC14257A8D2F34F304 /* Assets.xcassets */; };
@@ -30,9 +36,12 @@
 		B2AE7B6FB846F9B7AE55DAE2 /* SchemaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70AD67C8B61F19099B90170A /* SchemaTests.swift */; };
 		B3AC403AB7E6E5F0F0CCFFFA /* DividendPayment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 168A87450CDF38FF8E2931A6 /* DividendPayment.swift */; };
 		B43D07CBDB44FDFC98364027 /* AddHoldingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72B38DB100EF154D74149F3C /* AddHoldingTests.swift */; };
+		BD4A40AB295269B2F1E9D6BA /* StockRefreshService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A237E2958E19FB1B20DEB3 /* StockRefreshService.swift */; };
 		C738D64E338EA2ABBDCAFEF2 /* HoldingDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F397CCD27C3562FB5B67C57 /* HoldingDetailView.swift */; };
 		CC4776AC4CA2ADF98A177337 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D1001A03B6D7EEF85B52F5D /* SettingsView.swift */; };
 		DDA4856D608D76F9D88AA9BA /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83BDF54DD70EBE998E82089 /* View+Extensions.swift */; };
+		EC1F022BB2214D988676FC34 /* StockRefreshServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4DD5B2B7954B51F161C848C /* StockRefreshServiceTests.swift */; };
+		F0273F9FDBE894B9F8823926 /* DashboardMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10DAE0AC3A6D2BC5044E3789 /* DashboardMetricsTests.swift */; };
 		F2698E6ACFD1D5447D656A7D /* SettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2332EC481425613D04D5FF2A /* SettingsStoreTests.swift */; };
 		F4BF44D5393BCAC3B259F3AD /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41C018CC84BEF94F929B042E /* KeychainService.swift */; };
 /* End PBXBuildFile section */
@@ -49,7 +58,9 @@
 
 /* Begin PBXFileReference section */
 		01BD360246A6F91A42303E1A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		047526A7CB59A2CEC408D324 /* PolygonModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolygonModels.swift; sourceTree = "<group>"; };
 		0C74261CC2EEDEDF87E15DF9 /* DividendFrequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendFrequency.swift; sourceTree = "<group>"; };
+		10DAE0AC3A6D2BC5044E3789 /* DashboardMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardMetricsTests.swift; sourceTree = "<group>"; };
 		11AE850638057BE756C41B92 /* ModelContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerFactory.swift; sourceTree = "<group>"; };
 		1337F25AFB67ACEE25AF311F /* Stock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stock.swift; sourceTree = "<group>"; };
 		14C8CC0191B4D2B353C92812 /* EditHoldingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditHoldingTests.swift; sourceTree = "<group>"; };
@@ -63,9 +74,12 @@
 		39954C69C6016976D6D8707B /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
 		41C018CC84BEF94F929B042E /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		43AC62307FC0866810DDF20F /* MyAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAppApp.swift; sourceTree = "<group>"; };
+		4AC714EC6294F050205D7CBC /* IncomeHeroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomeHeroView.swift; sourceTree = "<group>"; };
 		4F82B6F194AD4950FEACE8BE /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		57A237E2958E19FB1B20DEB3 /* StockRefreshService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockRefreshService.swift; sourceTree = "<group>"; };
 		5FF7D7BA9F11C0ACE7514C4D /* AddHoldingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddHoldingView.swift; sourceTree = "<group>"; };
 		65C7AE553F676F967FF1B6E5 /* HoldingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingsView.swift; sourceTree = "<group>"; };
+		67CCEAC201176AF06A2EEE86 /* CoverageMeterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverageMeterTests.swift; sourceTree = "<group>"; };
 		6F397CCD27C3562FB5B67C57 /* HoldingDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingDetailView.swift; sourceTree = "<group>"; };
 		70AD67C8B61F19099B90170A /* SchemaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaTests.swift; sourceTree = "<group>"; };
 		72B38DB100EF154D74149F3C /* AddHoldingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddHoldingTests.swift; sourceTree = "<group>"; };
@@ -73,10 +87,14 @@
 		82975EBC14257A8D2F34F304 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8600F9CD4E0ECCF8DA305D42 /* EditHoldingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditHoldingView.swift; sourceTree = "<group>"; };
 		8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPortfolioTests.swift; sourceTree = "<group>"; };
+		9C30FC2CD0BC2FBFF38A93D0 /* DashboardMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardMetrics.swift; sourceTree = "<group>"; };
 		AF2A840CEFA0C7ED8794E479 /* Portfolio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Portfolio.swift; sourceTree = "<group>"; };
 		B83BDF54DD70EBE998E82089 /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
+		BBC36DA4D1479658B4AC9D33 /* PolygonService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolygonService.swift; sourceTree = "<group>"; };
 		CDB2A6E31CD31D98D7365571 /* Holding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Holding.swift; sourceTree = "<group>"; };
 		D3B8D08E73975BE9DB195BBC /* DividendCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendCalendarView.swift; sourceTree = "<group>"; };
+		D4A233EDCCF999850598369A /* CoverageMeterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverageMeterView.swift; sourceTree = "<group>"; };
+		D4DD5B2B7954B51F161C848C /* StockRefreshServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockRefreshServiceTests.swift; sourceTree = "<group>"; };
 		E74025E36A57BD79EC7BC227 /* AddPortfolioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPortfolioView.swift; sourceTree = "<group>"; };
 		F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -102,6 +120,16 @@
 				43AC62307FC0866810DDF20F /* MyAppApp.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		3BEC3D0DA694EF5C0E131D34 /* Polygon */ = {
+			isa = PBXGroup;
+			children = (
+				047526A7CB59A2CEC408D324 /* PolygonModels.swift */,
+				BBC36DA4D1479658B4AC9D33 /* PolygonService.swift */,
+				57A237E2958E19FB1B20DEB3 /* StockRefreshService.swift */,
+			);
+			path = Polygon;
 			sourceTree = "<group>";
 		};
 		5CF51C413CE7ADA4ACB9FC05 /* Features */ = {
@@ -176,10 +204,13 @@
 			children = (
 				72B38DB100EF154D74149F3C /* AddHoldingTests.swift */,
 				8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */,
+				67CCEAC201176AF06A2EEE86 /* CoverageMeterTests.swift */,
+				10DAE0AC3A6D2BC5044E3789 /* DashboardMetricsTests.swift */,
 				14C8CC0191B4D2B353C92812 /* EditHoldingTests.swift */,
 				F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */,
 				70AD67C8B61F19099B90170A /* SchemaTests.swift */,
 				2332EC481425613D04D5FF2A /* SettingsStoreTests.swift */,
+				D4DD5B2B7954B51F161C848C /* StockRefreshServiceTests.swift */,
 			);
 			path = MyAppTests;
 			sourceTree = "<group>";
@@ -195,7 +226,10 @@
 		B87D0602EFCA0EE0BFD1C9A7 /* Dashboard */ = {
 			isa = PBXGroup;
 			children = (
+				D4A233EDCCF999850598369A /* CoverageMeterView.swift */,
+				9C30FC2CD0BC2FBFF38A93D0 /* DashboardMetrics.swift */,
 				4F82B6F194AD4950FEACE8BE /* DashboardView.swift */,
+				4AC714EC6294F050205D7CBC /* IncomeHeroView.swift */,
 			);
 			path = Dashboard;
 			sourceTree = "<group>";
@@ -205,6 +239,7 @@
 			children = (
 				41C018CC84BEF94F929B042E /* KeychainService.swift */,
 				39954C69C6016976D6D8707B /* SettingsStore.swift */,
+				3BEC3D0DA694EF5C0E131D34 /* Polygon */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -325,10 +360,13 @@
 			files = (
 				B43D07CBDB44FDFC98364027 /* AddHoldingTests.swift in Sources */,
 				02BAE726E22BFFEDC7EF0414 /* AddPortfolioTests.swift in Sources */,
+				302708F25D08CD1BCE76FC2D /* CoverageMeterTests.swift in Sources */,
+				F0273F9FDBE894B9F8823926 /* DashboardMetricsTests.swift in Sources */,
 				4BFEF93245609B9F162F4F55 /* EditHoldingTests.swift in Sources */,
 				0979E0EFC122A65E87B6D040 /* KeychainServiceTests.swift in Sources */,
 				B2AE7B6FB846F9B7AE55DAE2 /* SchemaTests.swift in Sources */,
 				F2698E6ACFD1D5447D656A7D /* SettingsStoreTests.swift in Sources */,
+				EC1F022BB2214D988676FC34 /* StockRefreshServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -339,6 +377,8 @@
 				AAD3B35880926533988F1408 /* AddHoldingView.swift in Sources */,
 				9B9990E63644C5BC107B06E0 /* AddPortfolioView.swift in Sources */,
 				9C907F61FCC8E161A970659A /* ContentView.swift in Sources */,
+				53D1065F0BC685A0EC172A6A /* CoverageMeterView.swift in Sources */,
+				499BBEA3099494FE2D695306 /* DashboardMetrics.swift in Sources */,
 				4733A1B96E03A2AE728F9093 /* DashboardView.swift in Sources */,
 				8C910363A915775CF6FA7CE3 /* DividendCalendarView.swift in Sources */,
 				7AD4B0A71343166CC8E23389 /* DividendFrequency.swift in Sources */,
@@ -348,14 +388,18 @@
 				7DA91C0CF5A7B072841A77D8 /* Holding.swift in Sources */,
 				C738D64E338EA2ABBDCAFEF2 /* HoldingDetailView.swift in Sources */,
 				AA0C63AE826F5086197D0657 /* HoldingsView.swift in Sources */,
+				5D5DB28828779CC1549F317F /* IncomeHeroView.swift in Sources */,
 				F4BF44D5393BCAC3B259F3AD /* KeychainService.swift in Sources */,
 				8FFF33A49D1A9FC856F4D3AC /* MainTabView.swift in Sources */,
 				496B5466FBBAB916FEC7CDA4 /* ModelContainerFactory.swift in Sources */,
 				532A1BF0FBDA072F48C348BD /* MyAppApp.swift in Sources */,
+				6FB33C4BAF790F222558D82D /* PolygonModels.swift in Sources */,
+				1ED58B5C130C37C017765788 /* PolygonService.swift in Sources */,
 				8DCB6F60B033718750EB33B9 /* Portfolio.swift in Sources */,
 				10C70E33FFDEDB066F21DFC4 /* SettingsStore.swift in Sources */,
 				CC4776AC4CA2ADF98A177337 /* SettingsView.swift in Sources */,
 				AA1D2D9C2F69A518390AD9E9 /* Stock.swift in Sources */,
+				BD4A40AB295269B2F1E9D6BA /* StockRefreshService.swift in Sources */,
 				DDA4856D608D76F9D88AA9BA /* View+Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -374,17 +418,9 @@
 		3BC9F2FE6F93BE35F7549703 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.myapp.MyAppTests;
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MyApp.app/MyApp";
 			};
 			name = Release;
@@ -392,63 +428,10 @@
 		53FBB739A03DFDED333E0DA1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_PREVIEWS = YES;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
-					"DEBUG=1",
-				);
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.10;
 			};
 			name = Debug;
@@ -457,17 +440,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = MyApp/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.myapp.MyApp;
 				PRODUCT_NAME = MyApp;
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -475,34 +451,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = MyApp/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.myapp.MyApp;
 				PRODUCT_NAME = MyApp;
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
 		CDB2FE40F7F443040D6C7847 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.myapp.MyAppTests;
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MyApp.app/MyApp";
 			};
 			name = Debug;
@@ -510,56 +471,10 @@
 		D1199B124EE5FBBDFDAEFF0A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MTL_ENABLE_DEBUG_INFO = NO;
-				MTL_FAST_MATH = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.10;
 			};
 			name = Release;
