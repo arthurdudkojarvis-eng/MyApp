@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct MainTabView: View {
     var body: some View {
@@ -23,6 +24,10 @@ struct MainTabView: View {
 }
 
 #Preview {
-    MainTabView()
-        .environment(SettingsStore())
+    let container = ModelContainer.preview
+    let settings = SettingsStore()
+    return MainTabView()
+        .modelContainer(container)
+        .environment(settings)
+        .environment(StockRefreshService(settings: settings, container: container))
 }

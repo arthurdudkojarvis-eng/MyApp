@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
     var body: some View {
@@ -7,6 +8,10 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
-        .environment(SettingsStore())
+    let container = ModelContainer.preview
+    let settings = SettingsStore()
+    return ContentView()
+        .modelContainer(container)
+        .environment(settings)
+        .environment(StockRefreshService(settings: settings, container: container))
 }
