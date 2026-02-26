@@ -3,6 +3,9 @@ import SwiftData
 
 struct DashboardView: View {
     @State private var showSettings = false
+    // Start on page 1 (dashboard). Page 0 (placeholder) sits to the left,
+    // so swiping right reveals it and swiping left returns to the dashboard.
+    @State private var selectedPage = 1
 
     @Environment(StockRefreshService.self) private var stockRefresh
     @Environment(SettingsStore.self) private var settings
@@ -20,13 +23,13 @@ struct DashboardView: View {
             // all gaps including the page-dot region.
             ZStack {
                 Color(.systemGroupedBackground).ignoresSafeArea()
-                TabView {
-                    // Page 1 — income dashboard
-                    dashboardPage
+                TabView(selection: $selectedPage) {
+                    // Page 0 — placeholder (future features), sits to the LEFT
+                    DashboardSecondPage()
                         .tag(0)
 
-                    // Page 2 — placeholder (future features)
-                    DashboardSecondPage()
+                    // Page 1 — income dashboard (default), swipe right to reach page 0
+                    dashboardPage
                         .tag(1)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .always))
