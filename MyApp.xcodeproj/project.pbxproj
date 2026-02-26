@@ -1,0 +1,419 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		14625920A40A9DC1714F1022 /* HomeViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150AC8230390E7B73280367F /* HomeViewModelTests.swift */; };
+		39CE7770F3D82C44F3117BBF /* DividendSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76B968D0039281DB8983FA03 /* DividendSchedule.swift */; };
+		4733A1B96E03A2AE728F9093 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F82B6F194AD4950FEACE8BE /* DashboardView.swift */; };
+		496B5466FBBAB916FEC7CDA4 /* ModelContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11AE850638057BE756C41B92 /* ModelContainerFactory.swift */; };
+		532A1BF0FBDA072F48C348BD /* MyAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43AC62307FC0866810DDF20F /* MyAppApp.swift */; };
+		7AD4B0A71343166CC8E23389 /* DividendFrequency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C74261CC2EEDEDF87E15DF9 /* DividendFrequency.swift */; };
+		7DA91C0CF5A7B072841A77D8 /* Holding.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDB2A6E31CD31D98D7365571 /* Holding.swift */; };
+		84FCDFFB6F3785483FA427CF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82975EBC14257A8D2F34F304 /* Assets.xcassets */; };
+		8C910363A915775CF6FA7CE3 /* DividendCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B8D08E73975BE9DB195BBC /* DividendCalendarView.swift */; };
+		8DCB6F60B033718750EB33B9 /* Portfolio.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF2A840CEFA0C7ED8794E479 /* Portfolio.swift */; };
+		8FFF33A49D1A9FC856F4D3AC /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BE0AA6B455F873EB9DE360 /* MainTabView.swift */; };
+		9C907F61FCC8E161A970659A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01BD360246A6F91A42303E1A /* ContentView.swift */; };
+		AA0C63AE826F5086197D0657 /* HoldingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C7AE553F676F967FF1B6E5 /* HoldingsView.swift */; };
+		AA1D2D9C2F69A518390AD9E9 /* Stock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1337F25AFB67ACEE25AF311F /* Stock.swift */; };
+		B2AE7B6FB846F9B7AE55DAE2 /* SchemaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70AD67C8B61F19099B90170A /* SchemaTests.swift */; };
+		B3AC403AB7E6E5F0F0CCFFFA /* DividendPayment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 168A87450CDF38FF8E2931A6 /* DividendPayment.swift */; };
+		CC4776AC4CA2ADF98A177337 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D1001A03B6D7EEF85B52F5D /* SettingsView.swift */; };
+		DDA4856D608D76F9D88AA9BA /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83BDF54DD70EBE998E82089 /* View+Extensions.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		20056085BF954CB1BE1EA151 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D20D8C134AF0630A2765B38B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 95B215AF326162D28887FCB1;
+			remoteInfo = MyApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		01BD360246A6F91A42303E1A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		0C74261CC2EEDEDF87E15DF9 /* DividendFrequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendFrequency.swift; sourceTree = "<group>"; };
+		11AE850638057BE756C41B92 /* ModelContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerFactory.swift; sourceTree = "<group>"; };
+		1337F25AFB67ACEE25AF311F /* Stock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stock.swift; sourceTree = "<group>"; };
+		150AC8230390E7B73280367F /* HomeViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModelTests.swift; sourceTree = "<group>"; };
+		168A87450CDF38FF8E2931A6 /* DividendPayment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendPayment.swift; sourceTree = "<group>"; };
+		21BA810FCE7AFA87120F016B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		237B2E48D363E5FB9B47CB07 /* MyApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MyApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2D1001A03B6D7EEF85B52F5D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		2F21C600D487BE92833CD1B9 /* MyAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MyAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		37BE0AA6B455F873EB9DE360 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		43AC62307FC0866810DDF20F /* MyAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAppApp.swift; sourceTree = "<group>"; };
+		4F82B6F194AD4950FEACE8BE /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		65C7AE553F676F967FF1B6E5 /* HoldingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingsView.swift; sourceTree = "<group>"; };
+		70AD67C8B61F19099B90170A /* SchemaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaTests.swift; sourceTree = "<group>"; };
+		76B968D0039281DB8983FA03 /* DividendSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendSchedule.swift; sourceTree = "<group>"; };
+		82975EBC14257A8D2F34F304 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AF2A840CEFA0C7ED8794E479 /* Portfolio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Portfolio.swift; sourceTree = "<group>"; };
+		B83BDF54DD70EBE998E82089 /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
+		CDB2A6E31CD31D98D7365571 /* Holding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Holding.swift; sourceTree = "<group>"; };
+		D3B8D08E73975BE9DB195BBC /* DividendCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendCalendarView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0C9FB5F36A7BCD7CEEF78946 /* MyApp */ = {
+			isa = PBXGroup;
+			children = (
+				3AA325FAA6A40F7AEFC1DE58 /* App */,
+				689AB1BD9B3FE27B3D278C8D /* Core */,
+				5CF51C413CE7ADA4ACB9FC05 /* Features */,
+				D275A7B4BC9B3268B9F6002D /* Models */,
+				6895BD3F41536DDF4FA42161 /* Resources */,
+			);
+			path = MyApp;
+			sourceTree = "<group>";
+		};
+		3AA325FAA6A40F7AEFC1DE58 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				01BD360246A6F91A42303E1A /* ContentView.swift */,
+				37BE0AA6B455F873EB9DE360 /* MainTabView.swift */,
+				43AC62307FC0866810DDF20F /* MyAppApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		5CF51C413CE7ADA4ACB9FC05 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				92ECBB5F3C03FB81732FF55A /* Calendar */,
+				B87D0602EFCA0EE0BFD1C9A7 /* Dashboard */,
+				6A8A1C3CDBBB7E6D8BB63F79 /* Holdings */,
+				8A691F0C098D250795BBE57A /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		61B286794EC1C95E4FD91338 = {
+			isa = PBXGroup;
+			children = (
+				0C9FB5F36A7BCD7CEEF78946 /* MyApp */,
+				AE4A1B9AA67AE1E6AE415317 /* MyAppTests */,
+				FF89FD894BEFEC90C393D9C4 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6895BD3F41536DDF4FA42161 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				82975EBC14257A8D2F34F304 /* Assets.xcassets */,
+				21BA810FCE7AFA87120F016B /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		689AB1BD9B3FE27B3D278C8D /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				C96668EC89E273296DBA52EA /* Extensions */,
+				B76FB1F0A7CC1372F8252684 /* Persistence */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		6A8A1C3CDBBB7E6D8BB63F79 /* Holdings */ = {
+			isa = PBXGroup;
+			children = (
+				65C7AE553F676F967FF1B6E5 /* HoldingsView.swift */,
+			);
+			path = Holdings;
+			sourceTree = "<group>";
+		};
+		8A691F0C098D250795BBE57A /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				2D1001A03B6D7EEF85B52F5D /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		92ECBB5F3C03FB81732FF55A /* Calendar */ = {
+			isa = PBXGroup;
+			children = (
+				D3B8D08E73975BE9DB195BBC /* DividendCalendarView.swift */,
+			);
+			path = Calendar;
+			sourceTree = "<group>";
+		};
+		AE4A1B9AA67AE1E6AE415317 /* MyAppTests */ = {
+			isa = PBXGroup;
+			children = (
+				150AC8230390E7B73280367F /* HomeViewModelTests.swift */,
+				70AD67C8B61F19099B90170A /* SchemaTests.swift */,
+			);
+			path = MyAppTests;
+			sourceTree = "<group>";
+		};
+		B76FB1F0A7CC1372F8252684 /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				11AE850638057BE756C41B92 /* ModelContainerFactory.swift */,
+			);
+			path = Persistence;
+			sourceTree = "<group>";
+		};
+		B87D0602EFCA0EE0BFD1C9A7 /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				4F82B6F194AD4950FEACE8BE /* DashboardView.swift */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		C96668EC89E273296DBA52EA /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				B83BDF54DD70EBE998E82089 /* View+Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		D275A7B4BC9B3268B9F6002D /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				0C74261CC2EEDEDF87E15DF9 /* DividendFrequency.swift */,
+				168A87450CDF38FF8E2931A6 /* DividendPayment.swift */,
+				76B968D0039281DB8983FA03 /* DividendSchedule.swift */,
+				CDB2A6E31CD31D98D7365571 /* Holding.swift */,
+				AF2A840CEFA0C7ED8794E479 /* Portfolio.swift */,
+				1337F25AFB67ACEE25AF311F /* Stock.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		FF89FD894BEFEC90C393D9C4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				237B2E48D363E5FB9B47CB07 /* MyApp.app */,
+				2F21C600D487BE92833CD1B9 /* MyAppTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5104944F3E60EFD415650BB0 /* MyAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D429AD3ADAE8B88C933B242D /* Build configuration list for PBXNativeTarget "MyAppTests" */;
+			buildPhases = (
+				4F1FBFE9E85299EA93A84081 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8772F572702B96554114D31D /* PBXTargetDependency */,
+			);
+			name = MyAppTests;
+			packageProductDependencies = (
+			);
+			productName = MyAppTests;
+			productReference = 2F21C600D487BE92833CD1B9 /* MyAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		95B215AF326162D28887FCB1 /* MyApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A4FAA3409601C5ECB54DBC85 /* Build configuration list for PBXNativeTarget "MyApp" */;
+			buildPhases = (
+				750257455CA6C48D952C723D /* Sources */,
+				34FAD6744D8462372A0B029C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MyApp;
+			packageProductDependencies = (
+			);
+			productName = MyApp;
+			productReference = 237B2E48D363E5FB9B47CB07 /* MyApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D20D8C134AF0630A2765B38B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = 46AE2DEEF0ACBEB8BC36F81F /* Build configuration list for PBXProject "MyApp" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 61B286794EC1C95E4FD91338;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				95B215AF326162D28887FCB1 /* MyApp */,
+				5104944F3E60EFD415650BB0 /* MyAppTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		34FAD6744D8462372A0B029C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				84FCDFFB6F3785483FA427CF /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4F1FBFE9E85299EA93A84081 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				14625920A40A9DC1714F1022 /* HomeViewModelTests.swift in Sources */,
+				B2AE7B6FB846F9B7AE55DAE2 /* SchemaTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		750257455CA6C48D952C723D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9C907F61FCC8E161A970659A /* ContentView.swift in Sources */,
+				4733A1B96E03A2AE728F9093 /* DashboardView.swift in Sources */,
+				8C910363A915775CF6FA7CE3 /* DividendCalendarView.swift in Sources */,
+				7AD4B0A71343166CC8E23389 /* DividendFrequency.swift in Sources */,
+				B3AC403AB7E6E5F0F0CCFFFA /* DividendPayment.swift in Sources */,
+				39CE7770F3D82C44F3117BBF /* DividendSchedule.swift in Sources */,
+				7DA91C0CF5A7B072841A77D8 /* Holding.swift in Sources */,
+				AA0C63AE826F5086197D0657 /* HoldingsView.swift in Sources */,
+				8FFF33A49D1A9FC856F4D3AC /* MainTabView.swift in Sources */,
+				496B5466FBBAB916FEC7CDA4 /* ModelContainerFactory.swift in Sources */,
+				532A1BF0FBDA072F48C348BD /* MyAppApp.swift in Sources */,
+				8DCB6F60B033718750EB33B9 /* Portfolio.swift in Sources */,
+				CC4776AC4CA2ADF98A177337 /* SettingsView.swift in Sources */,
+				AA1D2D9C2F69A518390AD9E9 /* Stock.swift in Sources */,
+				DDA4856D608D76F9D88AA9BA /* View+Extensions.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8772F572702B96554114D31D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 95B215AF326162D28887FCB1 /* MyApp */;
+			targetProxy = 20056085BF954CB1BE1EA151 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		3BC9F2FE6F93BE35F7549703 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.myapp.MyAppTests;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MyApp.app/MyApp";
+			};
+			name = Release;
+		};
+		53FBB739A03DFDED333E0DA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_PREVIEWS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.10;
+			};
+			name = Debug;
+		};
+		866294BBCF218BA78F2419A4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = MyApp/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.myapp.MyApp;
+			};
+			name = Debug;
+		};
+		CD8095825CE070DE54C1A347 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = MyApp/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.myapp.MyApp;
+			};
+			name = Release;
+		};
+		CDB2FE40F7F443040D6C7847 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.myapp.MyAppTests;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MyApp.app/MyApp";
+			};
+			name = Debug;
+		};
+		D1199B124EE5FBBDFDAEFF0A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_PREVIEWS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.10;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		46AE2DEEF0ACBEB8BC36F81F /* Build configuration list for PBXProject "MyApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				53FBB739A03DFDED333E0DA1 /* Debug */,
+				D1199B124EE5FBBDFDAEFF0A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A4FAA3409601C5ECB54DBC85 /* Build configuration list for PBXNativeTarget "MyApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				866294BBCF218BA78F2419A4 /* Debug */,
+				CD8095825CE070DE54C1A347 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D429AD3ADAE8B88C933B242D /* Build configuration list for PBXNativeTarget "MyAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CDB2FE40F7F443040D6C7847 /* Debug */,
+				3BC9F2FE6F93BE35F7549703 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D20D8C134AF0630A2765B38B /* Project object */;
+}
