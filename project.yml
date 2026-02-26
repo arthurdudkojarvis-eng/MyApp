@@ -42,3 +42,4 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.myapp.MyAppTests
+        GENERATE_INFOPLIST_FILE: YES

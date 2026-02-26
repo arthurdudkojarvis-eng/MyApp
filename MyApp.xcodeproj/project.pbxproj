@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		14625920A40A9DC1714F1022 /* HomeViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150AC8230390E7B73280367F /* HomeViewModelTests.swift */; };
+		0979E0EFC122A65E87B6D040 /* KeychainServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */; };
+		10C70E33FFDEDB066F21DFC4 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39954C69C6016976D6D8707B /* SettingsStore.swift */; };
 		39CE7770F3D82C44F3117BBF /* DividendSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76B968D0039281DB8983FA03 /* DividendSchedule.swift */; };
 		4733A1B96E03A2AE728F9093 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F82B6F194AD4950FEACE8BE /* DashboardView.swift */; };
 		496B5466FBBAB916FEC7CDA4 /* ModelContainerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11AE850638057BE756C41B92 /* ModelContainerFactory.swift */; };
@@ -25,6 +26,8 @@
 		B3AC403AB7E6E5F0F0CCFFFA /* DividendPayment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 168A87450CDF38FF8E2931A6 /* DividendPayment.swift */; };
 		CC4776AC4CA2ADF98A177337 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D1001A03B6D7EEF85B52F5D /* SettingsView.swift */; };
 		DDA4856D608D76F9D88AA9BA /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83BDF54DD70EBE998E82089 /* View+Extensions.swift */; };
+		F2698E6ACFD1D5447D656A7D /* SettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2332EC481425613D04D5FF2A /* SettingsStoreTests.swift */; };
+		F4BF44D5393BCAC3B259F3AD /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41C018CC84BEF94F929B042E /* KeychainService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,13 +45,15 @@
 		0C74261CC2EEDEDF87E15DF9 /* DividendFrequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendFrequency.swift; sourceTree = "<group>"; };
 		11AE850638057BE756C41B92 /* ModelContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerFactory.swift; sourceTree = "<group>"; };
 		1337F25AFB67ACEE25AF311F /* Stock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stock.swift; sourceTree = "<group>"; };
-		150AC8230390E7B73280367F /* HomeViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModelTests.swift; sourceTree = "<group>"; };
 		168A87450CDF38FF8E2931A6 /* DividendPayment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendPayment.swift; sourceTree = "<group>"; };
 		21BA810FCE7AFA87120F016B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		2332EC481425613D04D5FF2A /* SettingsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStoreTests.swift; sourceTree = "<group>"; };
 		237B2E48D363E5FB9B47CB07 /* MyApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MyApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D1001A03B6D7EEF85B52F5D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		2F21C600D487BE92833CD1B9 /* MyAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MyAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		37BE0AA6B455F873EB9DE360 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		39954C69C6016976D6D8707B /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		41C018CC84BEF94F929B042E /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		43AC62307FC0866810DDF20F /* MyAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAppApp.swift; sourceTree = "<group>"; };
 		4F82B6F194AD4950FEACE8BE /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		65C7AE553F676F967FF1B6E5 /* HoldingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingsView.swift; sourceTree = "<group>"; };
@@ -59,6 +64,7 @@
 		B83BDF54DD70EBE998E82089 /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
 		CDB2A6E31CD31D98D7365571 /* Holding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Holding.swift; sourceTree = "<group>"; };
 		D3B8D08E73975BE9DB195BBC /* DividendCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendCalendarView.swift; sourceTree = "<group>"; };
+		F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -118,6 +124,7 @@
 			children = (
 				C96668EC89E273296DBA52EA /* Extensions */,
 				B76FB1F0A7CC1372F8252684 /* Persistence */,
+				C8AC4AE645CBA8D182E441DE /* Services */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -149,8 +156,9 @@
 		AE4A1B9AA67AE1E6AE415317 /* MyAppTests */ = {
 			isa = PBXGroup;
 			children = (
-				150AC8230390E7B73280367F /* HomeViewModelTests.swift */,
+				F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */,
 				70AD67C8B61F19099B90170A /* SchemaTests.swift */,
+				2332EC481425613D04D5FF2A /* SettingsStoreTests.swift */,
 			);
 			path = MyAppTests;
 			sourceTree = "<group>";
@@ -169,6 +177,15 @@
 				4F82B6F194AD4950FEACE8BE /* DashboardView.swift */,
 			);
 			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		C8AC4AE645CBA8D182E441DE /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				41C018CC84BEF94F929B042E /* KeychainService.swift */,
+				39954C69C6016976D6D8707B /* SettingsStore.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		C96668EC89E273296DBA52EA /* Extensions */ = {
@@ -285,8 +302,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				14625920A40A9DC1714F1022 /* HomeViewModelTests.swift in Sources */,
+				0979E0EFC122A65E87B6D040 /* KeychainServiceTests.swift in Sources */,
 				B2AE7B6FB846F9B7AE55DAE2 /* SchemaTests.swift in Sources */,
+				F2698E6ACFD1D5447D656A7D /* SettingsStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -302,10 +320,12 @@
 				39CE7770F3D82C44F3117BBF /* DividendSchedule.swift in Sources */,
 				7DA91C0CF5A7B072841A77D8 /* Holding.swift in Sources */,
 				AA0C63AE826F5086197D0657 /* HoldingsView.swift in Sources */,
+				F4BF44D5393BCAC3B259F3AD /* KeychainService.swift in Sources */,
 				8FFF33A49D1A9FC856F4D3AC /* MainTabView.swift in Sources */,
 				496B5466FBBAB916FEC7CDA4 /* ModelContainerFactory.swift in Sources */,
 				532A1BF0FBDA072F48C348BD /* MyAppApp.swift in Sources */,
 				8DCB6F60B033718750EB33B9 /* Portfolio.swift in Sources */,
+				10C70E33FFDEDB066F21DFC4 /* SettingsStore.swift in Sources */,
 				CC4776AC4CA2ADF98A177337 /* SettingsView.swift in Sources */,
 				AA1D2D9C2F69A518390AD9E9 /* Stock.swift in Sources */,
 				DDA4856D608D76F9D88AA9BA /* View+Extensions.swift in Sources */,
@@ -327,6 +347,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -444,6 +465,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

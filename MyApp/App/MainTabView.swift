@@ -24,4 +24,5 @@ struct MainTabView: View {
 
 #Preview {
     MainTabView()
+        .environment(SettingsStore())
 }

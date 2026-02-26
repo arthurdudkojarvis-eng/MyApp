@@ -384,7 +384,9 @@ final class SchemaTests: XCTestCase {
         holding2.portfolio = portfolio
         holding2.stock = stock2
 
-        [portfolio, stock1, schedule1, holding1, stock2, schedule2, holding2].forEach { context.insert($0) }
+        context.insert(portfolio)
+        context.insert(stock1); context.insert(schedule1); context.insert(holding1)
+        context.insert(stock2); context.insert(schedule2); context.insert(holding2)
         try context.save()
 
         // KO: 0.485 * 4 * 100 = 194; PEP: 1.355 * 4 * 50 = 271; Total = 465

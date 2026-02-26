@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct DashboardView: View {
+    @State private var showSettings = false
+
     var body: some View {
         NavigationStack {
             // STORY-009: Income dashboard content goes here
@@ -13,7 +15,7 @@ struct DashboardView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        // STORY-003: Present SettingsView as sheet
+                        showSettings = true
                     } label: {
                         Image(systemName: "gearshape")
                             .fontWeight(.regular)
@@ -21,10 +23,14 @@ struct DashboardView: View {
                     .tint(.primary)
                 }
             }
+            .sheet(isPresented: $showSettings) {
+                SettingsView()
+            }
         }
     }
 }
 
 #Preview {
     DashboardView()
+        .environment(SettingsStore())
 }
