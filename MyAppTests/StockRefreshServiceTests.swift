@@ -136,7 +136,7 @@ final class StockRefreshServiceTests: XCTestCase {
         XCTAssertEqual(stocks.first?.companyName, "") // unchanged
     }
 
-    func testRefreshLeavesNilPriceUnchanged() async throws {
+    func testRefreshLeavesCurrentPriceUnchangedWhenAPIReturnsNilPrice() async throws {
         _ = try insertStock(ticker: "AAPL")
         mockPolygon.previousCloseResult = nil   // API returns no price
         mockPolygon.dividendsResult = []
@@ -146,7 +146,8 @@ final class StockRefreshServiceTests: XCTestCase {
         let context = ModelContext(container)
         let stocks = try context.fetch(FetchDescriptor<Stock>())
         XCTAssertEqual(stocks.count, 1)
-        XCTAssertNil(stocks.first?.currentPrice)
+        // currentPrice is non-optional (defaults to 0); nil price from API leaves it unchanged.
+        XCTAssertEqual(stocks.first?.currentPrice, 0)
     }
 
     // MARK: - Dividend schedule tests
@@ -276,6 +277,57 @@ final class StockRefreshServiceTests: XCTestCase {
         let stocks = try context.fetch(FetchDescriptor<Stock>())
         XCTAssertEqual(stocks.first?.companyName, "") // not refreshed
         XCTAssertEqual(mockPolygon.fetchDetailsCallCount, 0)
+    }
+
+    func testRefreshStaleStocksSetsLastRefreshErrorOnFailure() async throws {
+        let context = ModelContext(container)
+        let staleStock = Stock(ticker: "FAIL")
+        staleStock.lastUpdated = .distantPast
+        context.insert(staleStock)
+        try context.save()
+        mockPolygon.shouldThrow = true
+
+        await sut.refreshStaleStocks()
+
+        XCTAssertNotNil(sut.lastRefreshError)
+        XCTAssertTrue(sut.lastRefreshError?.contains("FAIL") == true)
+    }
+
+    func testRefreshStaleStocksClearsErrorBeforeNewRefresh() async throws {
+        let context = ModelContext(container)
+        let staleStock = Stock(ticker: "AAPL")
+        staleStock.lastUpdated = .distantPast
+        context.insert(staleStock)
+        try context.save()
+
+        // First pass — fails.
+        mockPolygon.shouldThrow = true
+        await sut.refreshStaleStocks()
+        XCTAssertNotNil(sut.lastRefreshError)
+
+        // Second pass — succeeds. Mark stock as stale again.
+        let stocks = try context.fetch(FetchDescriptor<Stock>())
+        stocks.first?.lastUpdated = .distantPast
+        try context.save()
+
+        mockPolygon.shouldThrow = false
+        await sut.refreshStaleStocks()
+        XCTAssertNil(sut.lastRefreshError)
+    }
+
+    func testDismissRefreshError() async throws {
+        let context = ModelContext(container)
+        let staleStock = Stock(ticker: "ERR")
+        staleStock.lastUpdated = .distantPast
+        context.insert(staleStock)
+        try context.save()
+        mockPolygon.shouldThrow = true
+
+        await sut.refreshStaleStocks()
+        XCTAssertNotNil(sut.lastRefreshError)
+
+        sut.dismissRefreshError()
+        XCTAssertNil(sut.lastRefreshError)
     }
 
     func testRefreshStaleStocksDoesNotDoubleInvoke() async throws {

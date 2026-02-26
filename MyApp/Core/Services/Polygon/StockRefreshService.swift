@@ -18,6 +18,9 @@ private let dateFormatter: DateFormatter = {
 @Observable
 final class StockRefreshService {
     private(set) var isRefreshing = false
+    private(set) var lastRefreshError: String?
+
+    func dismissRefreshError() { lastRefreshError = nil }
 
     private let polygon: any PolygonFetching
     private let settings: SettingsStore
@@ -48,6 +51,7 @@ final class StockRefreshService {
     func refreshStaleStocks() async {
         guard !isRefreshing else { return }
         guard settings.hasPolygonAPIKey else { return }
+        lastRefreshError = nil   // clear previous error on every new refresh attempt
         let apiKey = settings.polygonAPIKey
         let context = ModelContext(container)
         let staleStocks: [Stock]
@@ -97,6 +101,10 @@ final class StockRefreshService {
 
         } catch {
             logger.error("Failed to refresh \(ticker): \(error.localizedDescription)")
+            // Report the first failure only; last-writer-wins is non-deterministic under concurrent refresh.
+            if lastRefreshError == nil {
+                lastRefreshError = "Could not refresh \(ticker). Check your connection or API key."
+            }
         }
     }
 
