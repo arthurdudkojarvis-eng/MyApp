@@ -3,6 +3,8 @@ import SwiftUI
 struct DividendCalendarRowView: View {
     let schedule: DividendSchedule
 
+    @State private var showLogPayment = false
+
     private var ticker: String      { schedule.stock?.ticker      ?? "—" }
     private var companyName: String { schedule.stock?.companyName ?? "—" }
 
@@ -43,6 +45,24 @@ struct DividendCalendarRowView: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(rowAccessibilityLabel)
+        .accessibilityAction(named: "Log Payment") {
+            if schedule.status != .paid { showLogPayment = true }
+        }
+        .swipeActions(edge: .trailing) {
+            if schedule.status != .paid {
+                Button {
+                    showLogPayment = true
+                } label: {
+                    Label("Log", systemImage: "checkmark.circle")
+                }
+                .tint(.green)
+            }
+        }
+        .sheet(isPresented: $showLogPayment) {
+            LogPaymentView(schedule: schedule)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
     }
 
     private var rowAccessibilityLabel: String {
