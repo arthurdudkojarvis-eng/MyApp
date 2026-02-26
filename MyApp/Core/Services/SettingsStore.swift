@@ -28,9 +28,10 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.myap
 final class SettingsStore {
     // MARK: - Keys
     private enum Keys {
-        static let polygonAPIKey        = "polygonAPIKey"
-        static let monthlyExpenseTarget = "monthlyExpenseTarget"
-        static let colorScheme          = "colorScheme"
+        static let polygonAPIKey          = "polygonAPIKey"
+        static let monthlyExpenseTarget   = "monthlyExpenseTarget"
+        static let colorScheme            = "colorScheme"
+        static let hasCompletedOnboarding = "hasCompletedOnboarding"
     }
 
     // MARK: - Dependencies
@@ -59,6 +60,10 @@ final class SettingsStore {
         didSet { defaults.set(colorScheme.rawValue, forKey: Keys.colorScheme) }
     }
 
+    var hasCompletedOnboarding: Bool {
+        didSet { defaults.set(hasCompletedOnboarding, forKey: Keys.hasCompletedOnboarding) }
+    }
+
     var hasPolygonAPIKey: Bool { !polygonAPIKey.isEmpty }
 
     // MARK: - Init
@@ -79,5 +84,7 @@ final class SettingsStore {
 
         let raw = defaults.string(forKey: Keys.colorScheme) ?? AppColorScheme.system.rawValue
         self.colorScheme = AppColorScheme(rawValue: raw) ?? .system
+
+        self.hasCompletedOnboarding = defaults.bool(forKey: Keys.hasCompletedOnboarding)
     }
 }

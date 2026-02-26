@@ -2,8 +2,17 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    @Environment(SettingsStore.self) private var settings
+
     var body: some View {
         MainTabView()
+            .fullScreenCover(isPresented: Binding(
+                get: { !settings.hasCompletedOnboarding },
+                set: { _ in }   // dismissal is driven only by setting the flag
+            )) {
+                OnboardingView()
+                    .environment(settings)
+            }
     }
 }
 
@@ -14,4 +23,9 @@ struct ContentView: View {
         .modelContainer(container)
         .environment(settings)
         .environment(StockRefreshService(settings: settings, container: container))
+}
+
+#Preview("Onboarding") {
+    OnboardingView()
+        .environment(SettingsStore())
 }
