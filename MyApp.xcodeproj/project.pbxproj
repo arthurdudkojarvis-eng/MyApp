@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02BAE726E22BFFEDC7EF0414 /* AddPortfolioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */; };
 		0979E0EFC122A65E87B6D040 /* KeychainServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */; };
 		10C70E33FFDEDB066F21DFC4 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39954C69C6016976D6D8707B /* SettingsStore.swift */; };
 		39CE7770F3D82C44F3117BBF /* DividendSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76B968D0039281DB8983FA03 /* DividendSchedule.swift */; };
@@ -19,6 +20,7 @@
 		8C910363A915775CF6FA7CE3 /* DividendCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B8D08E73975BE9DB195BBC /* DividendCalendarView.swift */; };
 		8DCB6F60B033718750EB33B9 /* Portfolio.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF2A840CEFA0C7ED8794E479 /* Portfolio.swift */; };
 		8FFF33A49D1A9FC856F4D3AC /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BE0AA6B455F873EB9DE360 /* MainTabView.swift */; };
+		9B9990E63644C5BC107B06E0 /* AddPortfolioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74025E36A57BD79EC7BC227 /* AddPortfolioView.swift */; };
 		9C907F61FCC8E161A970659A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01BD360246A6F91A42303E1A /* ContentView.swift */; };
 		AA0C63AE826F5086197D0657 /* HoldingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C7AE553F676F967FF1B6E5 /* HoldingsView.swift */; };
 		AA1D2D9C2F69A518390AD9E9 /* Stock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1337F25AFB67ACEE25AF311F /* Stock.swift */; };
@@ -60,10 +62,12 @@
 		70AD67C8B61F19099B90170A /* SchemaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaTests.swift; sourceTree = "<group>"; };
 		76B968D0039281DB8983FA03 /* DividendSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendSchedule.swift; sourceTree = "<group>"; };
 		82975EBC14257A8D2F34F304 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPortfolioTests.swift; sourceTree = "<group>"; };
 		AF2A840CEFA0C7ED8794E479 /* Portfolio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Portfolio.swift; sourceTree = "<group>"; };
 		B83BDF54DD70EBE998E82089 /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
 		CDB2A6E31CD31D98D7365571 /* Holding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Holding.swift; sourceTree = "<group>"; };
 		D3B8D08E73975BE9DB195BBC /* DividendCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendCalendarView.swift; sourceTree = "<group>"; };
+		E74025E36A57BD79EC7BC227 /* AddPortfolioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPortfolioView.swift; sourceTree = "<group>"; };
 		F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -132,6 +136,7 @@
 		6A8A1C3CDBBB7E6D8BB63F79 /* Holdings */ = {
 			isa = PBXGroup;
 			children = (
+				E74025E36A57BD79EC7BC227 /* AddPortfolioView.swift */,
 				65C7AE553F676F967FF1B6E5 /* HoldingsView.swift */,
 			);
 			path = Holdings;
@@ -156,6 +161,7 @@
 		AE4A1B9AA67AE1E6AE415317 /* MyAppTests */ = {
 			isa = PBXGroup;
 			children = (
+				8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */,
 				F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */,
 				70AD67C8B61F19099B90170A /* SchemaTests.swift */,
 				2332EC481425613D04D5FF2A /* SettingsStoreTests.swift */,
@@ -302,6 +308,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				02BAE726E22BFFEDC7EF0414 /* AddPortfolioTests.swift in Sources */,
 				0979E0EFC122A65E87B6D040 /* KeychainServiceTests.swift in Sources */,
 				B2AE7B6FB846F9B7AE55DAE2 /* SchemaTests.swift in Sources */,
 				F2698E6ACFD1D5447D656A7D /* SettingsStoreTests.swift in Sources */,
@@ -312,6 +319,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B9990E63644C5BC107B06E0 /* AddPortfolioView.swift in Sources */,
 				9C907F61FCC8E161A970659A /* ContentView.swift in Sources */,
 				4733A1B96E03A2AE728F9093 /* DashboardView.swift in Sources */,
 				8C910363A915775CF6FA7CE3 /* DividendCalendarView.swift in Sources */,

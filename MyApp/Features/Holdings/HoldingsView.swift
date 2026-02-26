@@ -3,19 +3,18 @@ import SwiftData
 
 struct HoldingsView: View {
     @Query(sort: \Portfolio.name) private var portfolios: [Portfolio]
+    @State private var showAddPortfolio = false
 
     var body: some View {
         NavigationStack {
             Group {
                 if portfolios.isEmpty {
-                    // STORY-004: Add Portfolio prompt
                     ContentUnavailableView(
                         "No portfolios yet",
                         systemImage: "square.stack",
-                        description: Text("Create a portfolio to start tracking your holdings.")
+                        description: Text("Tap + to create your first portfolio.")
                     )
                 } else {
-                    // STORY-006: Holdings list goes here
                     List {
                         ForEach(portfolios) { portfolio in
                             Section(portfolio.name) {
@@ -32,11 +31,15 @@ struct HoldingsView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        // STORY-004/005: Add holding or portfolio
+                        showAddPortfolio = true
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .accessibilityLabel("Add portfolio")
                 }
+            }
+            .sheet(isPresented: $showAddPortfolio) {
+                AddPortfolioView()
             }
         }
     }
