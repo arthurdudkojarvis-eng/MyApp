@@ -8,7 +8,13 @@ settings:
   base:
     SWIFT_VERSION: "5.10"
     ENABLE_PREVIEWS: YES
-    DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+  configs:
+    Debug:
+      DEBUG_INFORMATION_FORMAT: dwarf
+    Release:
+      DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
 
 targets:
   MyApp:
@@ -26,10 +32,12 @@ targets:
       path: MyApp/Resources/Info.plist
       properties:
         UILaunchScreen:
-          UIColorName: ""
+          UIColorName: LaunchBackground
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         CFBundleDisplayName: MyApp
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
 
   MyAppTests:
     type: bundle.unit-test
