@@ -24,8 +24,10 @@
 		9C907F61FCC8E161A970659A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01BD360246A6F91A42303E1A /* ContentView.swift */; };
 		AA0C63AE826F5086197D0657 /* HoldingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C7AE553F676F967FF1B6E5 /* HoldingsView.swift */; };
 		AA1D2D9C2F69A518390AD9E9 /* Stock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1337F25AFB67ACEE25AF311F /* Stock.swift */; };
+		AAD3B35880926533988F1408 /* AddHoldingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FF7D7BA9F11C0ACE7514C4D /* AddHoldingView.swift */; };
 		B2AE7B6FB846F9B7AE55DAE2 /* SchemaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70AD67C8B61F19099B90170A /* SchemaTests.swift */; };
 		B3AC403AB7E6E5F0F0CCFFFA /* DividendPayment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 168A87450CDF38FF8E2931A6 /* DividendPayment.swift */; };
+		B43D07CBDB44FDFC98364027 /* AddHoldingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72B38DB100EF154D74149F3C /* AddHoldingTests.swift */; };
 		CC4776AC4CA2ADF98A177337 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D1001A03B6D7EEF85B52F5D /* SettingsView.swift */; };
 		DDA4856D608D76F9D88AA9BA /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83BDF54DD70EBE998E82089 /* View+Extensions.swift */; };
 		F2698E6ACFD1D5447D656A7D /* SettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2332EC481425613D04D5FF2A /* SettingsStoreTests.swift */; };
@@ -58,8 +60,10 @@
 		41C018CC84BEF94F929B042E /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		43AC62307FC0866810DDF20F /* MyAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyAppApp.swift; sourceTree = "<group>"; };
 		4F82B6F194AD4950FEACE8BE /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		5FF7D7BA9F11C0ACE7514C4D /* AddHoldingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddHoldingView.swift; sourceTree = "<group>"; };
 		65C7AE553F676F967FF1B6E5 /* HoldingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingsView.swift; sourceTree = "<group>"; };
 		70AD67C8B61F19099B90170A /* SchemaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaTests.swift; sourceTree = "<group>"; };
+		72B38DB100EF154D74149F3C /* AddHoldingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddHoldingTests.swift; sourceTree = "<group>"; };
 		76B968D0039281DB8983FA03 /* DividendSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendSchedule.swift; sourceTree = "<group>"; };
 		82975EBC14257A8D2F34F304 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPortfolioTests.swift; sourceTree = "<group>"; };
@@ -136,6 +140,7 @@
 		6A8A1C3CDBBB7E6D8BB63F79 /* Holdings */ = {
 			isa = PBXGroup;
 			children = (
+				5FF7D7BA9F11C0ACE7514C4D /* AddHoldingView.swift */,
 				E74025E36A57BD79EC7BC227 /* AddPortfolioView.swift */,
 				65C7AE553F676F967FF1B6E5 /* HoldingsView.swift */,
 			);
@@ -161,6 +166,7 @@
 		AE4A1B9AA67AE1E6AE415317 /* MyAppTests */ = {
 			isa = PBXGroup;
 			children = (
+				72B38DB100EF154D74149F3C /* AddHoldingTests.swift */,
 				8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */,
 				F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */,
 				70AD67C8B61F19099B90170A /* SchemaTests.swift */,
@@ -308,6 +314,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B43D07CBDB44FDFC98364027 /* AddHoldingTests.swift in Sources */,
 				02BAE726E22BFFEDC7EF0414 /* AddPortfolioTests.swift in Sources */,
 				0979E0EFC122A65E87B6D040 /* KeychainServiceTests.swift in Sources */,
 				B2AE7B6FB846F9B7AE55DAE2 /* SchemaTests.swift in Sources */,
@@ -319,6 +326,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AAD3B35880926533988F1408 /* AddHoldingView.swift in Sources */,
 				9B9990E63644C5BC107B06E0 /* AddPortfolioView.swift in Sources */,
 				9C907F61FCC8E161A970659A /* ContentView.swift in Sources */,
 				4733A1B96E03A2AE728F9093 /* DashboardView.swift in Sources */,

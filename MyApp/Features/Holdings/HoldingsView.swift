@@ -17,11 +17,7 @@ struct HoldingsView: View {
                 } else {
                     List {
                         ForEach(portfolios) { portfolio in
-                            Section(portfolio.name) {
-                                // STORY-005/006: Holdings per portfolio
-                                Text("No holdings yet")
-                                    .foregroundStyle(.secondary)
-                            }
+                            PortfolioSectionView(portfolio: portfolio)
                         }
                     }
                     .listStyle(.insetGrouped)
@@ -41,6 +37,46 @@ struct HoldingsView: View {
             .sheet(isPresented: $showAddPortfolio) {
                 AddPortfolioView()
             }
+        }
+    }
+}
+
+// MARK: - Portfolio Section
+
+private struct PortfolioSectionView: View {
+    let portfolio: Portfolio
+    @State private var showAddHolding = false
+
+    var body: some View {
+        Section {
+            if portfolio.holdings.isEmpty {
+                Text("No holdings yet")
+                    .foregroundStyle(.secondary)
+            } else {
+                // STORY-006: Holding rows go here
+                ForEach(portfolio.holdings) { holding in
+                    Text(holding.stock?.ticker ?? "—")
+                }
+            }
+        } header: {
+            HStack {
+                Text(portfolio.name)
+                Spacer()
+                Button {
+                    showAddHolding = true
+                } label: {
+                    Image(systemName: "plus.circle")
+                        .foregroundStyle(Color.accentColor)
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Add holding to \(portfolio.name)")
+            }
+            .textCase(nil)
+        }
+        .sheet(isPresented: $showAddHolding) {
+            AddHoldingView(portfolio: portfolio)
         }
     }
 }
