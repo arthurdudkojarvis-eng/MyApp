@@ -167,27 +167,99 @@ private struct RefreshErrorBannerView: View {
 private struct DashboardSecondPage: View {
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 32) {
-                placeholderSection("Analytics")
-                placeholderSection("Watchlist")
-                placeholderSection("Insights")
-                placeholderSection("News")
+            VStack(alignment: .leading, spacing: 28) {
+
+                placeholderSection(
+                    icon: "chart.xyaxis.line",
+                    title: "Income Forecast",
+                    subtitle: "12-month projected dividend income based on your current holdings",
+                    height: 140
+                )
+
+                placeholderSection(
+                    icon: "chart.pie.fill",
+                    title: "Sector Allocation",
+                    subtitle: "Portfolio diversification across sectors and asset classes",
+                    height: 120
+                )
+
+                placeholderSection(
+                    icon: "arrow.trianglehead.2.clockwise",
+                    title: "DRIP Simulator",
+                    subtitle: "Model dividend reinvestment to project long-term share growth",
+                    height: 100
+                )
+
+                placeholderSection(
+                    icon: "shield.lefthalf.filled",
+                    title: "Dividend Safety",
+                    subtitle: "Payout ratio analysis and dividend cut risk scores per holding",
+                    height: 100
+                )
+
+                placeholderSection(
+                    icon: "doc.text.fill",
+                    title: "Tax Summary",
+                    subtitle: "Qualified vs ordinary dividends, Schedule B export",
+                    height: 80
+                )
+
+                placeholderSection(
+                    icon: "eye.fill",
+                    title: "Watchlist",
+                    subtitle: "Track stocks you're researching before adding to a portfolio",
+                    height: 100
+                )
+
+                placeholderSection(
+                    icon: "bell.fill",
+                    title: "Alerts",
+                    subtitle: "Ex-dividend date reminders, price targets, dividend cut notifications",
+                    height: 80
+                )
+
+                placeholderSection(
+                    icon: "newspaper.fill",
+                    title: "News & Events",
+                    subtitle: "Dividend announcements, earnings, and market news for your holdings",
+                    height: 100
+                )
             }
             .padding(.horizontal, 20)
             .padding(.top, 24)
+            .padding(.bottom, 32)
         }
         .background(Color.black)
     }
 
-    private func placeholderSection(_ title: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.title2.bold())
-                .foregroundStyle(.white)
+    private func placeholderSection(
+        icon: String,
+        title: String,
+        subtitle: String,
+        height: CGFloat
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.5))
+                Text(title)
+                    .font(.title3.bold())
+                    .foregroundStyle(.white)
+            }
+            Text(subtitle)
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.4))
+                .lineLimit(2)
             Rectangle()
-                .fill(Color.white.opacity(0.07))
-                .frame(height: 80)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .fill(Color.white.opacity(0.06))
+                .frame(height: height)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .overlay(
+                    Text("Coming soon")
+                        .font(.caption2)
+                        .foregroundStyle(.white.opacity(0.2))
+                )
         }
     }
 }
