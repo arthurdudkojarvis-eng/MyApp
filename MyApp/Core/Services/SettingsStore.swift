@@ -2,6 +2,22 @@ import Foundation
 import Observation
 import OSLog
 
+// MARK: - AppColorScheme
+
+enum AppColorScheme: String, CaseIterable {
+    case system = "system"
+    case light  = "light"
+    case dark   = "dark"
+
+    var label: String {
+        switch self {
+        case .system: return "System"
+        case .light:  return "Light"
+        case .dark:   return "Dark"
+        }
+    }
+}
+
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.myapp.MyApp",
                             category: "SettingsStore")
 
@@ -12,8 +28,9 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.myap
 final class SettingsStore {
     // MARK: - Keys
     private enum Keys {
-        static let polygonAPIKey = "polygonAPIKey"
+        static let polygonAPIKey        = "polygonAPIKey"
         static let monthlyExpenseTarget = "monthlyExpenseTarget"
+        static let colorScheme          = "colorScheme"
     }
 
     // MARK: - Dependencies
@@ -38,6 +55,10 @@ final class SettingsStore {
         }
     }
 
+    var colorScheme: AppColorScheme {
+        didSet { defaults.set(colorScheme.rawValue, forKey: Keys.colorScheme) }
+    }
+
     var hasPolygonAPIKey: Bool { !polygonAPIKey.isEmpty }
 
     // MARK: - Init
@@ -55,5 +76,8 @@ final class SettingsStore {
         } else {
             self.monthlyExpenseTarget = 0
         }
+
+        let raw = defaults.string(forKey: Keys.colorScheme) ?? AppColorScheme.system.rawValue
+        self.colorScheme = AppColorScheme(rawValue: raw) ?? .system
     }
 }

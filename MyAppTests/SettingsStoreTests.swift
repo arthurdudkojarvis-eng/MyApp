@@ -103,4 +103,56 @@ final class SettingsStoreTests: XCTestCase {
         let reloaded = SettingsStore(keychain: keychain, defaults: defaults)
         XCTAssertEqual(reloaded.monthlyExpenseTarget, original)
     }
+
+    // MARK: - colorScheme
+
+    func testColorSchemeDefaultsToSystem() {
+        XCTAssertEqual(sut.colorScheme, .system)
+        XCTAssertNil(sut.colorScheme.resolvedColorScheme)
+    }
+
+    func testSettingColorSchemePersistsToDefaults() {
+        sut.colorScheme = .dark
+        XCTAssertEqual(defaults.string(forKey: "colorScheme"), "dark")
+    }
+
+    func testColorSchemeRoundTrip() {
+        sut.colorScheme = .light
+        let reloaded = SettingsStore(keychain: keychain, defaults: defaults)
+        XCTAssertEqual(reloaded.colorScheme, .light)
+    }
+
+    func testColorSchemeCorruptedValueFallsBackToSystem() {
+        defaults.set("invalid-value", forKey: "colorScheme")
+        let store = SettingsStore(keychain: keychain, defaults: defaults)
+        XCTAssertEqual(store.colorScheme, .system)
+    }
+
+    func testAllColorSchemeCasesMapToExpectedColorScheme() {
+        XCTAssertNil(AppColorScheme.system.resolvedColorScheme)
+        XCTAssertEqual(AppColorScheme.light.resolvedColorScheme, .light)
+        XCTAssertEqual(AppColorScheme.dark.resolvedColorScheme, .dark)
+    }
+
+    func testColorSchemeLabels() {
+        XCTAssertEqual(AppColorScheme.system.label, "System")
+        XCTAssertEqual(AppColorScheme.light.label, "Light")
+        XCTAssertEqual(AppColorScheme.dark.label, "Dark")
+    }
+
+    func testAppColorSchemeCaseCount() {
+        XCTAssertEqual(AppColorScheme.allCases.count, 3)
+    }
+
+    func testInitDoesNotWriteToDefaultsWhenNoStoredColorScheme() {
+        // Fresh store with empty defaults — no colorScheme key should be written on init.
+        XCTAssertNil(defaults.string(forKey: "colorScheme"))
+    }
+
+    func testSettingSameColorSchemeIsIdempotent() {
+        sut.colorScheme = .dark
+        sut.colorScheme = .dark
+        XCTAssertEqual(sut.colorScheme, .dark)
+        XCTAssertEqual(defaults.string(forKey: "colorScheme"), "dark")
+    }
 }

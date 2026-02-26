@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		02BAE726E22BFFEDC7EF0414 /* AddPortfolioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */; };
+		05C95DE266286E5F2EFFF206 /* AppColorScheme+SwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E027B60436A61420ED999E3 /* AppColorScheme+SwiftUI.swift */; };
 		0979E0EFC122A65E87B6D040 /* KeychainServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */; };
 		10C70E33FFDEDB066F21DFC4 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39954C69C6016976D6D8707B /* SettingsStore.swift */; };
 		1ED58B5C130C37C017765788 /* PolygonService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC36DA4D1479658B4AC9D33 /* PolygonService.swift */; };
@@ -21,8 +22,10 @@
 		532A1BF0FBDA072F48C348BD /* MyAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43AC62307FC0866810DDF20F /* MyAppApp.swift */; };
 		53D1065F0BC685A0EC172A6A /* CoverageMeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A233EDCCF999850598369A /* CoverageMeterView.swift */; };
 		5D5DB28828779CC1549F317F /* IncomeHeroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AC714EC6294F050205D7CBC /* IncomeHeroView.swift */; };
+		6EAC5C805CD25068CD6B9FD2 /* DividendCalendarRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1679A13FA7597EEABA5E85CA /* DividendCalendarRowView.swift */; };
 		6FB33C4BAF790F222558D82D /* PolygonModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047526A7CB59A2CEC408D324 /* PolygonModels.swift */; };
 		7AD4B0A71343166CC8E23389 /* DividendFrequency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C74261CC2EEDEDF87E15DF9 /* DividendFrequency.swift */; };
+		7B2D54B3F2B469A4F95A7F15 /* LogPaymentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9AF13E5B9F14E0CDA9E3FC3 /* LogPaymentTests.swift */; };
 		7DA91C0CF5A7B072841A77D8 /* Holding.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDB2A6E31CD31D98D7365571 /* Holding.swift */; };
 		84FCDFFB6F3785483FA427CF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82975EBC14257A8D2F34F304 /* Assets.xcassets */; };
 		8C910363A915775CF6FA7CE3 /* DividendCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3B8D08E73975BE9DB195BBC /* DividendCalendarView.swift */; };
@@ -37,6 +40,7 @@
 		B3AC403AB7E6E5F0F0CCFFFA /* DividendPayment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 168A87450CDF38FF8E2931A6 /* DividendPayment.swift */; };
 		B43D07CBDB44FDFC98364027 /* AddHoldingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72B38DB100EF154D74149F3C /* AddHoldingTests.swift */; };
 		BD4A40AB295269B2F1E9D6BA /* StockRefreshService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A237E2958E19FB1B20DEB3 /* StockRefreshService.swift */; };
+		BDFA051B3BB6B86108D01568 /* DividendCalendarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87482738929F14A98BDD0FFE /* DividendCalendarTests.swift */; };
 		C738D64E338EA2ABBDCAFEF2 /* HoldingDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F397CCD27C3562FB5B67C57 /* HoldingDetailView.swift */; };
 		CC4776AC4CA2ADF98A177337 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D1001A03B6D7EEF85B52F5D /* SettingsView.swift */; };
 		DDA4856D608D76F9D88AA9BA /* View+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B83BDF54DD70EBE998E82089 /* View+Extensions.swift */; };
@@ -44,6 +48,7 @@
 		F0273F9FDBE894B9F8823926 /* DashboardMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10DAE0AC3A6D2BC5044E3789 /* DashboardMetricsTests.swift */; };
 		F2698E6ACFD1D5447D656A7D /* SettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2332EC481425613D04D5FF2A /* SettingsStoreTests.swift */; };
 		F4BF44D5393BCAC3B259F3AD /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41C018CC84BEF94F929B042E /* KeychainService.swift */; };
+		FD12A43066297F415F8C701B /* LogPaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8675B04AE3DD90FFEDA27D5C /* LogPaymentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,10 +65,12 @@
 		01BD360246A6F91A42303E1A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		047526A7CB59A2CEC408D324 /* PolygonModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolygonModels.swift; sourceTree = "<group>"; };
 		0C74261CC2EEDEDF87E15DF9 /* DividendFrequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendFrequency.swift; sourceTree = "<group>"; };
+		0E027B60436A61420ED999E3 /* AppColorScheme+SwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppColorScheme+SwiftUI.swift"; sourceTree = "<group>"; };
 		10DAE0AC3A6D2BC5044E3789 /* DashboardMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardMetricsTests.swift; sourceTree = "<group>"; };
 		11AE850638057BE756C41B92 /* ModelContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerFactory.swift; sourceTree = "<group>"; };
 		1337F25AFB67ACEE25AF311F /* Stock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stock.swift; sourceTree = "<group>"; };
 		14C8CC0191B4D2B353C92812 /* EditHoldingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditHoldingTests.swift; sourceTree = "<group>"; };
+		1679A13FA7597EEABA5E85CA /* DividendCalendarRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendCalendarRowView.swift; sourceTree = "<group>"; };
 		168A87450CDF38FF8E2931A6 /* DividendPayment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendPayment.swift; sourceTree = "<group>"; };
 		21BA810FCE7AFA87120F016B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		2332EC481425613D04D5FF2A /* SettingsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStoreTests.swift; sourceTree = "<group>"; };
@@ -86,11 +93,14 @@
 		76B968D0039281DB8983FA03 /* DividendSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendSchedule.swift; sourceTree = "<group>"; };
 		82975EBC14257A8D2F34F304 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8600F9CD4E0ECCF8DA305D42 /* EditHoldingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditHoldingView.swift; sourceTree = "<group>"; };
+		8675B04AE3DD90FFEDA27D5C /* LogPaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPaymentView.swift; sourceTree = "<group>"; };
+		87482738929F14A98BDD0FFE /* DividendCalendarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendCalendarTests.swift; sourceTree = "<group>"; };
 		8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPortfolioTests.swift; sourceTree = "<group>"; };
 		9C30FC2CD0BC2FBFF38A93D0 /* DashboardMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardMetrics.swift; sourceTree = "<group>"; };
 		AF2A840CEFA0C7ED8794E479 /* Portfolio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Portfolio.swift; sourceTree = "<group>"; };
 		B83BDF54DD70EBE998E82089 /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
 		BBC36DA4D1479658B4AC9D33 /* PolygonService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolygonService.swift; sourceTree = "<group>"; };
+		C9AF13E5B9F14E0CDA9E3FC3 /* LogPaymentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPaymentTests.swift; sourceTree = "<group>"; };
 		CDB2A6E31CD31D98D7365571 /* Holding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Holding.swift; sourceTree = "<group>"; };
 		D3B8D08E73975BE9DB195BBC /* DividendCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendCalendarView.swift; sourceTree = "<group>"; };
 		D4A233EDCCF999850598369A /* CoverageMeterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverageMeterView.swift; sourceTree = "<group>"; };
@@ -194,7 +204,9 @@
 		92ECBB5F3C03FB81732FF55A /* Calendar */ = {
 			isa = PBXGroup;
 			children = (
+				1679A13FA7597EEABA5E85CA /* DividendCalendarRowView.swift */,
 				D3B8D08E73975BE9DB195BBC /* DividendCalendarView.swift */,
+				8675B04AE3DD90FFEDA27D5C /* LogPaymentView.swift */,
 			);
 			path = Calendar;
 			sourceTree = "<group>";
@@ -206,8 +218,10 @@
 				8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */,
 				67CCEAC201176AF06A2EEE86 /* CoverageMeterTests.swift */,
 				10DAE0AC3A6D2BC5044E3789 /* DashboardMetricsTests.swift */,
+				87482738929F14A98BDD0FFE /* DividendCalendarTests.swift */,
 				14C8CC0191B4D2B353C92812 /* EditHoldingTests.swift */,
 				F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */,
+				C9AF13E5B9F14E0CDA9E3FC3 /* LogPaymentTests.swift */,
 				70AD67C8B61F19099B90170A /* SchemaTests.swift */,
 				2332EC481425613D04D5FF2A /* SettingsStoreTests.swift */,
 				D4DD5B2B7954B51F161C848C /* StockRefreshServiceTests.swift */,
@@ -237,6 +251,7 @@
 		C8AC4AE645CBA8D182E441DE /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				0E027B60436A61420ED999E3 /* AppColorScheme+SwiftUI.swift */,
 				41C018CC84BEF94F929B042E /* KeychainService.swift */,
 				39954C69C6016976D6D8707B /* SettingsStore.swift */,
 				3BEC3D0DA694EF5C0E131D34 /* Polygon */,
@@ -362,8 +377,10 @@
 				02BAE726E22BFFEDC7EF0414 /* AddPortfolioTests.swift in Sources */,
 				302708F25D08CD1BCE76FC2D /* CoverageMeterTests.swift in Sources */,
 				F0273F9FDBE894B9F8823926 /* DashboardMetricsTests.swift in Sources */,
+				BDFA051B3BB6B86108D01568 /* DividendCalendarTests.swift in Sources */,
 				4BFEF93245609B9F162F4F55 /* EditHoldingTests.swift in Sources */,
 				0979E0EFC122A65E87B6D040 /* KeychainServiceTests.swift in Sources */,
+				7B2D54B3F2B469A4F95A7F15 /* LogPaymentTests.swift in Sources */,
 				B2AE7B6FB846F9B7AE55DAE2 /* SchemaTests.swift in Sources */,
 				F2698E6ACFD1D5447D656A7D /* SettingsStoreTests.swift in Sources */,
 				EC1F022BB2214D988676FC34 /* StockRefreshServiceTests.swift in Sources */,
@@ -376,10 +393,12 @@
 			files = (
 				AAD3B35880926533988F1408 /* AddHoldingView.swift in Sources */,
 				9B9990E63644C5BC107B06E0 /* AddPortfolioView.swift in Sources */,
+				05C95DE266286E5F2EFFF206 /* AppColorScheme+SwiftUI.swift in Sources */,
 				9C907F61FCC8E161A970659A /* ContentView.swift in Sources */,
 				53D1065F0BC685A0EC172A6A /* CoverageMeterView.swift in Sources */,
 				499BBEA3099494FE2D695306 /* DashboardMetrics.swift in Sources */,
 				4733A1B96E03A2AE728F9093 /* DashboardView.swift in Sources */,
+				6EAC5C805CD25068CD6B9FD2 /* DividendCalendarRowView.swift in Sources */,
 				8C910363A915775CF6FA7CE3 /* DividendCalendarView.swift in Sources */,
 				7AD4B0A71343166CC8E23389 /* DividendFrequency.swift in Sources */,
 				B3AC403AB7E6E5F0F0CCFFFA /* DividendPayment.swift in Sources */,
@@ -390,6 +409,7 @@
 				AA0C63AE826F5086197D0657 /* HoldingsView.swift in Sources */,
 				5D5DB28828779CC1549F317F /* IncomeHeroView.swift in Sources */,
 				F4BF44D5393BCAC3B259F3AD /* KeychainService.swift in Sources */,
+				FD12A43066297F415F8C701B /* LogPaymentView.swift in Sources */,
 				8FFF33A49D1A9FC856F4D3AC /* MainTabView.swift in Sources */,
 				496B5466FBBAB916FEC7CDA4 /* ModelContainerFactory.swift in Sources */,
 				532A1BF0FBDA072F48C348BD /* MyAppApp.swift in Sources */,
@@ -428,9 +448,11 @@
 		53FBB739A03DFDED333E0DA1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_PREVIEWS = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.10;
 			};
@@ -471,9 +493,11 @@
 		D1199B124EE5FBBDFDAEFF0A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_PREVIEWS = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.10;
 			};

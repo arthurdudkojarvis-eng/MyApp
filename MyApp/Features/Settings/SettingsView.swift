@@ -29,6 +29,16 @@ struct SettingsView: View {
                 } footer: {
                     Text("Your target monthly dividend income. Used to calculate coverage on the Dashboard.")
                 }
+
+                Section("Appearance") {
+                    Picker("Color Scheme", selection: $settings.colorScheme) {
+                        ForEach(AppColorScheme.allCases, id: \.self) { scheme in
+                            Text(scheme.label).tag(scheme)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityLabel("Color scheme")
+                }
             }
             .listStyle(.insetGrouped)
             .navigationTitle("Settings")
