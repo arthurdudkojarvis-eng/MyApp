@@ -7,9 +7,11 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.myap
 
 struct AddHoldingView: View {
     let portfolio: Portfolio
+    var initialTicker: String = ""
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(StockRefreshService.self) private var stockRefresh
 
     @State private var ticker: String = ""
     @State private var sharesText: String = ""
@@ -96,7 +98,10 @@ struct AddHoldingView: View {
                         .accessibilityLabel("Add holding")
                 }
             }
-            .onAppear { focusedField = .ticker }
+            .onAppear {
+                if !initialTicker.isEmpty { ticker = initialTicker }
+                focusedField = initialTicker.isEmpty ? .ticker : .shares
+            }
         }
     }
 
@@ -124,7 +129,10 @@ struct AddHoldingView: View {
         holding.stock = stock
         modelContext.insert(holding)
 
+        let tickerToRefresh = trimmedTicker
         dismiss()
+
+        Task { await stockRefresh.refresh(ticker: tickerToRefresh) }
     }
 
     private func existingStock(ticker: String) -> Stock? {
@@ -144,6 +152,9 @@ struct AddHoldingView: View {
     let container = ModelContainer.preview
     let portfolio = Portfolio(name: "Preview Portfolio")
     container.mainContext.insert(portfolio)
+    let settings = SettingsStore()
     return AddHoldingView(portfolio: portfolio)
         .modelContainer(container)
+        .environment(settings)
+        .environment(StockRefreshService(settings: settings, container: container))
 }

@@ -70,4 +70,21 @@ final class Holding {
     var totalDividendsReceived: Decimal {
         dividendPayments.reduce(0) { $0 + $1.totalAmount }
     }
+
+    // MARK: - Performance
+
+    /// (currentPrice − averageCostBasis) × shares.
+    /// Zero when price data is unavailable.
+    var unrealizedGain: Decimal {
+        guard let price = stock?.currentPrice, price > 0 else { return 0 }
+        return (price - averageCostBasis) * shares
+    }
+
+    /// ((currentPrice − averageCostBasis) / averageCostBasis) × 100.
+    /// `nil` when cost basis is zero or price data is unavailable.
+    var unrealizedGainPercent: Decimal? {
+        guard averageCostBasis > 0,
+              let price = stock?.currentPrice, price > 0 else { return nil }
+        return ((price - averageCostBasis) / averageCostBasis) * 100
+    }
 }

@@ -6,16 +6,19 @@ import SwiftData
 
 final class MockPolygonService: PolygonFetching {
     var tickerDetailsResult: PolygonTickerDetails = PolygonTickerDetails(
-        ticker: "AAPL", name: "Apple Inc.", sicDescription: "Technology"
+        ticker: "AAPL", name: "Apple Inc.", sicDescription: "Technology",
+        marketCap: nil, description: nil
     )
     var previousCloseResult: Decimal? = Decimal(string: "185.00")
     var dividendsResult: [PolygonDividend] = []
+    var searchResults: [PolygonTickerSearchResult] = []
     var shouldThrow = false
 
     // Call counts let tests verify which endpoints were (or were not) invoked.
     var fetchDetailsCallCount = 0
     var fetchPreviousCloseCallCount = 0
     var fetchDividendsCallCount = 0
+    var fetchSearchCallCount = 0
 
     func fetchTickerDetails(ticker: String, apiKey: String) async throws -> PolygonTickerDetails {
         fetchDetailsCallCount += 1
@@ -31,6 +34,11 @@ final class MockPolygonService: PolygonFetching {
         fetchDividendsCallCount += 1
         if shouldThrow { throw PolygonError.httpError(statusCode: 403) }
         return dividendsResult
+    }
+    func fetchTickerSearch(query: String, apiKey: String) async throws -> [PolygonTickerSearchResult] {
+        fetchSearchCallCount += 1
+        if shouldThrow { throw PolygonError.httpError(statusCode: 403) }
+        return searchResults
     }
 }
 
@@ -79,7 +87,7 @@ final class StockRefreshServiceTests: XCTestCase {
     func testRefreshUpdatesCompanyName() async throws {
         _ = try insertStock(ticker: "AAPL")
         mockPolygon.tickerDetailsResult = PolygonTickerDetails(
-            ticker: "AAPL", name: "Apple Inc.", sicDescription: nil
+            ticker: "AAPL", name: "Apple Inc.", sicDescription: nil, marketCap: nil, description: nil
         )
 
         await sut.refresh(ticker: "AAPL")
@@ -103,7 +111,7 @@ final class StockRefreshServiceTests: XCTestCase {
     func testRefreshUpdatesSector() async throws {
         _ = try insertStock(ticker: "AAPL")
         mockPolygon.tickerDetailsResult = PolygonTickerDetails(
-            ticker: "AAPL", name: "Apple Inc.", sicDescription: "Technology"
+            ticker: "AAPL", name: "Apple Inc.", sicDescription: "Technology", marketCap: nil, description: nil
         )
 
         await sut.refresh(ticker: "AAPL")
@@ -344,7 +352,7 @@ final class StockRefreshServiceTests: XCTestCase {
         try context.save()
 
         mockPolygon.tickerDetailsResult = PolygonTickerDetails(
-            ticker: "AAPL", name: "Updated", sicDescription: nil
+            ticker: "AAPL", name: "Updated", sicDescription: nil, marketCap: nil, description: nil
         )
 
         await sut.refreshStaleStocks()
@@ -450,7 +458,7 @@ final class StockRefreshServiceTests: XCTestCase {
 
         // API returns a completely different ex-date.
         mockPolygon.tickerDetailsResult = PolygonTickerDetails(
-            ticker: "O", name: "Realty Income Corp.", sicDescription: nil
+            ticker: "O", name: "Realty Income Corp.", sicDescription: nil, marketCap: nil, description: nil
         )
         mockPolygon.dividendsResult = [
             PolygonDividend(

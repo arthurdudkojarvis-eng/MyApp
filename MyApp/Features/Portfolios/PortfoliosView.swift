@@ -1,0 +1,289 @@
+import SwiftUI
+import SwiftData
+
+// MARK: - PortfoliosView
+
+struct PortfoliosView: View {
+    @Query(sort: \Portfolio.createdAt) private var portfolios: [Portfolio]
+    @State private var showAddPortfolio = false
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if portfolios.isEmpty {
+                    ContentUnavailableView(
+                        "No Portfolios Yet",
+                        systemImage: "briefcase",
+                        description: Text("Tap + to create your first portfolio.")
+                    )
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(portfolios) { portfolio in
+                                NavigationLink {
+                                    PortfolioHoldingsView(portfolio: portfolio)
+                                } label: {
+                                    PortfolioCardView(portfolio: portfolio)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 12)
+                    }
+                    .background(Color(.systemGroupedBackground))
+                }
+            }
+            .navigationTitle("Portfolios")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showAddPortfolio = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel("Add portfolio")
+                }
+            }
+            .sheet(isPresented: $showAddPortfolio) {
+                AddPortfolioView()
+            }
+        }
+    }
+}
+
+// MARK: - Portfolio Card
+
+private struct PortfolioCardView: View {
+    let portfolio: Portfolio
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Header row
+            HStack {
+                Text(portfolio.name)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+
+            Divider()
+
+            // Metrics row
+            HStack(spacing: 0) {
+                MetricCell(
+                    label: "Market Value",
+                    value: portfolio.totalMarketValue > 0
+                        ? portfolio.totalMarketValue.formatted(.currency(code: portfolio.currency))
+                        : "—"
+                )
+                Spacer()
+                MetricCell(
+                    label: "Monthly Income",
+                    value: portfolio.projectedMonthlyIncome > 0
+                        ? portfolio.projectedMonthlyIncome.formatted(.currency(code: portfolio.currency))
+                        : "—"
+                )
+                Spacer()
+                PerformanceCell(portfolio: portfolio)
+            }
+        }
+        .padding()
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private struct MetricCell: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.subheadline.bold())
+                .foregroundStyle(.primary)
+        }
+    }
+}
+
+private struct PerformanceCell: View {
+    let portfolio: Portfolio
+
+    private var gain: Decimal { portfolio.totalUnrealizedGain }
+    private var gainPercent: Decimal? { portfolio.totalUnrealizedGainPercent }
+
+    private var color: Color {
+        if gain > 0 { return .green }
+        if gain < 0 { return .red }
+        return .secondary
+    }
+
+    var body: some View {
+        VStack(alignment: .trailing, spacing: 2) {
+            Text("Gain / Loss")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            if let pct = gainPercent {
+                Text(percentString(pct))
+                    .font(.subheadline.bold())
+                    .foregroundStyle(color)
+            } else {
+                Text("—")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func percentString(_ value: Decimal) -> String {
+        let prefix = value >= 0 ? "+" : ""
+        let formatted = (value as NSDecimalNumber)
+            .doubleValue
+            .formatted(.number.precision(.fractionLength(2)))
+        return "\(prefix)\(formatted)%"
+    }
+}
+
+// MARK: - Portfolio Holdings (drill-down)
+
+struct PortfolioHoldingsView: View {
+    let portfolio: Portfolio
+    @Environment(\.modelContext) private var modelContext
+    @Environment(StockRefreshService.self) private var stockRefresh
+    @State private var showAddHolding = false
+
+    private var sortedHoldings: [Holding] {
+        portfolio.holdings.sorted { ($0.stock?.ticker ?? "") < ($1.stock?.ticker ?? "") }
+    }
+
+    var body: some View {
+        Group {
+            if portfolio.holdings.isEmpty {
+                ContentUnavailableView(
+                    "No Holdings",
+                    systemImage: "tray",
+                    description: Text("Tap + to add a holding to this portfolio.")
+                )
+            } else {
+                List {
+                    Section {
+                        ForEach(sortedHoldings) { holding in
+                            NavigationLink(value: holding) {
+                                PortfolioHoldingRowView(holding: holding)
+                            }
+                        }
+                        .onDelete { offsets in
+                            let snapshot = sortedHoldings
+                            for index in offsets {
+                                modelContext.delete(snapshot[index])
+                            }
+                        }
+                    } footer: {
+                        if portfolio.totalMarketValue > 0 {
+                            HStack {
+                                Text("Total value: \(portfolio.totalMarketValue.formatted(.currency(code: portfolio.currency)))")
+                                Spacer()
+                                if let pct = portfolio.totalUnrealizedGainPercent {
+                                    let prefix = pct >= 0 ? "+" : ""
+                                    let formatted = (pct as NSDecimalNumber)
+                                        .doubleValue
+                                        .formatted(.number.precision(.fractionLength(2)))
+                                    Text("\(prefix)\(formatted)%")
+                                        .foregroundStyle(portfolio.totalUnrealizedGain >= 0 ? .green : .red)
+                                }
+                            }
+                            .font(.footnote)
+                        }
+                    }
+                }
+                .listStyle(.insetGrouped)
+                .navigationDestination(for: Holding.self) { holding in
+                    HoldingDetailView(holding: holding)
+                }
+            }
+        }
+        .navigationTitle(portfolio.name)
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showAddHolding = true
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .accessibilityLabel("Add holding")
+            }
+        }
+        .sheet(isPresented: $showAddHolding) {
+            AddHoldingView(portfolio: portfolio)
+        }
+    }
+}
+
+// MARK: - Holding Row with performance
+
+private struct PortfolioHoldingRowView: View {
+    let holding: Holding
+
+    private var ticker: String { holding.stock?.ticker ?? "—" }
+    private var companyName: String { holding.stock?.companyName ?? "" }
+
+    private var gainColor: Color {
+        guard let pct = holding.unrealizedGainPercent else { return .secondary }
+        if pct > 0 { return .green }
+        if pct < 0 { return .red }
+        return .secondary
+    }
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(ticker).font(.headline)
+                if !companyName.isEmpty {
+                    Text(companyName).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                }
+            }
+            Spacer()
+            VStack(alignment: .trailing, spacing: 2) {
+                if holding.currentValue > 0 {
+                    Text(holding.currentValue.formatted(.currency(code: holding.currency)))
+                        .font(.subheadline.bold())
+                } else {
+                    Text("—").font(.subheadline.bold()).foregroundStyle(.secondary)
+                }
+                if let pct = holding.unrealizedGainPercent {
+                    let prefix = pct >= 0 ? "+" : ""
+                    let formatted = (pct as NSDecimalNumber)
+                        .doubleValue
+                        .formatted(.number.precision(.fractionLength(2)))
+                    Text("\(prefix)\(formatted)%")
+                        .font(.caption)
+                        .foregroundStyle(gainColor)
+                } else {
+                    Text("—").font(.caption).foregroundStyle(.secondary)
+                }
+            }
+        }
+        .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+// MARK: - Preview
+
+#Preview {
+    let container = ModelContainer.preview
+    let settings = SettingsStore()
+    return PortfoliosView()
+        .modelContainer(container)
+        .environment(settings)
+        .environment(StockRefreshService(settings: settings, container: container))
+}

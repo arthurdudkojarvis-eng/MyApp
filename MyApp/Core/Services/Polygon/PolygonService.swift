@@ -52,6 +52,25 @@ struct PolygonService: PolygonFetching {
         return response.results ?? []
     }
 
+    // MARK: - Ticker Search
+
+    func fetchTickerSearch(query: String, apiKey: String) async throws -> [PolygonTickerSearchResult] {
+        guard var components = URLComponents(string: "\(Self.baseURL)/v3/reference/tickers") else {
+            throw URLError(.badURL)
+        }
+        components.queryItems = [
+            URLQueryItem(name: "search", value: query),
+            URLQueryItem(name: "market", value: "stocks"),
+            URLQueryItem(name: "active", value: "true"),
+            URLQueryItem(name: "limit", value: "20"),
+            URLQueryItem(name: "apiKey", value: apiKey)
+        ]
+        guard let url = components.url else { throw URLError(.badURL) }
+        let data = try await fetch(url: url)
+        let response = try Self.decoder.decode(PolygonTickerSearchResponse.self, from: data)
+        return response.results ?? []
+    }
+
     // MARK: - Helpers
 
     /// Percent-encodes `ticker` so only alphanumerics, `.`, and `-` remain unencoded.

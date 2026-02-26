@@ -14,16 +14,22 @@ struct DashboardView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if portfolios.isEmpty {
-                    ContentUnavailableView(
-                        "No Holdings Yet",
-                        systemImage: "chart.line.uptrend.xyaxis",
-                        description: Text("Go to Holdings to add your first position and start tracking dividend income.")
-                    )
-                } else {
-                    mainContent
+            // ZStack is needed because .background() is ignored by the UIPageViewController
+            // backing a .page TabView — the scroll view bleeds through. Placing the color
+            // behind the TabView at the ZStack level and extending it into safe-area fills
+            // all gaps including the page-dot region.
+            ZStack {
+                Color(.systemGroupedBackground).ignoresSafeArea()
+                TabView {
+                    // Page 1 — income dashboard
+                    dashboardPage
+                        .tag(0)
+
+                    // Page 2 — placeholder (future features)
+                    DashboardSecondPage()
+                        .tag(1)
                 }
+                .tabViewStyle(.page(indexDisplayMode: .always))
             }
             .navigationTitle("Dashboard")
             .toolbar {
@@ -39,6 +45,20 @@ struct DashboardView: View {
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
+            }
+        }
+    }
+
+    private var dashboardPage: some View {
+        Group {
+            if portfolios.isEmpty {
+                ContentUnavailableView(
+                    "No Holdings Yet",
+                    systemImage: "chart.line.uptrend.xyaxis",
+                    description: Text("Go to Holdings to add your first position and start tracking dividend income.")
+                )
+            } else {
+                mainContent
             }
         }
     }
@@ -136,6 +156,36 @@ private struct RefreshErrorBannerView: View {
                 .fill(Color.red.opacity(0.1))
         )
         .padding(.horizontal)
+    }
+}
+
+// MARK: - Dashboard Second Page (placeholder)
+
+private struct DashboardSecondPage: View {
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 32) {
+                placeholderSection("Analytics")
+                placeholderSection("Watchlist")
+                placeholderSection("Insights")
+                placeholderSection("News")
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 24)
+        }
+        .background(Color.black)
+    }
+
+    private func placeholderSection(_ title: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.title2.bold())
+                .foregroundStyle(.white)
+            Rectangle()
+                .fill(Color.white.opacity(0.07))
+                .frame(height: 80)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
     }
 }
 

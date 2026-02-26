@@ -6,6 +6,7 @@ protocol PolygonFetching: Sendable {
     func fetchTickerDetails(ticker: String, apiKey: String) async throws -> PolygonTickerDetails
     func fetchPreviousClose(ticker: String, apiKey: String) async throws -> Decimal?
     func fetchDividends(ticker: String, limit: Int, apiKey: String) async throws -> [PolygonDividend]
+    func fetchTickerSearch(query: String, apiKey: String) async throws -> [PolygonTickerSearchResult]
 }
 
 // MARK: - Ticker Details
@@ -18,6 +19,24 @@ struct PolygonTickerDetails: Decodable {
     let ticker: String
     let name: String
     let sicDescription: String?   // maps to sector
+    let marketCap: Decimal?       // may be absent for small/unlisted tickers
+    let description: String?      // company description
+}
+
+// MARK: - Ticker Search
+
+struct PolygonTickerSearchResponse: Decodable {
+    let results: [PolygonTickerSearchResult]?
+}
+
+struct PolygonTickerSearchResult: Decodable, Identifiable {
+    let ticker: String
+    let name: String
+    let market: String?
+    let type: String?
+    let primaryExchange: String?
+
+    var id: String { ticker }
 }
 
 // MARK: - Aggregates (Price)

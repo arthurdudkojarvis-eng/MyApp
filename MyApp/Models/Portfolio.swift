@@ -25,4 +25,26 @@ final class Portfolio {
     var projectedMonthlyIncome: Decimal {
         projectedAnnualIncome / Decimal(12)
     }
+
+    // MARK: - Performance
+
+    var totalMarketValue: Decimal {
+        holdings.reduce(0) { $0 + $1.currentValue }
+    }
+
+    /// Sum of (averageCostBasis × shares) across all holdings.
+    var totalCostBasis: Decimal {
+        holdings.reduce(0) { $0 + $1.averageCostBasis * $1.shares }
+    }
+
+    var totalUnrealizedGain: Decimal {
+        holdings.reduce(0) { $0 + $1.unrealizedGain }
+    }
+
+    /// Portfolio-level unrealized gain percent using aggregate cost basis.
+    var totalUnrealizedGainPercent: Decimal? {
+        let cost = totalCostBasis
+        guard cost > 0 else { return nil }
+        return (totalUnrealizedGain / cost) * 100
+    }
 }

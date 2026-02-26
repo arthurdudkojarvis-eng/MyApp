@@ -9,14 +9,19 @@ struct MainTabView: View {
                     Label("Dashboard", systemImage: "chart.line.uptrend.xyaxis")
                 }
 
+            PortfoliosView()
+                .tabItem {
+                    Label("Portfolios", systemImage: "briefcase")
+                }
+
+            StockBrowserView()
+                .tabItem {
+                    Label("Stocks", systemImage: "magnifyingglass")
+                }
+
             DividendCalendarView()
                 .tabItem {
                     Label("Calendar", systemImage: "calendar")
-                }
-
-            HoldingsView()
-                .tabItem {
-                    Label("Holdings", systemImage: "square.stack")
                 }
         }
         .tint(Color.accentColor)
