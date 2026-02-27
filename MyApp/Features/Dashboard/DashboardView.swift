@@ -48,6 +48,7 @@ struct DashboardView: View {
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
+                    .preferredColorScheme(settings.colorScheme.resolvedColorScheme)
             }
         }
     }
