@@ -108,12 +108,10 @@ final class StockRefreshService {
     private func refreshTicker(_ ticker: String, apiKey: String) async {
         let context = ModelContext(container)
         do {
-            // Fetch all three endpoints concurrently.
-            async let detailsTask   = polygon.fetchTickerDetails(ticker: ticker, apiKey: apiKey)
-            async let priceTask     = polygon.fetchPreviousClose(ticker: ticker, apiKey: apiKey)
-            async let dividendsTask = polygon.fetchDividends(ticker: ticker, limit: 8, apiKey: apiKey)
-
-            let (details, price, dividends) = try await (detailsTask, priceTask, dividendsTask)
+            // Fetch details and price concurrently — required for a useful refresh.
+            async let detailsTask = polygon.fetchTickerDetails(ticker: ticker, apiKey: apiKey)
+            async let priceTask   = polygon.fetchPreviousClose(ticker: ticker, apiKey: apiKey)
+            let (details, price) = try await (detailsTask, priceTask)
 
             // Find or create the Stock.
             // NOTE: `stock` and its relationships are live objects from this same
@@ -129,6 +127,11 @@ final class StockRefreshService {
             if let p = price  { stock.currentPrice = p }
             stock.lastUpdated = .now
 
+            // Dividends are best-effort — a 402 (subscription restriction) or network
+            // error should not prevent the price/name from being saved.
+            let dividends = (try? await polygon.fetchDividends(
+                ticker: ticker, limit: 8, apiKey: apiKey
+            )) ?? []
             updateDividendSchedules(stock: stock, dividends: dividends, context: context)
             try context.save()
             logger.info("Refreshed \(ticker)")

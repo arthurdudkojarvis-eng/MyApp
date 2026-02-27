@@ -66,10 +66,13 @@ struct FMPService: PolygonFetching {
     }
 
     // MARK: - Price
+    // /stable/quote returns 402 for some symbols on the free tier.
+    // The profile endpoint is reliably free and includes a current price field,
+    // so we reuse it here rather than making a separate quote call.
 
     func fetchPreviousClose(ticker: String, apiKey: String) async throws -> Decimal? {
         let encoded = try percentEncode(ticker: ticker)
-        guard var components = URLComponents(string: "\(Self.baseURL)/quote") else {
+        guard var components = URLComponents(string: "\(Self.baseURL)/profile") else {
             throw URLError(.badURL)
         }
         components.queryItems = [
@@ -78,7 +81,7 @@ struct FMPService: PolygonFetching {
         ]
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
-        let results = try Self.decoder.decode([FMPQuote].self, from: data)
+        let results = try Self.decoder.decode([FMPProfile].self, from: data)
         return results.first?.price
     }
 
@@ -197,14 +200,10 @@ private struct FMPSearchResult: Decodable {
 private struct FMPProfile: Decodable {
     let symbol: String
     let companyName: String
+    let price: Decimal?
     let sector: String?
     let marketCap: Decimal?
     let description: String?
-}
-
-private struct FMPQuote: Decodable {
-    let symbol: String
-    let price: Decimal
 }
 
 private struct FMPDividend: Decodable {
