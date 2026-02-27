@@ -26,7 +26,7 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.myap
 final class SettingsStore {
     // MARK: - Keys
     private enum Keys {
-        static let polygonAPIKey          = "polygonAPIKey"
+        static let fmpAPIKey              = "fmpAPIKey"
         static let monthlyExpenseTarget   = "monthlyExpenseTarget"
         static let colorScheme            = "colorScheme"
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
@@ -37,12 +37,12 @@ final class SettingsStore {
     private let defaults: UserDefaults
 
     // MARK: - Published state
-    var polygonAPIKey: String {
+    var fmpAPIKey: String {
         didSet {
             do {
-                try keychain.save(polygonAPIKey, forKey: Keys.polygonAPIKey)
+                try keychain.save(fmpAPIKey, forKey: Keys.fmpAPIKey)
             } catch {
-                logger.error("Failed to save Polygon API key to Keychain: \(error.localizedDescription)")
+                logger.error("Failed to save FMP API key to Keychain: \(error.localizedDescription)")
             }
         }
     }
@@ -62,7 +62,7 @@ final class SettingsStore {
         didSet { defaults.set(hasCompletedOnboarding, forKey: Keys.hasCompletedOnboarding) }
     }
 
-    var hasPolygonAPIKey: Bool { !polygonAPIKey.isEmpty }
+    var hasAPIKey: Bool { !fmpAPIKey.isEmpty }
 
     // MARK: - Init
     init(keychain: KeychainService = KeychainService(),
@@ -70,7 +70,7 @@ final class SettingsStore {
         self.keychain = keychain
         self.defaults = defaults
 
-        self.polygonAPIKey = keychain.load(forKey: Keys.polygonAPIKey) ?? ""
+        self.fmpAPIKey = keychain.load(forKey: Keys.fmpAPIKey) ?? ""
 
         // Store as String to avoid Decimal → Double precision loss.
         if let stored = defaults.string(forKey: Keys.monthlyExpenseTarget),

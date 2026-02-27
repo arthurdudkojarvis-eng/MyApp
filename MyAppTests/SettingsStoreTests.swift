@@ -18,7 +18,7 @@ final class SettingsStoreTests: XCTestCase {
     }
 
     override func tearDown() async throws {
-        keychain.delete(forKey: "polygonAPIKey")
+        keychain.delete(forKey: "fmpAPIKey")
         defaults.removePersistentDomain(forName: defaultsSuite)
         sut = nil
         try await super.tearDown()
@@ -27,13 +27,13 @@ final class SettingsStoreTests: XCTestCase {
     // MARK: - Initialization
 
     func testInitLoadsAPIKeyFromKeychain() throws {
-        try keychain.save("test-api-key", forKey: "polygonAPIKey")
+        try keychain.save("test-api-key", forKey: "fmpAPIKey")
         let store = SettingsStore(keychain: keychain, defaults: defaults)
-        XCTAssertEqual(store.polygonAPIKey, "test-api-key")
+        XCTAssertEqual(store.fmpAPIKey, "test-api-key")
     }
 
     func testInitDefaultsAPIKeyToEmptyStringWhenKeychainEmpty() {
-        XCTAssertEqual(sut.polygonAPIKey, "")
+        XCTAssertEqual(sut.fmpAPIKey, "")
     }
 
     func testInitLoadsExpenseTargetFromDefaults() {
@@ -58,26 +58,26 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.monthlyExpenseTarget, 0)
     }
 
-    // MARK: - polygonAPIKey mutations
+    // MARK: - fmpAPIKey mutations
 
     func testSettingAPIKeyPersistsToKeychain() {
-        sut.polygonAPIKey = "new-key"
-        XCTAssertEqual(keychain.load(forKey: "polygonAPIKey"), "new-key")
+        sut.fmpAPIKey = "new-key"
+        XCTAssertEqual(keychain.load(forKey: "fmpAPIKey"), "new-key")
     }
 
     func testSettingAPIKeyToEmptyStringPersistsEmptyString() {
-        sut.polygonAPIKey = "some-key"
-        sut.polygonAPIKey = ""
-        XCTAssertEqual(keychain.load(forKey: "polygonAPIKey"), "")
+        sut.fmpAPIKey = "some-key"
+        sut.fmpAPIKey = ""
+        XCTAssertEqual(keychain.load(forKey: "fmpAPIKey"), "")
     }
 
-    func testHasPolygonAPIKeyIsFalseWhenEmpty() {
-        XCTAssertFalse(sut.hasPolygonAPIKey)
+    func testHasAPIKeyIsFalseWhenEmpty() {
+        XCTAssertFalse(sut.hasAPIKey)
     }
 
-    func testHasPolygonAPIKeyIsTrueWhenNonEmpty() {
-        sut.polygonAPIKey = "abc"
-        XCTAssertTrue(sut.hasPolygonAPIKey)
+    func testHasAPIKeyIsTrueWhenNonEmpty() {
+        sut.fmpAPIKey = "abc"
+        XCTAssertTrue(sut.hasAPIKey)
     }
 
     // MARK: - monthlyExpenseTarget mutations
@@ -106,9 +106,9 @@ final class SettingsStoreTests: XCTestCase {
 
     // MARK: - colorScheme
 
-    func testColorSchemeDefaultsToSystem() {
-        XCTAssertEqual(sut.colorScheme, .system)
-        XCTAssertNil(sut.colorScheme.resolvedColorScheme)
+    func testColorSchemeDefaultsToLight() {
+        XCTAssertEqual(sut.colorScheme, .light)
+        XCTAssertEqual(sut.colorScheme.resolvedColorScheme, .light)
     }
 
     func testSettingColorSchemePersistsToDefaults() {
@@ -122,26 +122,24 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertEqual(reloaded.colorScheme, .light)
     }
 
-    func testColorSchemeCorruptedValueFallsBackToSystem() {
+    func testColorSchemeCorruptedValueFallsBackToLight() {
         defaults.set("invalid-value", forKey: "colorScheme")
         let store = SettingsStore(keychain: keychain, defaults: defaults)
-        XCTAssertEqual(store.colorScheme, .system)
+        XCTAssertEqual(store.colorScheme, .light)
     }
 
     func testAllColorSchemeCasesMapToExpectedColorScheme() {
-        XCTAssertNil(AppColorScheme.system.resolvedColorScheme)
         XCTAssertEqual(AppColorScheme.light.resolvedColorScheme, .light)
         XCTAssertEqual(AppColorScheme.dark.resolvedColorScheme, .dark)
     }
 
     func testColorSchemeLabels() {
-        XCTAssertEqual(AppColorScheme.system.label, "System")
         XCTAssertEqual(AppColorScheme.light.label, "Light")
         XCTAssertEqual(AppColorScheme.dark.label, "Dark")
     }
 
     func testAppColorSchemeCaseCount() {
-        XCTAssertEqual(AppColorScheme.allCases.count, 3)
+        XCTAssertEqual(AppColorScheme.allCases.count, 2)
     }
 
     func testInitDoesNotWriteToDefaultsWhenNoStoredColorScheme() {

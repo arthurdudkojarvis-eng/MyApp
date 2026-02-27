@@ -40,6 +40,10 @@ final class MockPolygonService: PolygonFetching {
         if shouldThrow { throw PolygonError.httpError(statusCode: 403) }
         return searchResults
     }
+    func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [PolygonNewsArticle] {
+        if shouldThrow { throw PolygonError.httpError(statusCode: 403) }
+        return []
+    }
 }
 
 // MARK: - Tests
@@ -58,7 +62,7 @@ final class StockRefreshServiceTests: XCTestCase {
             keychain: KeychainService(service: "com.myapp.tests.refresh.\(UUID().uuidString)"),
             defaults: UserDefaults(suiteName: "com.myapp.tests.refresh.\(UUID().uuidString)")!
         )
-        settings.polygonAPIKey = "test-api-key"
+        settings.fmpAPIKey = "test-api-key"
         mockPolygon = MockPolygonService()
         sut = StockRefreshService(settings: settings, container: container, polygon: mockPolygon,
                                   interTickerDelay: .zero)
@@ -123,7 +127,7 @@ final class StockRefreshServiceTests: XCTestCase {
 
     func testRefreshSkipsWhenNoAPIKey() async throws {
         _ = try insertStock(ticker: "AAPL")
-        settings.polygonAPIKey = ""
+        settings.fmpAPIKey = ""
 
         await sut.refresh(ticker: "AAPL")
 

@@ -87,7 +87,7 @@ private struct APIKeyPage: View {
     @State private var apiKeyInput = ""
     @State private var showKey = false
 
-    private static let polygonURL = URL(string: "https://polygon.io")!
+    private static let fmpURL = URL(string: "https://financialmodelingprep.com")!
 
     var body: some View {
         VStack(spacing: 0) {
@@ -102,14 +102,14 @@ private struct APIKeyPage: View {
                 .font(.largeTitle.bold())
                 .padding(.bottom, 12)
 
-            Text("Paste your free Polygon.io API key to fetch live stock prices and dividend data.")
+            Text("Paste your free FMP API key to fetch live stock prices and dividend data.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
                 .padding(.bottom, 8)
 
-            Link("Get a free key at polygon.io →", destination: Self.polygonURL)
+            Link("Get a free key at financialmodelingprep.com →", destination: Self.fmpURL)
                 .font(.subheadline)
                 .padding(.bottom, 36)
 
@@ -153,13 +153,13 @@ private struct APIKeyPage: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 48)
         }
-        .onAppear { apiKeyInput = settings.polygonAPIKey }
+        .onAppear { apiKeyInput = settings.fmpAPIKey }
     }
 
     private func saveAndContinue() {
         let trimmed = apiKeyInput.trimmingCharacters(in: .whitespaces)
         if !trimmed.isEmpty {
-            settings.polygonAPIKey = trimmed
+            settings.fmpAPIKey = trimmed
         }
         onNext()
     }

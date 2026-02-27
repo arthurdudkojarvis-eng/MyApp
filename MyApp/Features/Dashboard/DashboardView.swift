@@ -72,7 +72,7 @@ struct DashboardView: View {
     private var mainContent: some View {
         ScrollView {
             VStack(spacing: 16) {
-                if !settings.hasPolygonAPIKey {
+                if !settings.hasAPIKey {
                     NoAPIKeyBannerView { showSettings = true }
                 }
                 if let error = stockRefresh.lastRefreshError {
@@ -110,7 +110,7 @@ private struct NoAPIKeyBannerView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("No API Key")
                     .font(.subheadline.bold())
-                Text("Live prices unavailable. Add a Polygon API key in Settings.")
+                Text("Live prices unavailable. Add an FMP API key in Settings.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -286,7 +286,7 @@ private struct DashboardSecondPage: View {
 #Preview("No API key") {
     let container = ModelContainer.preview
     let settings = SettingsStore()
-    settings.polygonAPIKey = ""          // force banner regardless of Keychain state
+    settings.fmpAPIKey = ""          // force banner regardless of Keychain state
     settings.monthlyExpenseTarget = Decimal(string: "2000")!
 
     let portfolio = Portfolio(name: "Main")

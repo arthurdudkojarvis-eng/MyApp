@@ -92,9 +92,9 @@ enum PolygonError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .missingAPIKey:     return "Polygon.io API key is not configured."
-        case .httpError(let c):  return "Polygon.io returned HTTP \(c)."
-        case .emptyResponse:     return "Polygon.io returned no results."
+        case .missingAPIKey:     return "API key is not configured."
+        case .httpError(let c):  return "API returned HTTP \(c)."
+        case .emptyResponse:     return "API returned no results."
         }
     }
 }

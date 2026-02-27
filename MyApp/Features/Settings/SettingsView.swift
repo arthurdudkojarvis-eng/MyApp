@@ -19,7 +19,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Market Data")
                 } footer: {
-                    Text("Required for live stock prices and dividend data. Get a free key at polygon.io.")
+                    Text("Required for live stock prices and dividend data. Get a free key at financialmodelingprep.com.")
                 }
 
                 Section {
@@ -49,7 +49,7 @@ struct SettingsView: View {
                 }
             }
             .onAppear {
-                apiKeyInput = settings.polygonAPIKey
+                apiKeyInput = settings.fmpAPIKey
                 expenseTargetInput = settings.monthlyExpenseTarget > 0
                     ? NSDecimalNumber(decimal: settings.monthlyExpenseTarget).stringValue
                     : ""
@@ -70,11 +70,11 @@ struct SettingsView: View {
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
                     .onSubmit { commitAPIKey() }
-                    .accessibilityLabel("Polygon API key")
+                    .accessibilityLabel("FMP API key")
             } else {
                 SecureField("Paste API key", text: $apiKeyInput)
                     .onSubmit { commitAPIKey() }
-                    .accessibilityLabel("Polygon API key")
+                    .accessibilityLabel("FMP API key")
             }
 
             Button {
@@ -130,7 +130,7 @@ struct SettingsView: View {
     // MARK: - Helpers
 
     private func commitAPIKey() {
-        settings.polygonAPIKey = apiKeyInput
+        settings.fmpAPIKey = apiKeyInput
     }
 
     private func commitExpenseTarget() {
