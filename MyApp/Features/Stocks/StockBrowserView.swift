@@ -84,7 +84,17 @@ struct StockBrowserView: View {
             )
             // Discard stale responses superseded by a newer query.
             guard !Task.isCancelled else { return }
-            results = fetched
+            // Re-sort: exact ticker match first, then starts-with, then Polygon's order.
+            let upper = query.uppercased()
+            results = fetched.sorted { a, b in
+                let aExact = a.ticker == upper
+                let bExact = b.ticker == upper
+                if aExact != bExact { return aExact }
+                let aPrefix = a.ticker.hasPrefix(upper)
+                let bPrefix = b.ticker.hasPrefix(upper)
+                if aPrefix != bPrefix { return aPrefix }
+                return false // preserve Polygon order within each tier
+            }
         } catch {
             guard !Task.isCancelled else { return }
             searchError = error.localizedDescription
