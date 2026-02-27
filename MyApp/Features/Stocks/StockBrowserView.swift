@@ -131,6 +131,14 @@ struct StockDetailView: View {
     @Environment(StockRefreshService.self) private var stockRefresh
     @Environment(\.polygonService) private var polygon
     @Query(sort: \Portfolio.createdAt) private var portfolios: [Portfolio]
+    // Filtered to only the current ticker so SwiftData doesn't load the entire watchlist.
+    @Query private var watchlistItems: [WatchlistItem]
+
+    init(result: PolygonTickerSearchResult) {
+        self.result = result
+        let ticker = result.ticker
+        _watchlistItems = Query(filter: #Predicate<WatchlistItem> { $0.ticker == ticker })
+    }
 
     @State private var details: PolygonTickerDetails?
     @State private var currentPrice: Decimal?
@@ -163,6 +171,7 @@ struct StockDetailView: View {
 
     private var existingHoldings: [Holding] { existingStock?.holdings ?? [] }
     private var isAlreadyAdded: Bool { !existingHoldings.isEmpty }
+    private var watchlistItem: WatchlistItem? { watchlistItems.first }
 
     private var annualDividendPerShare: Decimal? {
         guard let div = dividends.first(where: { $0.dividendType == "CD" }),
@@ -208,6 +217,7 @@ struct StockDetailView: View {
                         descriptionSection(desc)
                     }
                     addRemoveButton
+                    watchlistButton
                 }
             }
             .padding()
@@ -351,6 +361,31 @@ struct StockDetailView: View {
                 .disabled(portfolios.isEmpty)
             }
         }
+    }
+
+    private var watchlistButton: some View {
+        Button {
+            if let item = watchlistItem {
+                modelContext.delete(item)
+            } else {
+                let name = details?.name ?? result.name
+                let item = WatchlistItem(ticker: result.ticker, companyName: name)
+                modelContext.insert(item)
+            }
+        } label: {
+            Label(
+                watchlistItem != nil ? "In Watchlist" : "Add to Watchlist",
+                systemImage: watchlistItem != nil ? "eye.fill" : "eye"
+            )
+            .font(.headline)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color(.secondarySystemGroupedBackground))
+            .foregroundStyle(watchlistItem != nil ? Color.accentColor : .primary)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
+        .accessibilityHint(watchlistItem != nil ? "Removes this stock from your watchlist" : "Adds this stock to your watchlist")
+        .accessibilityAddTraits(watchlistItem != nil ? .isSelected : [])
     }
 
     // MARK: - Data loading
