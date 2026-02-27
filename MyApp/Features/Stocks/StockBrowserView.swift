@@ -184,9 +184,27 @@ struct StockDetailView: View {
     private var watchlistItem: WatchlistItem? { watchlistItems.first }
 
     private var annualDividendPerShare: Decimal? {
-        guard let div = dividends.first(where: { $0.dividendType == "CD" }),
-              let freq = div.frequency else { return nil }
-        return div.cashAmount * Decimal(freq)
+        let regulars = dividends.filter { $0.dividendType == "CD" }
+        guard let latest = regulars.first else { return nil }
+
+        // Use the explicit frequency when Polygon provides it.
+        if let freq = latest.frequency, freq > 0 {
+            return latest.cashAmount * Decimal(freq)
+        }
+
+        // Polygon sometimes omits frequency — infer from how many regular payments
+        // occurred in the trailing 12 months.
+        let cutoff = Calendar.current.date(byAdding: .year, value: -1, to: Date()) ?? Date()
+        let recentCount = regulars.filter {
+            Self.exDateFormatter.date(from: $0.exDividendDate).map { $0 >= cutoff } ?? false
+        }.count
+
+        if recentCount > 0 {
+            return latest.cashAmount * Decimal(recentCount)
+        }
+
+        // Last resort: show one payment's amount (annual-equivalent unknown).
+        return latest.cashAmount
     }
 
     private var dividendYield: Decimal? {
@@ -406,16 +424,24 @@ struct StockDetailView: View {
             isLoading = false
             return
         }
+        // Fetch details and price together — these are required for the page to render.
         do {
-            async let detailsTask   = polygon.service.fetchTickerDetails(ticker: result.ticker, apiKey: settings.polygonAPIKey)
-            async let priceTask     = polygon.service.fetchPreviousClose(ticker: result.ticker, apiKey: settings.polygonAPIKey)
-            async let dividendsTask = polygon.service.fetchDividends(ticker: result.ticker, limit: 4, apiKey: settings.polygonAPIKey)
-            (details, currentPrice, dividends) = try await (detailsTask, priceTask, dividendsTask)
+            async let detailsTask = polygon.service.fetchTickerDetails(ticker: result.ticker, apiKey: settings.polygonAPIKey)
+            async let priceTask   = polygon.service.fetchPreviousClose(ticker: result.ticker, apiKey: settings.polygonAPIKey)
+            (details, currentPrice) = try await (detailsTask, priceTask)
         } catch {
             loadError = error.localizedDescription
+            isLoading = false
+            return
         }
         isLoading = false
         reloadExistingStock()
+
+        // Fetch dividends separately — failure shows "—" rather than hiding the whole page.
+        // Limit 13 covers one full year for monthly payers plus one extra record.
+        dividends = (try? await polygon.service.fetchDividends(
+            ticker: result.ticker, limit: 13, apiKey: settings.polygonAPIKey
+        )) ?? []
     }
 
     private func reloadExistingStock() {
