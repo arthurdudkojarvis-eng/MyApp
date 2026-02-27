@@ -71,6 +71,28 @@ struct PolygonService: PolygonFetching {
         return response.results ?? []
     }
 
+    // MARK: - News
+
+    func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [PolygonNewsArticle] {
+        guard var components = URLComponents(string: "\(Self.baseURL)/v2/reference/news") else {
+            throw URLError(.badURL)
+        }
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "limit", value: "\(limit)"),
+            URLQueryItem(name: "order", value: "desc"),
+            URLQueryItem(name: "apiKey", value: apiKey)
+        ]
+        // Pass the first ticker for more relevant results; omit for general market news.
+        if let first = tickers.first {
+            queryItems.append(URLQueryItem(name: "ticker", value: first))
+        }
+        components.queryItems = queryItems
+        guard let url = components.url else { throw URLError(.badURL) }
+        let data = try await fetch(url: url)
+        let response = try Self.decoder.decode(PolygonNewsResponse.self, from: data)
+        return response.results ?? []
+    }
+
     // MARK: - Helpers
 
     /// Percent-encodes `ticker` so only alphanumerics, `.`, and `-` remain unencoded.

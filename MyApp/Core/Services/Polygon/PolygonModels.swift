@@ -7,6 +7,7 @@ protocol PolygonFetching: Sendable {
     func fetchPreviousClose(ticker: String, apiKey: String) async throws -> Decimal?
     func fetchDividends(ticker: String, limit: Int, apiKey: String) async throws -> [PolygonDividend]
     func fetchTickerSearch(query: String, apiKey: String) async throws -> [PolygonTickerSearchResult]
+    func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [PolygonNewsArticle]
 }
 
 // MARK: - Ticker Details
@@ -63,6 +64,23 @@ struct PolygonDividend: Decodable {
     let declarationDate: String?
     let frequency: Int?                 // 1, 2, 4, 12
     let dividendType: String            // "CD" = regular, "SC" = special cash
+}
+
+// MARK: - News
+
+struct PolygonNewsResponse: Decodable {
+    let results: [PolygonNewsArticle]?
+}
+
+struct PolygonNewsArticle: Decodable, Identifiable {
+    let id: String
+    let title: String
+    let description: String?
+    let publishedUtc: String        // ISO-8601
+    let articleUrl: String
+    let author: String?
+    let tickers: [String]?
+    let imageUrl: String?
 }
 
 // MARK: - Errors

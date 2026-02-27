@@ -7,7 +7,8 @@ extension ModelContainer {
         Holding.self,
         Stock.self,
         DividendSchedule.self,
-        DividendPayment.self
+        DividendPayment.self,
+        WatchlistItem.self
     ])
 
     /// Persistent on-disk container used by the production app.

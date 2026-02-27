@@ -162,67 +162,59 @@ private struct RefreshErrorBannerView: View {
     }
 }
 
-// MARK: - Dashboard Second Page (placeholder)
+// MARK: - Dashboard Second Page
 
 private struct DashboardSecondPage: View {
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 28) {
-
-                placeholderSection(
+            VStack(alignment: .leading, spacing: 12) {
+                featureLink(
                     icon: "chart.xyaxis.line",
                     title: "Income Forecast",
-                    subtitle: "12-month projected dividend income based on your current holdings",
-                    height: 140
+                    subtitle: "12-month projected dividend income",
+                    destination: IncomeForecastView()
                 )
-
-                placeholderSection(
+                featureLink(
                     icon: "chart.pie.fill",
                     title: "Sector Allocation",
-                    subtitle: "Portfolio diversification across sectors and asset classes",
-                    height: 120
+                    subtitle: "Portfolio diversification by sector",
+                    destination: SectorAllocationView()
                 )
-
-                placeholderSection(
+                featureLink(
                     icon: "arrow.trianglehead.2.clockwise",
                     title: "DRIP Simulator",
-                    subtitle: "Model dividend reinvestment to project long-term share growth",
-                    height: 100
+                    subtitle: "Model reinvestment and long-term growth",
+                    destination: DRIPSimulatorView()
                 )
-
-                placeholderSection(
+                featureLink(
                     icon: "shield.lefthalf.filled",
                     title: "Dividend Safety",
-                    subtitle: "Payout ratio analysis and dividend cut risk scores per holding",
-                    height: 100
+                    subtitle: "Yield-based risk indicators per holding",
+                    destination: DividendSafetyView()
                 )
-
-                placeholderSection(
+                featureLink(
                     icon: "doc.text.fill",
                     title: "Tax Summary",
-                    subtitle: "Qualified vs ordinary dividends, Schedule B export",
-                    height: 80
+                    subtitle: "Annual income totals with CSV export",
+                    destination: TaxSummaryView()
                 )
-
-                placeholderSection(
+                featureLink(
                     icon: "eye.fill",
                     title: "Watchlist",
-                    subtitle: "Track stocks you're researching before adding to a portfolio",
-                    height: 100
+                    subtitle: "Track stocks before adding to a portfolio",
+                    destination: WatchlistView()
                 )
-
-                placeholderSection(
+                featureLink(
                     icon: "bell.fill",
                     title: "Alerts",
-                    subtitle: "Ex-dividend date reminders, price targets, dividend cut notifications",
-                    height: 80
+                    subtitle: "Ex-dividend date reminders for your holdings",
+                    destination: AlertsView()
                 )
-
-                placeholderSection(
+                featureLink(
                     icon: "newspaper.fill",
                     title: "News & Events",
-                    subtitle: "Dividend announcements, earnings, and market news for your holdings",
-                    height: 100
+                    subtitle: "Market news for your holdings",
+                    destination: NewsView()
                 )
             }
             .padding(.horizontal, 20)
@@ -230,37 +222,43 @@ private struct DashboardSecondPage: View {
             .padding(.bottom, 32)
         }
         .background(Color.black)
+        .preferredColorScheme(.dark)
     }
 
-    private func placeholderSection(
+    private func featureLink<Destination: View>(
         icon: String,
         title: String,
         subtitle: String,
-        height: CGFloat
+        destination: Destination
     ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
+        NavigationLink(destination: destination) {
+            HStack(spacing: 14) {
                 Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.5))
-                Text(title)
-                    .font(.title3.bold())
-                    .foregroundStyle(.white)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.7))
+                    .frame(width: 24)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title)
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.45))
+                        .lineLimit(1)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.bold())
+                    .foregroundStyle(.white.opacity(0.3))
             }
-            Text(subtitle)
-                .font(.caption)
-                .foregroundStyle(.white.opacity(0.4))
-                .lineLimit(2)
-            Rectangle()
-                .fill(Color.white.opacity(0.06))
-                .frame(height: height)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .overlay(
-                    Text("Coming soon")
-                        .font(.caption2)
-                        .foregroundStyle(.white.opacity(0.2))
-                )
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.white.opacity(0.07))
+            )
         }
+        .buttonStyle(.plain)
     }
 }
 
