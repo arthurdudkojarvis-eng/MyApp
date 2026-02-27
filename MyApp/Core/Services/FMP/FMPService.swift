@@ -1,14 +1,16 @@
 import Foundation
 
 // MARK: - FMPService
-// Implements PolygonFetching using the Financial Modeling Prep (FMP) API.
+// Implements PolygonFetching using the Financial Modeling Prep (FMP) stable API.
 // All responses are mapped to the existing Polygon model types so the rest
 // of the app continues to work without any structural changes.
+//
+// Stable API base: https://financialmodelingprep.com/stable/
+// (v3 endpoints are legacy and unavailable for accounts created after Aug 2025)
 
 struct FMPService: PolygonFetching {
-    private static let baseURL = "https://financialmodelingprep.com/api"
+    private static let baseURL = "https://financialmodelingprep.com/stable"
 
-    // FMP doesn't use snake_case — field names already match Swift conventions.
     private static let decoder = JSONDecoder()
 
     private static let tickerAllowed = CharacterSet.alphanumerics
@@ -17,7 +19,7 @@ struct FMPService: PolygonFetching {
     // MARK: - Ticker Search
 
     func fetchTickerSearch(query: String, apiKey: String) async throws -> [PolygonTickerSearchResult] {
-        guard var components = URLComponents(string: "\(Self.baseURL)/v3/search-ticker") else {
+        guard var components = URLComponents(string: "\(Self.baseURL)/search-symbol") else {
             throw URLError(.badURL)
         }
         components.queryItems = [
@@ -34,7 +36,7 @@ struct FMPService: PolygonFetching {
                 name:            $0.name,
                 market:          "stocks",
                 type:            nil,
-                primaryExchange: $0.stockExchange
+                primaryExchange: $0.exchange
             )
         }
     }
@@ -43,10 +45,13 @@ struct FMPService: PolygonFetching {
 
     func fetchTickerDetails(ticker: String, apiKey: String) async throws -> PolygonTickerDetails {
         let encoded = try percentEncode(ticker: ticker)
-        guard var components = URLComponents(string: "\(Self.baseURL)/v3/profile/\(encoded)") else {
+        guard var components = URLComponents(string: "\(Self.baseURL)/profile") else {
             throw URLError(.badURL)
         }
-        components.queryItems = [URLQueryItem(name: "apikey", value: apiKey)]
+        components.queryItems = [
+            URLQueryItem(name: "symbol", value: encoded),
+            URLQueryItem(name: "apikey", value: apiKey)
+        ]
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
         let results = try Self.decoder.decode([FMPProfile].self, from: data)
@@ -55,22 +60,25 @@ struct FMPService: PolygonFetching {
             ticker:         profile.symbol,
             name:           profile.companyName,
             sicDescription: profile.sector,
-            marketCap:      profile.mktCap,
+            marketCap:      profile.marketCap,
             description:    profile.description
         )
     }
 
-    // MARK: - Price (quote-short)
+    // MARK: - Price
 
     func fetchPreviousClose(ticker: String, apiKey: String) async throws -> Decimal? {
         let encoded = try percentEncode(ticker: ticker)
-        guard var components = URLComponents(string: "\(Self.baseURL)/v3/quote-short/\(encoded)") else {
+        guard var components = URLComponents(string: "\(Self.baseURL)/quote") else {
             throw URLError(.badURL)
         }
-        components.queryItems = [URLQueryItem(name: "apikey", value: apiKey)]
+        components.queryItems = [
+            URLQueryItem(name: "symbol", value: encoded),
+            URLQueryItem(name: "apikey", value: apiKey)
+        ]
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
-        let results = try Self.decoder.decode([FMPQuoteShort].self, from: data)
+        let results = try Self.decoder.decode([FMPQuote].self, from: data)
         return results.first?.price
     }
 
@@ -78,55 +86,55 @@ struct FMPService: PolygonFetching {
 
     func fetchDividends(ticker: String, limit: Int, apiKey: String) async throws -> [PolygonDividend] {
         let encoded = try percentEncode(ticker: ticker)
-        guard var components = URLComponents(
-            string: "\(Self.baseURL)/v3/historical-price-full/stock_dividend/\(encoded)"
-        ) else { throw URLError(.badURL) }
-        components.queryItems = [URLQueryItem(name: "apikey", value: apiKey)]
+        guard var components = URLComponents(string: "\(Self.baseURL)/dividends") else {
+            throw URLError(.badURL)
+        }
+        components.queryItems = [
+            URLQueryItem(name: "symbol", value: encoded),
+            URLQueryItem(name: "apikey", value: apiKey)
+        ]
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
-        let response = try Self.decoder.decode(FMPDividendResponse.self, from: data)
-        let historical = response.historical ?? []
+        let dividends = try Self.decoder.decode([FMPDividend].self, from: data)
 
-        // Infer payment frequency from the spacing of the most recent dividend dates
-        // so StockRefreshService can correctly build DividendSchedules.
-        let freq = inferFrequency(from: historical.prefix(13).compactMap {
-            Self.ymdFormatter.date(from: $0.date)
-        })
-
-        return historical.prefix(limit).map { div in
+        return dividends.prefix(limit).map { div in
             PolygonDividend(
                 ticker:          ticker.uppercased(),
                 cashAmount:      div.dividend,
                 exDividendDate:  div.date,
                 payDate:         div.paymentDate,
                 declarationDate: div.declarationDate,
-                frequency:       freq,
-                dividendType:    "CD"   // FMP only returns regular cash dividends here
+                frequency:       frequencyInt(from: div.frequency),
+                dividendType:    "CD"
             )
         }
     }
 
     // MARK: - News
+    // The stable news endpoint is restricted on the free FMP tier.
+    // Return an empty array silently so the rest of the app is unaffected.
 
     func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [PolygonNewsArticle] {
-        guard var components = URLComponents(string: "\(Self.baseURL)/v3/stock_news") else {
+        guard var components = URLComponents(string: "\(Self.baseURL)/news/stock") else {
             throw URLError(.badURL)
         }
+        let validTickers = tickers.compactMap { try? percentEncode(ticker: $0) }
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "limit",  value: "\(limit)"),
             URLQueryItem(name: "apikey", value: apiKey)
         ]
-        // Validate each ticker through percentEncode before joining to prevent
-        // malformed symbols from splitting the comma-separated parameter.
-        let validTickers = tickers.compactMap { try? percentEncode(ticker: $0) }
         if !validTickers.isEmpty {
-            queryItems.append(URLQueryItem(name: "tickers", value: validTickers.joined(separator: ",")))
+            queryItems.append(URLQueryItem(name: "symbols", value: validTickers.joined(separator: ",")))
         }
         components.queryItems = queryItems
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
-        let results = try Self.decoder.decode([FMPNewsArticle].self, from: data)
-        return results.map { article in
+        // Gracefully return empty on restricted endpoint (free tier returns a plain
+        // error string rather than a JSON array, so decode failure → empty list).
+        guard let articles = try? Self.decoder.decode([FMPNewsArticle].self, from: data) else {
+            return []
+        }
+        return articles.map { article in
             PolygonNewsArticle(
                 id:           article.url,
                 title:        article.title,
@@ -134,7 +142,7 @@ struct FMPService: PolygonFetching {
                 publishedUtc: isoDateString(from: article.publishedDate),
                 articleUrl:   article.url,
                 author:       article.site,
-                tickers:      article.symbol.map { [$0] },
+                tickers:      article.symbols,
                 imageUrl:     article.image
             )
         }
@@ -158,78 +166,58 @@ struct FMPService: PolygonFetching {
         return data
     }
 
-    /// Converts FMP's "YYYY-MM-DD HH:mm:ss" format to ISO-8601 "YYYY-MM-DDTHH:mm:ssZ"
-    /// so existing ISO8601DateFormatter usage in the UI parses correctly.
+    /// Converts FMP's frequency string to the Int used by PolygonDividend / DividendFrequency.
+    private func frequencyInt(from string: String?) -> Int {
+        switch string?.lowercased() {
+        case "monthly":                   return 12
+        case "quarterly":                 return 4
+        case "semi-annual", "biannual":   return 2
+        case "annual", "annually":        return 1
+        default:                          return 4  // fall back to quarterly
+        }
+    }
+
+    /// Converts FMP's "YYYY-MM-DD HH:mm:ss" to ISO-8601 "YYYY-MM-DDTHH:mm:ssZ".
     private func isoDateString(from fmpDate: String) -> String {
-        // FMP uses a space separator and no timezone; treat as UTC.
         if fmpDate.contains(" ") {
             return fmpDate.replacingOccurrences(of: " ", with: "T") + "Z"
         }
         return fmpDate
     }
-
-    /// Infers annual payment frequency (1/2/4/12) from average spacing between dividend dates.
-    /// Falls back to 4 (quarterly) when there is insufficient history.
-    private func inferFrequency(from dates: [Date]) -> Int {
-        guard dates.count >= 2 else { return 4 }
-        let sorted = dates.sorted()
-        let gaps = zip(sorted, sorted.dropFirst()).compactMap {
-            Calendar.current.dateComponents([.day], from: $0, to: $1).day
-        }
-        guard !gaps.isEmpty else { return 4 }
-        // Use Double to avoid integer truncation near bucket boundaries.
-        let avgGap = Double(gaps.reduce(0, +)) / Double(gaps.count)
-        switch avgGap {
-        case ..<40:  return 12  // monthly  (~30 days)
-        case ..<110: return 4   // quarterly (~91 days)
-        case ..<230: return 2   // semi-annual (~182 days)
-        default:     return 1   // annual
-        }
-    }
-
-    private static let ymdFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.timeZone = TimeZone(identifier: "UTC")
-        return f
-    }()
 }
 
-// MARK: - FMP-private decodable models
+// MARK: - FMP stable API decodable models
 
 private struct FMPSearchResult: Decodable {
     let symbol: String
     let name: String
-    let stockExchange: String?
+    let exchange: String?
 }
 
 private struct FMPProfile: Decodable {
     let symbol: String
     let companyName: String
     let sector: String?
-    let mktCap: Decimal?
+    let marketCap: Decimal?
     let description: String?
 }
 
-private struct FMPQuoteShort: Decodable {
+private struct FMPQuote: Decodable {
     let symbol: String
     let price: Decimal
 }
 
-private struct FMPDividendResponse: Decodable {
-    let historical: [FMPDividend]?
-}
-
 private struct FMPDividend: Decodable {
+    let symbol: String
     let date: String             // ex-date "YYYY-MM-DD"
     let dividend: Decimal
     let paymentDate: String?
     let declarationDate: String?
+    let frequency: String?       // "Quarterly", "Monthly", "Annual", etc.
 }
 
 private struct FMPNewsArticle: Decodable {
-    let symbol: String?     // absent for general market articles
+    let symbols: [String]?
     let publishedDate: String
     let title: String
     let text: String?
