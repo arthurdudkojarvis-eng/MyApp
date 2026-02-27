@@ -5,15 +5,13 @@ import OSLog
 // MARK: - AppColorScheme
 
 enum AppColorScheme: String, CaseIterable {
-    case system = "system"
-    case light  = "light"
-    case dark   = "dark"
+    case light = "light"
+    case dark  = "dark"
 
     var label: String {
         switch self {
-        case .system: return "System"
-        case .light:  return "Light"
-        case .dark:   return "Dark"
+        case .light: return "Light"
+        case .dark:  return "Dark"
         }
     }
 }
@@ -82,8 +80,9 @@ final class SettingsStore {
             self.monthlyExpenseTarget = 0
         }
 
-        let raw = defaults.string(forKey: Keys.colorScheme) ?? AppColorScheme.system.rawValue
-        self.colorScheme = AppColorScheme(rawValue: raw) ?? .system
+        let raw = defaults.string(forKey: Keys.colorScheme) ?? AppColorScheme.light.rawValue
+        // "system" was removed — migrate existing stored value to .light
+        self.colorScheme = AppColorScheme(rawValue: raw) ?? .light
 
         self.hasCompletedOnboarding = defaults.bool(forKey: Keys.hasCompletedOnboarding)
     }

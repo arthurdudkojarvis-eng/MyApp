@@ -221,8 +221,7 @@ private struct DashboardSecondPage: View {
             .padding(.top, 24)
             .padding(.bottom, 32)
         }
-        .background(Color.black)
-        .preferredColorScheme(.dark)
+        .background(Color(.systemGroupedBackground))
     }
 
     private func featureLink<Destination: View>(
@@ -235,27 +234,27 @@ private struct DashboardSecondPage: View {
             HStack(spacing: 14) {
                 Image(systemName: icon)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.7))
+                    .foregroundStyle(Color.accentColor)
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
                         .font(.headline)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                     Text(subtitle)
                         .font(.caption)
-                        .foregroundStyle(.white.opacity(0.45))
+                        .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.caption.bold())
-                    .foregroundStyle(.white.opacity(0.3))
+                    .foregroundStyle(.tertiary)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color.white.opacity(0.07))
+                    .fill(Color(.secondarySystemGroupedBackground))
             )
         }
         .buttonStyle(.plain)
