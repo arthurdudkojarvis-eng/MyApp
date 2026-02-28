@@ -94,7 +94,7 @@ struct NewsView: View {
 
     private func loadNews() async {
         guard settings.hasAPIKey else {
-            loadError = "Add an FMP API key in Settings to load news."
+            loadError = "Add a Polygon API key in Settings to load news."
             return
         }
         let tickers = selectedTicker.map { [$0] } ?? heldTickers
@@ -109,7 +109,7 @@ struct NewsView: View {
             articles = try await polygon.service.fetchNews(
                 tickers: tickers,
                 limit: 20,
-                apiKey: settings.fmpAPIKey
+                apiKey: settings.apiKey
             )
         } catch {
             loadError = error.localizedDescription

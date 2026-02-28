@@ -16,7 +16,7 @@ final class PolygonServiceBox: @unchecked Sendable {
 }
 
 private struct PolygonServiceKey: EnvironmentKey {
-    static let defaultValue = PolygonServiceBox(FMPService())
+    static let defaultValue = PolygonServiceBox(PolygonService())
 }
 
 extension EnvironmentValues {

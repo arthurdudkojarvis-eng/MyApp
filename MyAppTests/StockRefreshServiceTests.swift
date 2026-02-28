@@ -62,7 +62,7 @@ final class StockRefreshServiceTests: XCTestCase {
             keychain: KeychainService(service: "com.myapp.tests.refresh.\(UUID().uuidString)"),
             defaults: UserDefaults(suiteName: "com.myapp.tests.refresh.\(UUID().uuidString)")!
         )
-        settings.fmpAPIKey = "test-api-key"
+        settings.apiKey = "test-api-key"
         mockPolygon = MockPolygonService()
         sut = StockRefreshService(settings: settings, container: container, polygon: mockPolygon,
                                   interTickerDelay: .zero)
@@ -127,7 +127,7 @@ final class StockRefreshServiceTests: XCTestCase {
 
     func testRefreshSkipsWhenNoAPIKey() async throws {
         _ = try insertStock(ticker: "AAPL")
-        settings.fmpAPIKey = ""
+        settings.apiKey = ""
 
         await sut.refresh(ticker: "AAPL")
 

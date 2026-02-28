@@ -49,7 +49,7 @@ struct StockBrowserView: View {
             .onChange(of: query) { _, newValue in
                 // Cancel the previous in-flight search before starting a new one.
                 // The 350 ms sleep absorbs fast keystrokes so we only hit the API
-                // once the user has paused — important for FMP's free tier (250 req/day).
+                // once the user has paused — important for Polygon's free tier (5 req/min).
                 searchTask?.cancel()
                 let trimmed = newValue.trimmingCharacters(in: .whitespaces)
                 guard !trimmed.isEmpty else {
@@ -69,7 +69,7 @@ struct StockBrowserView: View {
 
     private func search(query: String) async {
         guard settings.hasAPIKey else {
-            searchError = "Add an FMP API key in Settings to search stocks."
+            searchError = "Add a Polygon API key in Settings to search stocks."
             return
         }
         isSearching = true
@@ -80,11 +80,11 @@ struct StockBrowserView: View {
         defer { if !Task.isCancelled { isSearching = false } }
         do {
             let fetched = try await polygon.service.fetchTickerSearch(
-                query: query, apiKey: settings.fmpAPIKey
+                query: query, apiKey: settings.apiKey
             )
             // Discard stale responses superseded by a newer query.
             guard !Task.isCancelled else { return }
-            // Re-sort: exact ticker match first, then starts-with, then FMP's order.
+            // Re-sort: exact ticker match first, then starts-with, then Polygon's order.
             let upper = query.uppercased()
             results = fetched.sorted { a, b in
                 let aExact = a.ticker == upper
@@ -93,7 +93,7 @@ struct StockBrowserView: View {
                 let aPrefix = a.ticker.hasPrefix(upper)
                 let bPrefix = b.ticker.hasPrefix(upper)
                 if aPrefix != bPrefix { return aPrefix }
-                return false // preserve FMP order within each tier
+                return false // preserve Polygon order within each tier
             }
         } catch {
             guard !Task.isCancelled else { return }
@@ -419,14 +419,14 @@ struct StockDetailView: View {
 
     private func load() async {
         guard settings.hasAPIKey else {
-            loadError = "Add an FMP API key in Settings."
+            loadError = "Add a Polygon API key in Settings."
             isLoading = false
             return
         }
         // Fetch details and price together — these are required for the page to render.
         do {
-            async let detailsTask = polygon.service.fetchTickerDetails(ticker: result.ticker, apiKey: settings.fmpAPIKey)
-            async let priceTask   = polygon.service.fetchPreviousClose(ticker: result.ticker, apiKey: settings.fmpAPIKey)
+            async let detailsTask = polygon.service.fetchTickerDetails(ticker: result.ticker, apiKey: settings.apiKey)
+            async let priceTask   = polygon.service.fetchPreviousClose(ticker: result.ticker, apiKey: settings.apiKey)
             (details, currentPrice) = try await (detailsTask, priceTask)
         } catch {
             loadError = error.localizedDescription
@@ -439,7 +439,7 @@ struct StockDetailView: View {
         // Fetch dividends separately — failure shows "—" rather than hiding the whole page.
         // Limit 13 covers one full year for monthly payers plus one extra record.
         dividends = (try? await polygon.service.fetchDividends(
-            ticker: result.ticker, limit: 13, apiKey: settings.fmpAPIKey
+            ticker: result.ticker, limit: 13, apiKey: settings.apiKey
         )) ?? []
     }
 

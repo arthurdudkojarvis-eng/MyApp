@@ -18,7 +18,7 @@ final class SettingsStoreTests: XCTestCase {
     }
 
     override func tearDown() async throws {
-        keychain.delete(forKey: "fmpAPIKey")
+        keychain.delete(forKey: "apiKey")
         defaults.removePersistentDomain(forName: defaultsSuite)
         sut = nil
         try await super.tearDown()
@@ -27,13 +27,21 @@ final class SettingsStoreTests: XCTestCase {
     // MARK: - Initialization
 
     func testInitLoadsAPIKeyFromKeychain() throws {
-        try keychain.save("test-api-key", forKey: "fmpAPIKey")
+        try keychain.save("test-api-key", forKey: "apiKey")
         let store = SettingsStore(keychain: keychain, defaults: defaults)
-        XCTAssertEqual(store.fmpAPIKey, "test-api-key")
+        XCTAssertEqual(store.apiKey, "test-api-key")
+    }
+
+    func testInitMigratesLegacyFMPAPIKey() throws {
+        try keychain.save("legacy-fmp-key", forKey: "fmpAPIKey")
+        let store = SettingsStore(keychain: keychain, defaults: defaults)
+        XCTAssertEqual(store.apiKey, "legacy-fmp-key")
+        XCTAssertNil(keychain.load(forKey: "fmpAPIKey"), "Legacy key should be deleted after migration")
+        XCTAssertEqual(keychain.load(forKey: "apiKey"), "legacy-fmp-key")
     }
 
     func testInitDefaultsAPIKeyToEmptyStringWhenKeychainEmpty() {
-        XCTAssertEqual(sut.fmpAPIKey, "")
+        XCTAssertEqual(sut.apiKey, "")
     }
 
     func testInitLoadsExpenseTargetFromDefaults() {
@@ -58,17 +66,17 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.monthlyExpenseTarget, 0)
     }
 
-    // MARK: - fmpAPIKey mutations
+    // MARK: - apiKey mutations
 
     func testSettingAPIKeyPersistsToKeychain() {
-        sut.fmpAPIKey = "new-key"
-        XCTAssertEqual(keychain.load(forKey: "fmpAPIKey"), "new-key")
+        sut.apiKey = "new-key"
+        XCTAssertEqual(keychain.load(forKey: "apiKey"), "new-key")
     }
 
     func testSettingAPIKeyToEmptyStringPersistsEmptyString() {
-        sut.fmpAPIKey = "some-key"
-        sut.fmpAPIKey = ""
-        XCTAssertEqual(keychain.load(forKey: "fmpAPIKey"), "")
+        sut.apiKey = "some-key"
+        sut.apiKey = ""
+        XCTAssertEqual(keychain.load(forKey: "apiKey"), "")
     }
 
     func testHasAPIKeyIsFalseWhenEmpty() {
@@ -76,7 +84,7 @@ final class SettingsStoreTests: XCTestCase {
     }
 
     func testHasAPIKeyIsTrueWhenNonEmpty() {
-        sut.fmpAPIKey = "abc"
+        sut.apiKey = "abc"
         XCTAssertTrue(sut.hasAPIKey)
     }
 

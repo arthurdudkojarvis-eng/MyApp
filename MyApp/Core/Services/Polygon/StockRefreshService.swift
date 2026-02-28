@@ -26,13 +26,13 @@ final class StockRefreshService {
     private let settings: SettingsStore
     private let container: ModelContainer
     /// Delay inserted between consecutive ticker refreshes to stay within
-    /// FMP's free-tier rate limit (250 requests / day, ~3 calls per ticker).
+    /// Polygon's free-tier rate limit (5 requests / minute).
     private let interTickerDelay: Duration
 
     init(
         settings: SettingsStore,
         container: ModelContainer = .app,
-        polygon: any PolygonFetching = FMPService(),
+        polygon: any PolygonFetching = PolygonService(),
         interTickerDelay: Duration = .seconds(2)
     ) {
         self.settings = settings
@@ -55,17 +55,17 @@ final class StockRefreshService {
             logger.info("Skipping refresh for \(ticker): API key not configured.")
             return
         }
-        await refreshTicker(ticker, apiKey: settings.fmpAPIKey)
+        await refreshTicker(ticker, apiKey: settings.apiKey)
     }
 
     /// Refresh all stale stocks. Call when the app returns to foreground.
     /// Tickers are refreshed sequentially with `interTickerDelay` between each
-    /// to stay within FMP's free-tier rate limit (250 requests / day).
+    /// to stay within Polygon's free-tier rate limit (5 requests / minute).
     func refreshStaleStocks() async {
         guard !isRefreshing else { return }
         guard settings.hasAPIKey else { return }
         lastRefreshError = nil   // clear previous error on every new refresh attempt
-        let apiKey = settings.fmpAPIKey
+        let apiKey = settings.apiKey
 
         // Push the staleness filter into SwiftData instead of fetching all stocks
         // and filtering in Swift — avoids loading every Stock into memory.

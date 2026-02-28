@@ -87,7 +87,7 @@ private struct APIKeyPage: View {
     @State private var apiKeyInput = ""
     @State private var showKey = false
 
-    private static let fmpURL = URL(string: "https://financialmodelingprep.com")!
+    private static let polygonURL = URL(string: "https://polygon.io")!
 
     var body: some View {
         VStack(spacing: 0) {
@@ -102,14 +102,14 @@ private struct APIKeyPage: View {
                 .font(.largeTitle.bold())
                 .padding(.bottom, 12)
 
-            Text("Paste your free FMP API key to fetch live stock prices and dividend data.")
+            Text("Paste your Polygon.io API key to fetch live stock prices and dividend data.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
                 .padding(.bottom, 8)
 
-            Link("Get a free key at financialmodelingprep.com →", destination: Self.fmpURL)
+            Link("Get a key at polygon.io →", destination: Self.polygonURL)
                 .font(.subheadline)
                 .padding(.bottom, 36)
 
@@ -119,8 +119,10 @@ private struct APIKeyPage: View {
                         TextField("Paste API key", text: $apiKeyInput)
                             .autocorrectionDisabled()
                             .textInputAutocapitalization(.never)
+                            .accessibilityLabel("Polygon API key")
                     } else {
                         SecureField("Paste API key", text: $apiKeyInput)
+                            .accessibilityLabel("Polygon API key")
                     }
                 }
                 .padding()
@@ -153,13 +155,13 @@ private struct APIKeyPage: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 48)
         }
-        .onAppear { apiKeyInput = settings.fmpAPIKey }
+        .onAppear { apiKeyInput = settings.apiKey }
     }
 
     private func saveAndContinue() {
         let trimmed = apiKeyInput.trimmingCharacters(in: .whitespaces)
         if !trimmed.isEmpty {
-            settings.fmpAPIKey = trimmed
+            settings.apiKey = trimmed
         }
         onNext()
     }

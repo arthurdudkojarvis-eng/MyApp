@@ -26,7 +26,7 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.myap
 final class SettingsStore {
     // MARK: - Keys
     private enum Keys {
-        static let fmpAPIKey              = "fmpAPIKey"
+        static let apiKey                 = "apiKey"
         static let monthlyExpenseTarget   = "monthlyExpenseTarget"
         static let colorScheme            = "colorScheme"
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
@@ -37,12 +37,12 @@ final class SettingsStore {
     private let defaults: UserDefaults
 
     // MARK: - Published state
-    var fmpAPIKey: String {
+    var apiKey: String {
         didSet {
             do {
-                try keychain.save(fmpAPIKey, forKey: Keys.fmpAPIKey)
+                try keychain.save(apiKey, forKey: Keys.apiKey)
             } catch {
-                logger.error("Failed to save FMP API key to Keychain: \(error.localizedDescription)")
+                logger.error("Failed to save API key to Keychain: \(error.localizedDescription)")
             }
         }
     }
@@ -62,7 +62,7 @@ final class SettingsStore {
         didSet { defaults.set(hasCompletedOnboarding, forKey: Keys.hasCompletedOnboarding) }
     }
 
-    var hasAPIKey: Bool { !fmpAPIKey.isEmpty }
+    var hasAPIKey: Bool { !apiKey.isEmpty }
 
     // MARK: - Init
     init(keychain: KeychainService = KeychainService(),
@@ -70,7 +70,14 @@ final class SettingsStore {
         self.keychain = keychain
         self.defaults = defaults
 
-        self.fmpAPIKey = keychain.load(forKey: Keys.fmpAPIKey) ?? ""
+        // Migrate API key stored under the legacy "fmpAPIKey" Keychain entry.
+        if let legacy = keychain.load(forKey: "fmpAPIKey"), !legacy.isEmpty {
+            try? keychain.save(legacy, forKey: Keys.apiKey)
+            keychain.delete(forKey: "fmpAPIKey")
+            self.apiKey = legacy
+        } else {
+            self.apiKey = keychain.load(forKey: Keys.apiKey) ?? ""
+        }
 
         // Store as String to avoid Decimal → Double precision loss.
         if let stored = defaults.string(forKey: Keys.monthlyExpenseTarget),

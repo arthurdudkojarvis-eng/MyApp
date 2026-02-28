@@ -17,7 +17,6 @@
 		17AE816DDA9521CBBFDFD69B /* WatchlistItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545032ABA0D6C2F77F79D93C /* WatchlistItem.swift */; };
 		1BAA2B119C2179B83EE8A41D /* DividendSafetyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796F34EF1AB763776D0CFDB7 /* DividendSafetyView.swift */; };
 		1ED58B5C130C37C017765788 /* PolygonService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC36DA4D1479658B4AC9D33 /* PolygonService.swift */; };
-		FB5AA676BE7841029663F6F2 /* FMPService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 885A5DB66EBA487EBB2BC8EF /* FMPService.swift */; };
 		2219A3D66CC6A7AE4E870849 /* EditHoldingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8600F9CD4E0ECCF8DA305D42 /* EditHoldingView.swift */; };
 		2811D99258A809FCFBD5EBDB /* OnboardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B301CF32A5E5ECBF36F3E32 /* OnboardingTests.swift */; };
 		2B2F7F5FE6554DC6CBC1D8B0 /* StockBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBF85C275AC60329CD30EE9A /* StockBrowserView.swift */; };
@@ -130,7 +129,6 @@
 		B83BDF54DD70EBE998E82089 /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
 		B8CA452D1E6974625C1C5FE7 /* PolygonEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolygonEnvironment.swift; sourceTree = "<group>"; };
 		BBC36DA4D1479658B4AC9D33 /* PolygonService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolygonService.swift; sourceTree = "<group>"; };
-		885A5DB66EBA487EBB2BC8EF /* FMPService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FMPService.swift; sourceTree = "<group>"; };
 		C9AF13E5B9F14E0CDA9E3FC3 /* LogPaymentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPaymentTests.swift; sourceTree = "<group>"; };
 		CBF85C275AC60329CD30EE9A /* StockBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockBrowserView.swift; sourceTree = "<group>"; };
 		CDB2A6E31CD31D98D7365571 /* Holding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Holding.swift; sourceTree = "<group>"; };
@@ -342,22 +340,13 @@
 			path = Dashboard;
 			sourceTree = "<group>";
 		};
-		D8F6A4FCD58043918C943EAE /* FMP */ = {
-			isa = PBXGroup;
-			children = (
-				885A5DB66EBA487EBB2BC8EF /* FMPService.swift */,
-			);
-			path = FMP;
-			sourceTree = "<group>";
-		};
 		C8AC4AE645CBA8D182E441DE /* Services */ = {
 			isa = PBXGroup;
 			children = (
 				0E027B60436A61420ED999E3 /* AppColorScheme+SwiftUI.swift */,
 				41C018CC84BEF94F929B042E /* KeychainService.swift */,
 				39954C69C6016976D6D8707B /* SettingsStore.swift */,
-				D8F6A4FCD58043918C943EAE /* FMP */,
-				3BEC3D0DA694EF5C0E131D34 /* Polygon */,
+					3BEC3D0DA694EF5C0E131D34 /* Polygon */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -518,7 +507,6 @@
 				AA0C63AE826F5086197D0657 /* HoldingsView.swift in Sources */,
 				CE68D103E010F4F931536ABC /* IncomeForecastView.swift in Sources */,
 				5D5DB28828779CC1549F317F /* IncomeHeroView.swift in Sources */,
-				FB5AA676BE7841029663F6F2 /* FMPService.swift in Sources */,
 				F4BF44D5393BCAC3B259F3AD /* KeychainService.swift in Sources */,
 				FD12A43066297F415F8C701B /* LogPaymentView.swift in Sources */,
 				8FFF33A49D1A9FC856F4D3AC /* MainTabView.swift in Sources */,
