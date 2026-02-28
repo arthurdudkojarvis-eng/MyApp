@@ -69,8 +69,7 @@ struct IncomeHeroView: View {
         }
     }
 
-    /// Conditionally shown refresh indicator — removed from hierarchy when not refreshing
-    /// so the `ProgressView` animation does not run in the background.
+    /// Shows a refresh spinner while updating, otherwise a delayed-data notice.
     private var refreshRow: some View {
         Group {
             if isRefreshing {
@@ -81,10 +80,15 @@ struct IncomeHeroView: View {
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
-                .padding(.top, 10)
                 .accessibilityLabel("Refreshing data")
+            } else {
+                Text("Prices delayed 15 min")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .accessibilityLabel("Prices are delayed 15 minutes")
             }
         }
+        .padding(.top, 10)
         .animation(.easeInOut(duration: 0.2), value: isRefreshing)
     }
 

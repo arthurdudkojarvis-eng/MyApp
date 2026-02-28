@@ -23,15 +23,21 @@ struct PolygonService: PolygonFetching {
         return response.results
     }
 
-    // MARK: - Previous Close
+    // MARK: - Snapshot (current delayed price)
 
     func fetchPreviousClose(ticker: String, apiKey: String) async throws -> Decimal? {
         let encoded = try percentEncode(ticker: ticker)
-        let url = try buildURL(path: "/v2/aggs/ticker/\(encoded)/prev", apiKey: apiKey)
+        let url = try buildURL(
+            path: "/v2/snapshot/locale/us/markets/stocks/tickers/\(encoded)",
+            apiKey: apiKey
+        )
         let data = try await fetch(url: url)
-        let response = try Self.decoder.decode(PolygonAggregatesResponse.self, from: data)
-        // c is already Decimal — no Double conversion needed
-        return response.results?.first?.c
+        let response = try Self.decoder.decode(PolygonSnapshotResponse.self, from: data)
+        // Prefer today's intraday close; fall back to previous day when market is closed.
+        if let dayClose = response.ticker.day?.c, dayClose > 0 {
+            return dayClose
+        }
+        return response.ticker.prevDay?.c
     }
 
     // MARK: - Dividends

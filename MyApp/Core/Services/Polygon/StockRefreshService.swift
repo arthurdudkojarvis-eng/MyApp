@@ -25,15 +25,15 @@ final class StockRefreshService {
     private let polygon: any PolygonFetching
     private let settings: SettingsStore
     private let container: ModelContainer
-    /// Delay inserted between consecutive ticker refreshes to stay within
-    /// Polygon's free-tier rate limit (5 requests / minute).
+    /// Optional delay between consecutive ticker refreshes. Defaults to zero
+    /// (unlimited API calls on Polygon Starter). Can be overridden in tests.
     private let interTickerDelay: Duration
 
     init(
         settings: SettingsStore,
         container: ModelContainer = .app,
         polygon: any PolygonFetching = PolygonService(),
-        interTickerDelay: Duration = .seconds(2)
+        interTickerDelay: Duration = .milliseconds(0)
     ) {
         self.settings = settings
         self.container = container
@@ -59,8 +59,7 @@ final class StockRefreshService {
     }
 
     /// Refresh all stale stocks. Call when the app returns to foreground.
-    /// Tickers are refreshed sequentially with `interTickerDelay` between each
-    /// to stay within Polygon's free-tier rate limit (5 requests / minute).
+    /// Tickers are refreshed sequentially with an optional `interTickerDelay` between each.
     func refreshStaleStocks() async {
         guard !isRefreshing else { return }
         guard settings.hasAPIKey else { return }
@@ -127,12 +126,14 @@ final class StockRefreshService {
             if let p = price  { stock.currentPrice = p }
             stock.lastUpdated = .now
 
-            // Dividends are best-effort — a 402 (subscription restriction) or network
-            // error should not prevent the price/name from being saved.
-            let dividends = (try? await polygon.fetchDividends(
-                ticker: ticker, limit: 8, apiKey: apiKey
-            )) ?? []
-            updateDividendSchedules(stock: stock, dividends: dividends, context: context)
+            // Fetch dividends separately so a network hiccup doesn't discard the
+            // price/name update already written above.
+            do {
+                let dividends = try await polygon.fetchDividends(ticker: ticker, limit: 8, apiKey: apiKey)
+                updateDividendSchedules(stock: stock, dividends: dividends, context: context)
+            } catch {
+                logger.warning("Dividend fetch failed for \(ticker): \(error.localizedDescription)")
+            }
             try context.save()
             logger.info("Refreshed \(ticker)")
 

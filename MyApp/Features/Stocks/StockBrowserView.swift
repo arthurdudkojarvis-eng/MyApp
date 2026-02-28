@@ -302,7 +302,7 @@ struct StockDetailView: View {
     private var criteriaGrid: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
             CriteriaCell(
-                label: "Current Price",
+                label: "Price (15-min delay)",
                 value: currentPrice.map { $0.formatted(.currency(code: "USD")) } ?? "—"
             )
             CriteriaCell(
@@ -438,9 +438,13 @@ struct StockDetailView: View {
 
         // Fetch dividends separately — failure shows "—" rather than hiding the whole page.
         // Limit 13 covers one full year for monthly payers plus one extra record.
-        dividends = (try? await polygon.service.fetchDividends(
-            ticker: result.ticker, limit: 13, apiKey: settings.apiKey
-        )) ?? []
+        do {
+            dividends = try await polygon.service.fetchDividends(
+                ticker: result.ticker, limit: 13, apiKey: settings.apiKey
+            )
+        } catch {
+            // Dividend errors are non-fatal; price and details are still shown.
+        }
     }
 
     private func reloadExistingStock() {

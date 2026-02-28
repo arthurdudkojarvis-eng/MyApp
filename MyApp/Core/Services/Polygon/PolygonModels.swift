@@ -40,13 +40,18 @@ struct PolygonTickerSearchResult: Decodable, Identifiable {
     var id: String { ticker }
 }
 
-// MARK: - Aggregates (Price)
+// MARK: - Snapshot (Price)
 
-struct PolygonAggregatesResponse: Decodable {
-    let results: [PolygonBar]?
+struct PolygonSnapshotResponse: Decodable {
+    let ticker: PolygonSnapshotTicker
 }
 
-struct PolygonBar: Decodable {
+struct PolygonSnapshotTicker: Decodable {
+    let day: PolygonSnapshotBar?
+    let prevDay: PolygonSnapshotBar?
+}
+
+struct PolygonSnapshotBar: Decodable {
     let c: Decimal   // close price — decoded as Decimal to avoid Double precision loss
 }
 
