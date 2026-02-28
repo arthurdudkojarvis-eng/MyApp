@@ -110,7 +110,7 @@ private struct NoAPIKeyBannerView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("No API Key")
                     .font(.subheadline.bold())
-                Text("Live prices unavailable. Add a Polygon API key in Settings.")
+                Text("Live prices unavailable. Add a Massive API key in Settings.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

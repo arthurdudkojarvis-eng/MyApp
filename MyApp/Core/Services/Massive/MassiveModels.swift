@@ -2,21 +2,21 @@ import Foundation
 
 // MARK: - Protocol (enables mocking in tests)
 
-protocol PolygonFetching: Sendable {
-    func fetchTickerDetails(ticker: String, apiKey: String) async throws -> PolygonTickerDetails
+protocol MassiveFetching: Sendable {
+    func fetchTickerDetails(ticker: String, apiKey: String) async throws -> MassiveTickerDetails
     func fetchPreviousClose(ticker: String, apiKey: String) async throws -> Decimal?
-    func fetchDividends(ticker: String, limit: Int, apiKey: String) async throws -> [PolygonDividend]
-    func fetchTickerSearch(query: String, apiKey: String) async throws -> [PolygonTickerSearchResult]
-    func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [PolygonNewsArticle]
+    func fetchDividends(ticker: String, limit: Int, apiKey: String) async throws -> [MassiveDividend]
+    func fetchTickerSearch(query: String, apiKey: String) async throws -> [MassiveTickerSearchResult]
+    func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [MassiveNewsArticle]
 }
 
 // MARK: - Ticker Details
 
-struct PolygonTickerDetailsResponse: Decodable {
-    let results: PolygonTickerDetails
+struct MassiveTickerDetailsResponse: Decodable {
+    let results: MassiveTickerDetails
 }
 
-struct PolygonTickerDetails: Decodable {
+struct MassiveTickerDetails: Decodable {
     let ticker: String
     let name: String
     let sicDescription: String?   // maps to sector
@@ -26,11 +26,11 @@ struct PolygonTickerDetails: Decodable {
 
 // MARK: - Ticker Search
 
-struct PolygonTickerSearchResponse: Decodable {
-    let results: [PolygonTickerSearchResult]?
+struct MassiveTickerSearchResponse: Decodable {
+    let results: [MassiveTickerSearchResult]?
 }
 
-struct PolygonTickerSearchResult: Decodable, Identifiable {
+struct MassiveTickerSearchResult: Decodable, Identifiable {
     let ticker: String
     let name: String
     let market: String?
@@ -42,26 +42,27 @@ struct PolygonTickerSearchResult: Decodable, Identifiable {
 
 // MARK: - Snapshot (Price)
 
-struct PolygonSnapshotResponse: Decodable {
-    let ticker: PolygonSnapshotTicker
+struct MassiveSnapshotResponse: Decodable {
+    /// Nil when the ticker is not found (API returns {"ticker": null, "status": "OK"}).
+    let ticker: MassiveTickerSnapshot?
 }
 
-struct PolygonSnapshotTicker: Decodable {
-    let day: PolygonSnapshotBar?
-    let prevDay: PolygonSnapshotBar?
+struct MassiveTickerSnapshot: Decodable {
+    let day: MassiveSnapshotBar?
+    let prevDay: MassiveSnapshotBar?
 }
 
-struct PolygonSnapshotBar: Decodable {
+struct MassiveSnapshotBar: Decodable {
     let c: Decimal   // close price — decoded as Decimal to avoid Double precision loss
 }
 
 // MARK: - Dividends
 
-struct PolygonDividendsResponse: Decodable {
-    let results: [PolygonDividend]?
+struct MassiveDividendsResponse: Decodable {
+    let results: [MassiveDividend]?
 }
 
-struct PolygonDividend: Decodable {
+struct MassiveDividend: Decodable {
     let ticker: String
     let cashAmount: Decimal
     let exDividendDate: String          // "YYYY-MM-DD"
@@ -73,11 +74,11 @@ struct PolygonDividend: Decodable {
 
 // MARK: - News
 
-struct PolygonNewsResponse: Decodable {
-    let results: [PolygonNewsArticle]?
+struct MassiveNewsResponse: Decodable {
+    let results: [MassiveNewsArticle]?
 }
 
-struct PolygonNewsArticle: Decodable, Identifiable {
+struct MassiveNewsArticle: Decodable, Identifiable {
     let id: String
     let title: String
     let description: String?
@@ -90,7 +91,7 @@ struct PolygonNewsArticle: Decodable, Identifiable {
 
 // MARK: - Errors
 
-enum PolygonError: Error, LocalizedError {
+enum MassiveError: Error, LocalizedError {
     case missingAPIKey
     case httpError(statusCode: Int)
     case emptyResponse

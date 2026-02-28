@@ -22,22 +22,23 @@ final class StockRefreshService {
 
     func dismissRefreshError() { lastRefreshError = nil }
 
-    private let polygon: any PolygonFetching
+    private let massive: any MassiveFetching
     private let settings: SettingsStore
     private let container: ModelContainer
     /// Optional delay between consecutive ticker refreshes. Defaults to zero
-    /// (unlimited API calls on Polygon Starter). Can be overridden in tests.
+    /// because the Massive paid plan offers unlimited API calls. Override in tests
+    /// or set to a non-zero value if switching to a rate-limited tier.
     private let interTickerDelay: Duration
 
     init(
         settings: SettingsStore,
         container: ModelContainer = .app,
-        polygon: any PolygonFetching = PolygonService(),
+        massive: any MassiveFetching = MassiveService(),
         interTickerDelay: Duration = .milliseconds(0)
     ) {
         self.settings = settings
         self.container = container
-        self.polygon = polygon
+        self.massive = massive
         self.interTickerDelay = interTickerDelay
     }
 
@@ -108,8 +109,8 @@ final class StockRefreshService {
         let context = ModelContext(container)
         do {
             // Fetch details and price concurrently — required for a useful refresh.
-            async let detailsTask = polygon.fetchTickerDetails(ticker: ticker, apiKey: apiKey)
-            async let priceTask   = polygon.fetchPreviousClose(ticker: ticker, apiKey: apiKey)
+            async let detailsTask = massive.fetchTickerDetails(ticker: ticker, apiKey: apiKey)
+            async let priceTask   = massive.fetchPreviousClose(ticker: ticker, apiKey: apiKey)
             let (details, price) = try await (detailsTask, priceTask)
 
             // Find or create the Stock.
@@ -129,7 +130,7 @@ final class StockRefreshService {
             // Fetch dividends separately so a network hiccup doesn't discard the
             // price/name update already written above.
             do {
-                let dividends = try await polygon.fetchDividends(ticker: ticker, limit: 8, apiKey: apiKey)
+                let dividends = try await massive.fetchDividends(ticker: ticker, limit: 8, apiKey: apiKey)
                 updateDividendSchedules(stock: stock, dividends: dividends, context: context)
             } catch {
                 logger.warning("Dividend fetch failed for \(ticker): \(error.localizedDescription)")
@@ -149,7 +150,7 @@ final class StockRefreshService {
 
     private func updateDividendSchedules(
         stock: Stock,
-        dividends: [PolygonDividend],
+        dividends: [MassiveDividend],
         context: ModelContext
     ) {
         // Build a lookup of existing schedules keyed by ex-date string so we can
@@ -167,7 +168,7 @@ final class StockRefreshService {
         for div in dividends {
             guard div.dividendType == "CD",
                   let exDate = dateFormatter.date(from: div.exDividendDate),
-                  let freq = div.frequency.flatMap({ DividendFrequency(polygonFrequency: $0) })
+                  let freq = div.frequency.flatMap({ DividendFrequency(massiveFrequency: $0) })
             else { continue }
 
             let exDateKey = div.exDividendDate
@@ -214,11 +215,11 @@ final class StockRefreshService {
     }
 }
 
-// MARK: - DividendFrequency ← Polygon frequency integer
+// MARK: - DividendFrequency ← Massive frequency integer
 
 private extension DividendFrequency {
-    init?(polygonFrequency: Int) {
-        switch polygonFrequency {
+    init?(massiveFrequency: Int) {
+        switch massiveFrequency {
         case 1:  self = .annual
         case 2:  self = .semiAnnual
         case 4:  self = .quarterly

@@ -16,7 +16,7 @@
 		14BF60D0BA98FE81C5979572 /* TaxSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A74ED20A31232F6646A2A6 /* TaxSummaryView.swift */; };
 		17AE816DDA9521CBBFDFD69B /* WatchlistItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545032ABA0D6C2F77F79D93C /* WatchlistItem.swift */; };
 		1BAA2B119C2179B83EE8A41D /* DividendSafetyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796F34EF1AB763776D0CFDB7 /* DividendSafetyView.swift */; };
-		1ED58B5C130C37C017765788 /* PolygonService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC36DA4D1479658B4AC9D33 /* PolygonService.swift */; };
+		1ED58B5C130C37C017765788 /* MassiveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC36DA4D1479658B4AC9D33 /* MassiveService.swift */; };
 		2219A3D66CC6A7AE4E870849 /* EditHoldingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8600F9CD4E0ECCF8DA305D42 /* EditHoldingView.swift */; };
 		2811D99258A809FCFBD5EBDB /* OnboardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B301CF32A5E5ECBF36F3E32 /* OnboardingTests.swift */; };
 		2B2F7F5FE6554DC6CBC1D8B0 /* StockBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBF85C275AC60329CD30EE9A /* StockBrowserView.swift */; };
@@ -30,7 +30,7 @@
 		53D1065F0BC685A0EC172A6A /* CoverageMeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A233EDCCF999850598369A /* CoverageMeterView.swift */; };
 		5D5DB28828779CC1549F317F /* IncomeHeroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AC714EC6294F050205D7CBC /* IncomeHeroView.swift */; };
 		6EAC5C805CD25068CD6B9FD2 /* DividendCalendarRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1679A13FA7597EEABA5E85CA /* DividendCalendarRowView.swift */; };
-		6FB33C4BAF790F222558D82D /* PolygonModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047526A7CB59A2CEC408D324 /* PolygonModels.swift */; };
+		6FB33C4BAF790F222558D82D /* MassiveModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047526A7CB59A2CEC408D324 /* MassiveModels.swift */; };
 		73B2BA9EDC6ED7AB23745BB6 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 059E338DA8E0E4E6ADFF964C /* OnboardingView.swift */; };
 		7AD4B0A71343166CC8E23389 /* DividendFrequency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C74261CC2EEDEDF87E15DF9 /* DividendFrequency.swift */; };
 		7B2D54B3F2B469A4F95A7F15 /* LogPaymentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9AF13E5B9F14E0CDA9E3FC3 /* LogPaymentTests.swift */; };
@@ -41,7 +41,7 @@
 		8FFF33A49D1A9FC856F4D3AC /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BE0AA6B455F873EB9DE360 /* MainTabView.swift */; };
 		9B9990E63644C5BC107B06E0 /* AddPortfolioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74025E36A57BD79EC7BC227 /* AddPortfolioView.swift */; };
 		9C907F61FCC8E161A970659A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01BD360246A6F91A42303E1A /* ContentView.swift */; };
-		A50203DD3D1B2076C7D19950 /* PolygonEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8CA452D1E6974625C1C5FE7 /* PolygonEnvironment.swift */; };
+		A50203DD3D1B2076C7D19950 /* MassiveEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8CA452D1E6974625C1C5FE7 /* MassiveEnvironment.swift */; };
 		A5CF89FFC8257053FF08CBE7 /* HoldingPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3B95BDB50172AB02EE93A3 /* HoldingPerformanceTests.swift */; };
 		AA0C63AE826F5086197D0657 /* HoldingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65C7AE553F676F967FF1B6E5 /* HoldingsView.swift */; };
 		AA1D2D9C2F69A518390AD9E9 /* Stock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1337F25AFB67ACEE25AF311F /* Stock.swift */; };
@@ -78,7 +78,7 @@
 
 /* Begin PBXFileReference section */
 		01BD360246A6F91A42303E1A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		047526A7CB59A2CEC408D324 /* PolygonModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolygonModels.swift; sourceTree = "<group>"; };
+		047526A7CB59A2CEC408D324 /* MassiveModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MassiveModels.swift; sourceTree = "<group>"; };
 		059E338DA8E0E4E6ADFF964C /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		0C05724C3000FDD010B74C4D /* PortfoliosView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfoliosView.swift; sourceTree = "<group>"; };
 		0C74261CC2EEDEDF87E15DF9 /* DividendFrequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendFrequency.swift; sourceTree = "<group>"; };
@@ -127,8 +127,8 @@
 		AF2A840CEFA0C7ED8794E479 /* Portfolio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Portfolio.swift; sourceTree = "<group>"; };
 		B5C352E29810DED9E7E134B9 /* AlertsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertsView.swift; sourceTree = "<group>"; };
 		B83BDF54DD70EBE998E82089 /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
-		B8CA452D1E6974625C1C5FE7 /* PolygonEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolygonEnvironment.swift; sourceTree = "<group>"; };
-		BBC36DA4D1479658B4AC9D33 /* PolygonService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolygonService.swift; sourceTree = "<group>"; };
+		B8CA452D1E6974625C1C5FE7 /* MassiveEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MassiveEnvironment.swift; sourceTree = "<group>"; };
+		BBC36DA4D1479658B4AC9D33 /* MassiveService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MassiveService.swift; sourceTree = "<group>"; };
 		C9AF13E5B9F14E0CDA9E3FC3 /* LogPaymentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPaymentTests.swift; sourceTree = "<group>"; };
 		CBF85C275AC60329CD30EE9A /* StockBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockBrowserView.swift; sourceTree = "<group>"; };
 		CDB2A6E31CD31D98D7365571 /* Holding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Holding.swift; sourceTree = "<group>"; };
@@ -170,15 +170,15 @@
 			path = App;
 			sourceTree = "<group>";
 		};
-		3BEC3D0DA694EF5C0E131D34 /* Polygon */ = {
+		3BEC3D0DA694EF5C0E131D34 /* Massive */ = {
 			isa = PBXGroup;
 			children = (
-				B8CA452D1E6974625C1C5FE7 /* PolygonEnvironment.swift */,
-				047526A7CB59A2CEC408D324 /* PolygonModels.swift */,
-				BBC36DA4D1479658B4AC9D33 /* PolygonService.swift */,
+				B8CA452D1E6974625C1C5FE7 /* MassiveEnvironment.swift */,
+				047526A7CB59A2CEC408D324 /* MassiveModels.swift */,
+				BBC36DA4D1479658B4AC9D33 /* MassiveService.swift */,
 				57A237E2958E19FB1B20DEB3 /* StockRefreshService.swift */,
 			);
-			path = Polygon;
+			path = Massive;
 			sourceTree = "<group>";
 		};
 		3DE49B8AEA0A9B5C1C851A08 /* Onboarding */ = {
@@ -346,7 +346,7 @@
 				0E027B60436A61420ED999E3 /* AppColorScheme+SwiftUI.swift */,
 				41C018CC84BEF94F929B042E /* KeychainService.swift */,
 				39954C69C6016976D6D8707B /* SettingsStore.swift */,
-					3BEC3D0DA694EF5C0E131D34 /* Polygon */,
+					3BEC3D0DA694EF5C0E131D34 /* Massive */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -514,9 +514,9 @@
 				532A1BF0FBDA072F48C348BD /* MyAppApp.swift in Sources */,
 				D32F8F8F3FFB4E5055C45BE3 /* NewsView.swift in Sources */,
 				73B2BA9EDC6ED7AB23745BB6 /* OnboardingView.swift in Sources */,
-				A50203DD3D1B2076C7D19950 /* PolygonEnvironment.swift in Sources */,
-				6FB33C4BAF790F222558D82D /* PolygonModels.swift in Sources */,
-				1ED58B5C130C37C017765788 /* PolygonService.swift in Sources */,
+				A50203DD3D1B2076C7D19950 /* MassiveEnvironment.swift in Sources */,
+				6FB33C4BAF790F222558D82D /* MassiveModels.swift in Sources */,
+				1ED58B5C130C37C017765788 /* MassiveService.swift in Sources */,
 				8DCB6F60B033718750EB33B9 /* Portfolio.swift in Sources */,
 				F3D8EC4E90AC7D62E61A6B10 /* PortfoliosView.swift in Sources */,
 				D41E216EAECADBB79E988561 /* SectorAllocationView.swift in Sources */,

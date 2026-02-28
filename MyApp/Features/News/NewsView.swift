@@ -4,10 +4,10 @@ import SwiftData
 struct NewsView: View {
     @Query(sort: \Portfolio.createdAt) private var portfolios: [Portfolio]
     @Environment(SettingsStore.self) private var settings
-    @Environment(\.polygonService) private var polygon
+    @Environment(\.massiveService) private var massive
     @Environment(\.openURL) private var openURL
 
-    @State private var articles: [PolygonNewsArticle] = []
+    @State private var articles: [MassiveNewsArticle] = []
     @State private var isLoading = false
     @State private var loadError: String?
     @State private var selectedTicker: String?
@@ -94,7 +94,7 @@ struct NewsView: View {
 
     private func loadNews() async {
         guard settings.hasAPIKey else {
-            loadError = "Add a Polygon API key in Settings to load news."
+            loadError = "Add a Massive API key in Settings to load news."
             return
         }
         let tickers = selectedTicker.map { [$0] } ?? heldTickers
@@ -106,7 +106,7 @@ struct NewsView: View {
         loadError = nil
         defer { isLoading = false }
         do {
-            articles = try await polygon.service.fetchNews(
+            articles = try await massive.service.fetchNews(
                 tickers: tickers,
                 limit: 20,
                 apiKey: settings.apiKey
@@ -120,7 +120,7 @@ struct NewsView: View {
 // MARK: - Article Card
 
 private struct ArticleCard: View {
-    let article: PolygonNewsArticle
+    let article: MassiveNewsArticle
     let onTap: () -> Void
 
     var body: some View {

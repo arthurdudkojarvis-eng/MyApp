@@ -4,7 +4,7 @@ import SwiftData
 struct WatchlistView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(SettingsStore.self) private var settings
-    @Environment(\.polygonService) private var polygon
+    @Environment(\.massiveService) private var massive
 
     @Query(sort: \WatchlistItem.addedDate, order: .reverse) private var items: [WatchlistItem]
 
@@ -141,8 +141,8 @@ struct WatchlistItemDetailView: View {
     @Environment(\.modelContext) private var modelContext
 
     // Construct a lightweight result for StockDetailView
-    private var searchResult: PolygonTickerSearchResult {
-        PolygonTickerSearchResult(
+    private var searchResult: MassiveTickerSearchResult {
+        MassiveTickerSearchResult(
             ticker: item.ticker,
             name: item.companyName.isEmpty ? item.ticker : item.companyName,
             market: "stocks",

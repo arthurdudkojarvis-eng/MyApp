@@ -1,14 +1,18 @@
 import SwiftUI
 import SwiftData
+import OSLog
+
+private let detailLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.myapp.MyApp",
+                                  category: "StockDetailView")
 
 // MARK: - StockBrowserView
 
 struct StockBrowserView: View {
     @Environment(SettingsStore.self) private var settings
-    @Environment(\.polygonService) private var polygon
+    @Environment(\.massiveService) private var massive
 
     @State private var query = ""
-    @State private var results: [PolygonTickerSearchResult] = []
+    @State private var results: [MassiveTickerSearchResult] = []
     @State private var isSearching = false
     @State private var searchError: String?
     @State private var searchTask: Task<Void, Never>?
@@ -49,7 +53,7 @@ struct StockBrowserView: View {
             .onChange(of: query) { _, newValue in
                 // Cancel the previous in-flight search before starting a new one.
                 // The 350 ms sleep absorbs fast keystrokes so we only hit the API
-                // once the user has paused — important for Polygon's free tier (5 req/min).
+                // once the user has paused — important for Massive's free tier (5 req/min).
                 searchTask?.cancel()
                 let trimmed = newValue.trimmingCharacters(in: .whitespaces)
                 guard !trimmed.isEmpty else {
@@ -69,7 +73,7 @@ struct StockBrowserView: View {
 
     private func search(query: String) async {
         guard settings.hasAPIKey else {
-            searchError = "Add a Polygon API key in Settings to search stocks."
+            searchError = "Add a Massive API key in Settings to search stocks."
             return
         }
         isSearching = true
@@ -79,12 +83,12 @@ struct StockBrowserView: View {
         // preventing the spinner from flickering off while the next search is running.
         defer { if !Task.isCancelled { isSearching = false } }
         do {
-            let fetched = try await polygon.service.fetchTickerSearch(
+            let fetched = try await massive.service.fetchTickerSearch(
                 query: query, apiKey: settings.apiKey
             )
             // Discard stale responses superseded by a newer query.
             guard !Task.isCancelled else { return }
-            // Re-sort: exact ticker match first, then starts-with, then Polygon's order.
+            // Re-sort: exact ticker match first, then starts-with, then Massive's order.
             let upper = query.uppercased()
             results = fetched.sorted { a, b in
                 let aExact = a.ticker == upper
@@ -93,7 +97,7 @@ struct StockBrowserView: View {
                 let aPrefix = a.ticker.hasPrefix(upper)
                 let bPrefix = b.ticker.hasPrefix(upper)
                 if aPrefix != bPrefix { return aPrefix }
-                return false // preserve Polygon order within each tier
+                return false // preserve Massive order within each tier
             }
         } catch {
             guard !Task.isCancelled else { return }
@@ -106,7 +110,7 @@ struct StockBrowserView: View {
 // MARK: - Search Row
 
 private struct StockSearchRowView: View {
-    let result: PolygonTickerSearchResult
+    let result: MassiveTickerSearchResult
 
     var body: some View {
         HStack(spacing: 12) {
@@ -134,25 +138,25 @@ private struct StockSearchRowView: View {
 // MARK: - Stock Detail
 
 struct StockDetailView: View {
-    let result: PolygonTickerSearchResult
+    let result: MassiveTickerSearchResult
 
     @Environment(\.modelContext) private var modelContext
     @Environment(SettingsStore.self) private var settings
     @Environment(StockRefreshService.self) private var stockRefresh
-    @Environment(\.polygonService) private var polygon
+    @Environment(\.massiveService) private var massive
     @Query(sort: \Portfolio.createdAt) private var portfolios: [Portfolio]
     // Filtered to only the current ticker so SwiftData doesn't load the entire watchlist.
     @Query private var watchlistItems: [WatchlistItem]
 
-    init(result: PolygonTickerSearchResult) {
+    init(result: MassiveTickerSearchResult) {
         self.result = result
         let ticker = result.ticker
         _watchlistItems = Query(filter: #Predicate<WatchlistItem> { $0.ticker == ticker })
     }
 
-    @State private var details: PolygonTickerDetails?
+    @State private var details: MassiveTickerDetails?
     @State private var currentPrice: Decimal?
-    @State private var dividends: [PolygonDividend] = []
+    @State private var dividends: [MassiveDividend] = []
     @State private var isLoading = true
     @State private var loadError: String?
 
@@ -419,14 +423,14 @@ struct StockDetailView: View {
 
     private func load() async {
         guard settings.hasAPIKey else {
-            loadError = "Add a Polygon API key in Settings."
+            loadError = "Add a Massive API key in Settings."
             isLoading = false
             return
         }
         // Fetch details and price together — these are required for the page to render.
         do {
-            async let detailsTask = polygon.service.fetchTickerDetails(ticker: result.ticker, apiKey: settings.apiKey)
-            async let priceTask   = polygon.service.fetchPreviousClose(ticker: result.ticker, apiKey: settings.apiKey)
+            async let detailsTask = massive.service.fetchTickerDetails(ticker: result.ticker, apiKey: settings.apiKey)
+            async let priceTask   = massive.service.fetchPreviousClose(ticker: result.ticker, apiKey: settings.apiKey)
             (details, currentPrice) = try await (detailsTask, priceTask)
         } catch {
             loadError = error.localizedDescription
@@ -439,11 +443,11 @@ struct StockDetailView: View {
         // Fetch dividends separately — failure shows "—" rather than hiding the whole page.
         // Limit 13 covers one full year for monthly payers plus one extra record.
         do {
-            dividends = try await polygon.service.fetchDividends(
+            dividends = try await massive.service.fetchDividends(
                 ticker: result.ticker, limit: 13, apiKey: settings.apiKey
             )
         } catch {
-            // Dividend errors are non-fatal; price and details are still shown.
+            detailLogger.warning("Dividend fetch failed for \(result.ticker): \(error.localizedDescription)")
         }
     }
 

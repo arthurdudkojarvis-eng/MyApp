@@ -65,14 +65,14 @@ final class HoldingPerformanceTests: XCTestCase {
 
     // MARK: - Holding.unrealizedGainPercent
 
-    func testUnrealizedGainPercent_positiveGain() {
+    func testUnrealizedGainPercent_positiveGain() throws {
         // ((200 - 150) / 150) × 100 = 33.333...
         let holding = makeHolding(shares: 10, costBasis: 150, currentPrice: 200)
         let pct = try XCTUnwrap(holding.unrealizedGainPercent)
         XCTAssertEqual((pct as NSDecimalNumber).doubleValue, 33.333, accuracy: 0.001)
     }
 
-    func testUnrealizedGainPercent_negativeLoss() {
+    func testUnrealizedGainPercent_negativeLoss() throws {
         // ((100 - 150) / 150) × 100 = -33.333...
         let holding = makeHolding(shares: 10, costBasis: 150, currentPrice: 100)
         let pct = try XCTUnwrap(holding.unrealizedGainPercent)
@@ -199,12 +199,12 @@ final class HoldingPerformanceTests: XCTestCase {
         XCTAssertEqual((pct as NSDecimalNumber).doubleValue, 0.0, accuracy: 0.001)
     }
 
-    // MARK: - MockPolygonService.fetchTickerSearch
+    // MARK: - MockMassiveService.fetchTickerSearch
 
     func testMockFetchTickerSearchReturnsConfiguredResults() async throws {
-        let mock = MockPolygonService()
+        let mock = MockMassiveService()
         mock.searchResults = [
-            PolygonTickerSearchResult(ticker: "AAPL", name: "Apple Inc.", market: "stocks", type: "CS", primaryExchange: "XNAS")
+            MassiveTickerSearchResult(ticker: "AAPL", name: "Apple Inc.", market: "stocks", type: "CS", primaryExchange: "XNAS")
         ]
         let results = try await mock.fetchTickerSearch(query: "Apple", apiKey: "test")
         XCTAssertEqual(results.count, 1)
@@ -213,12 +213,12 @@ final class HoldingPerformanceTests: XCTestCase {
     }
 
     func testMockFetchTickerSearchThrowsWhenShouldThrow() async {
-        let mock = MockPolygonService()
+        let mock = MockMassiveService()
         mock.shouldThrow = true
         do {
             _ = try await mock.fetchTickerSearch(query: "AAPL", apiKey: "test")
             XCTFail("Expected throw")
-        } catch PolygonError.httpError(statusCode: let code) {
+        } catch MassiveError.httpError(statusCode: let code) {
             XCTAssertEqual(code, 403)
         } catch {
             XCTFail("Unexpected error: \(error)")

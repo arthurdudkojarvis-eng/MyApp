@@ -87,7 +87,7 @@ private struct APIKeyPage: View {
     @State private var apiKeyInput = ""
     @State private var showKey = false
 
-    private static let polygonURL = URL(string: "https://polygon.io")!
+    private static let massiveURL = URL(string: "https://massive.com")!
 
     var body: some View {
         VStack(spacing: 0) {
@@ -102,14 +102,14 @@ private struct APIKeyPage: View {
                 .font(.largeTitle.bold())
                 .padding(.bottom, 12)
 
-            Text("Paste your Polygon.io API key to fetch live stock prices and dividend data.")
+            Text("Paste your Massive API key to fetch live stock prices and dividend data.")
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
                 .padding(.bottom, 8)
 
-            Link("Get a key at polygon.io →", destination: Self.polygonURL)
+            Link("Get a key at massive.com →", destination: Self.massiveURL)
                 .font(.subheadline)
                 .padding(.bottom, 36)
 
@@ -119,10 +119,10 @@ private struct APIKeyPage: View {
                         TextField("Paste API key", text: $apiKeyInput)
                             .autocorrectionDisabled()
                             .textInputAutocapitalization(.never)
-                            .accessibilityLabel("Polygon API key")
+                            .accessibilityLabel("Massive API key")
                     } else {
                         SecureField("Paste API key", text: $apiKeyInput)
-                            .accessibilityLabel("Polygon API key")
+                            .accessibilityLabel("Massive API key")
                     }
                 }
                 .padding()

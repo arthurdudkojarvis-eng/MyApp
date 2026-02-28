@@ -4,15 +4,16 @@ import SwiftData
 
 // MARK: - Mock
 
-final class MockPolygonService: PolygonFetching {
-    var tickerDetailsResult: PolygonTickerDetails = PolygonTickerDetails(
+final class MockMassiveService: MassiveFetching {
+    var tickerDetailsResult: MassiveTickerDetails = MassiveTickerDetails(
         ticker: "AAPL", name: "Apple Inc.", sicDescription: "Technology",
         marketCap: nil, description: nil
     )
     var previousCloseResult: Decimal? = Decimal(string: "185.00")
-    var dividendsResult: [PolygonDividend] = []
-    var searchResults: [PolygonTickerSearchResult] = []
+    var dividendsResult: [MassiveDividend] = []
+    var searchResults: [MassiveTickerSearchResult] = []
     var shouldThrow = false
+    var shouldThrowDividends = false
 
     // Call counts let tests verify which endpoints were (or were not) invoked.
     var fetchDetailsCallCount = 0
@@ -20,28 +21,28 @@ final class MockPolygonService: PolygonFetching {
     var fetchDividendsCallCount = 0
     var fetchSearchCallCount = 0
 
-    func fetchTickerDetails(ticker: String, apiKey: String) async throws -> PolygonTickerDetails {
+    func fetchTickerDetails(ticker: String, apiKey: String) async throws -> MassiveTickerDetails {
         fetchDetailsCallCount += 1
-        if shouldThrow { throw PolygonError.httpError(statusCode: 403) }
+        if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return tickerDetailsResult
     }
     func fetchPreviousClose(ticker: String, apiKey: String) async throws -> Decimal? {
         fetchPreviousCloseCallCount += 1
-        if shouldThrow { throw PolygonError.httpError(statusCode: 403) }
+        if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return previousCloseResult
     }
-    func fetchDividends(ticker: String, limit: Int, apiKey: String) async throws -> [PolygonDividend] {
+    func fetchDividends(ticker: String, limit: Int, apiKey: String) async throws -> [MassiveDividend] {
         fetchDividendsCallCount += 1
-        if shouldThrow { throw PolygonError.httpError(statusCode: 403) }
+        if shouldThrow || shouldThrowDividends { throw MassiveError.httpError(statusCode: 403) }
         return dividendsResult
     }
-    func fetchTickerSearch(query: String, apiKey: String) async throws -> [PolygonTickerSearchResult] {
+    func fetchTickerSearch(query: String, apiKey: String) async throws -> [MassiveTickerSearchResult] {
         fetchSearchCallCount += 1
-        if shouldThrow { throw PolygonError.httpError(statusCode: 403) }
+        if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return searchResults
     }
-    func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [PolygonNewsArticle] {
-        if shouldThrow { throw PolygonError.httpError(statusCode: 403) }
+    func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [MassiveNewsArticle] {
+        if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return []
     }
 }
@@ -52,7 +53,7 @@ final class MockPolygonService: PolygonFetching {
 final class StockRefreshServiceTests: XCTestCase {
     private var container: ModelContainer!
     private var settings: SettingsStore!
-    private var mockPolygon: MockPolygonService!
+    private var mockMassive: MockMassiveService!
     private var sut: StockRefreshService!
 
     override func setUp() async throws {
@@ -63,14 +64,14 @@ final class StockRefreshServiceTests: XCTestCase {
             defaults: UserDefaults(suiteName: "com.myapp.tests.refresh.\(UUID().uuidString)")!
         )
         settings.apiKey = "test-api-key"
-        mockPolygon = MockPolygonService()
-        sut = StockRefreshService(settings: settings, container: container, polygon: mockPolygon,
+        mockMassive = MockMassiveService()
+        sut = StockRefreshService(settings: settings, container: container, massive: mockMassive,
                                   interTickerDelay: .zero)
     }
 
     override func tearDown() async throws {
         sut = nil
-        mockPolygon = nil
+        mockMassive = nil
         settings = nil
         container = nil
         try await super.tearDown()
@@ -90,7 +91,7 @@ final class StockRefreshServiceTests: XCTestCase {
 
     func testRefreshUpdatesCompanyName() async throws {
         _ = try insertStock(ticker: "AAPL")
-        mockPolygon.tickerDetailsResult = PolygonTickerDetails(
+        mockMassive.tickerDetailsResult = MassiveTickerDetails(
             ticker: "AAPL", name: "Apple Inc.", sicDescription: nil, marketCap: nil, description: nil
         )
 
@@ -103,7 +104,7 @@ final class StockRefreshServiceTests: XCTestCase {
 
     func testRefreshUpdatesCurrentPrice() async throws {
         _ = try insertStock(ticker: "AAPL")
-        mockPolygon.previousCloseResult = Decimal(string: "185.50")
+        mockMassive.previousCloseResult = Decimal(string: "185.50")
 
         await sut.refresh(ticker: "AAPL")
 
@@ -114,7 +115,7 @@ final class StockRefreshServiceTests: XCTestCase {
 
     func testRefreshUpdatesSector() async throws {
         _ = try insertStock(ticker: "AAPL")
-        mockPolygon.tickerDetailsResult = PolygonTickerDetails(
+        mockMassive.tickerDetailsResult = MassiveTickerDetails(
             ticker: "AAPL", name: "Apple Inc.", sicDescription: "Technology", marketCap: nil, description: nil
         )
 
@@ -134,12 +135,12 @@ final class StockRefreshServiceTests: XCTestCase {
         let context = ModelContext(container)
         let stocks = try context.fetch(FetchDescriptor<Stock>())
         XCTAssertEqual(stocks.first?.companyName, "") // unchanged
-        XCTAssertEqual(mockPolygon.fetchDetailsCallCount, 0) // no API call
+        XCTAssertEqual(mockMassive.fetchDetailsCallCount, 0) // no API call
     }
 
     func testRefreshHandlesNetworkError() async throws {
         _ = try insertStock(ticker: "AAPL")
-        mockPolygon.shouldThrow = true
+        mockMassive.shouldThrow = true
 
         // Should not crash
         await sut.refresh(ticker: "AAPL")
@@ -151,8 +152,8 @@ final class StockRefreshServiceTests: XCTestCase {
 
     func testRefreshLeavesCurrentPriceUnchangedWhenAPIReturnsNilPrice() async throws {
         _ = try insertStock(ticker: "AAPL")
-        mockPolygon.previousCloseResult = nil   // API returns no price
-        mockPolygon.dividendsResult = []
+        mockMassive.previousCloseResult = nil   // API returns no price
+        mockMassive.dividendsResult = []
 
         await sut.refresh(ticker: "AAPL")
 
@@ -167,8 +168,8 @@ final class StockRefreshServiceTests: XCTestCase {
 
     func testRefreshCreatesDividendSchedules() async throws {
         _ = try insertStock(ticker: "AAPL")
-        mockPolygon.dividendsResult = [
-            PolygonDividend(
+        mockMassive.dividendsResult = [
+            MassiveDividend(
                 ticker: "AAPL",
                 cashAmount: Decimal(string: "0.24")!,
                 exDividendDate: "2024-08-09",
@@ -191,8 +192,8 @@ final class StockRefreshServiceTests: XCTestCase {
 
     func testRefreshIgnoresSpecialCashDividends() async throws {
         _ = try insertStock(ticker: "AAPL")
-        mockPolygon.dividendsResult = [
-            PolygonDividend(
+        mockMassive.dividendsResult = [
+            MassiveDividend(
                 ticker: "AAPL",
                 cashAmount: Decimal(string: "5.00")!,
                 exDividendDate: "2024-08-09",
@@ -223,8 +224,8 @@ final class StockRefreshServiceTests: XCTestCase {
         context.insert(oldSchedule)
         try context.save()
 
-        mockPolygon.dividendsResult = [
-            PolygonDividend(
+        mockMassive.dividendsResult = [
+            MassiveDividend(
                 ticker: "VYM",
                 cashAmount: Decimal(string: "0.95")!,
                 exDividendDate: "2024-09-20",
@@ -244,9 +245,9 @@ final class StockRefreshServiceTests: XCTestCase {
 
     func testRefreshIgnoresDividendWithUnknownFrequency() async throws {
         _ = try insertStock(ticker: "AAPL")
-        mockPolygon.previousCloseResult = Decimal(string: "185.00")
-        mockPolygon.dividendsResult = [
-            PolygonDividend(
+        mockMassive.previousCloseResult = Decimal(string: "185.00")
+        mockMassive.dividendsResult = [
+            MassiveDividend(
                 ticker: "AAPL",
                 cashAmount: Decimal(string: "0.25")!,
                 // Far-future date ensures date filtering can't cause a false pass
@@ -289,7 +290,7 @@ final class StockRefreshServiceTests: XCTestCase {
 
         let stocks = try context.fetch(FetchDescriptor<Stock>())
         XCTAssertEqual(stocks.first?.companyName, "") // not refreshed
-        XCTAssertEqual(mockPolygon.fetchDetailsCallCount, 0)
+        XCTAssertEqual(mockMassive.fetchDetailsCallCount, 0)
     }
 
     func testRefreshStaleStocksSetsLastRefreshErrorOnFailure() async throws {
@@ -298,7 +299,7 @@ final class StockRefreshServiceTests: XCTestCase {
         staleStock.lastUpdated = .distantPast
         context.insert(staleStock)
         try context.save()
-        mockPolygon.shouldThrow = true
+        mockMassive.shouldThrow = true
 
         await sut.refreshStaleStocks()
 
@@ -314,7 +315,7 @@ final class StockRefreshServiceTests: XCTestCase {
         try context.save()
 
         // First pass — fails.
-        mockPolygon.shouldThrow = true
+        mockMassive.shouldThrow = true
         await sut.refreshStaleStocks()
         XCTAssertNotNil(sut.lastRefreshError)
 
@@ -323,7 +324,7 @@ final class StockRefreshServiceTests: XCTestCase {
         stocks.first?.lastUpdated = .distantPast
         try context.save()
 
-        mockPolygon.shouldThrow = false
+        mockMassive.shouldThrow = false
         await sut.refreshStaleStocks()
         XCTAssertNil(sut.lastRefreshError)
     }
@@ -334,7 +335,7 @@ final class StockRefreshServiceTests: XCTestCase {
         staleStock.lastUpdated = .distantPast
         context.insert(staleStock)
         try context.save()
-        mockPolygon.shouldThrow = true
+        mockMassive.shouldThrow = true
 
         await sut.refreshStaleStocks()
         XCTAssertNotNil(sut.lastRefreshError)
@@ -355,16 +356,16 @@ final class StockRefreshServiceTests: XCTestCase {
         context.insert(stock2)
         try context.save()
 
-        mockPolygon.tickerDetailsResult = PolygonTickerDetails(
+        mockMassive.tickerDetailsResult = MassiveTickerDetails(
             ticker: "AAPL", name: "Updated", sicDescription: nil, marketCap: nil, description: nil
         )
 
         await sut.refreshStaleStocks()
 
         // Both tickers must have been fetched (sequential, not skipped).
-        XCTAssertEqual(mockPolygon.fetchDetailsCallCount, 2)
-        XCTAssertEqual(mockPolygon.fetchPreviousCloseCallCount, 2)
-        XCTAssertEqual(mockPolygon.fetchDividendsCallCount, 2)
+        XCTAssertEqual(mockMassive.fetchDetailsCallCount, 2)
+        XCTAssertEqual(mockMassive.fetchPreviousCloseCallCount, 2)
+        XCTAssertEqual(mockMassive.fetchDividendsCallCount, 2)
     }
 
     func testFreshStocksAreNotRefreshedByStaleQuery() async throws {
@@ -380,7 +381,7 @@ final class StockRefreshServiceTests: XCTestCase {
         await sut.refreshStaleStocks()
 
         // Predicate must filter server-side; only one ticker should be refreshed.
-        XCTAssertEqual(mockPolygon.fetchDetailsCallCount, 1)
+        XCTAssertEqual(mockMassive.fetchDetailsCallCount, 1)
     }
 
     func testDividendScheduleDiffingUpdatesExistingScheduleInPlace() async throws {
@@ -413,8 +414,8 @@ final class StockRefreshServiceTests: XCTestCase {
         let originalScheduleID = originalSchedule.id
 
         // API now returns the same ex-date but a revised amount.
-        mockPolygon.dividendsResult = [
-            PolygonDividend(
+        mockMassive.dividendsResult = [
+            MassiveDividend(
                 ticker: "VYM",
                 cashAmount: Decimal(string: "0.95")!,
                 exDividendDate: exDateString,
@@ -461,11 +462,11 @@ final class StockRefreshServiceTests: XCTestCase {
         try context.save()
 
         // API returns a completely different ex-date.
-        mockPolygon.tickerDetailsResult = PolygonTickerDetails(
+        mockMassive.tickerDetailsResult = MassiveTickerDetails(
             ticker: "O", name: "Realty Income Corp.", sicDescription: nil, marketCap: nil, description: nil
         )
-        mockPolygon.dividendsResult = [
-            PolygonDividend(
+        mockMassive.dividendsResult = [
+            MassiveDividend(
                 ticker: "O",
                 cashAmount: Decimal(string: "0.26")!,
                 exDividendDate: "2024-02-10",
@@ -494,8 +495,8 @@ final class StockRefreshServiceTests: XCTestCase {
         try context.save()
 
         // Two dividends with the same ex-date — only the first should be persisted.
-        mockPolygon.dividendsResult = [
-            PolygonDividend(
+        mockMassive.dividendsResult = [
+            MassiveDividend(
                 ticker: "AAPL",
                 cashAmount: Decimal(string: "0.24")!,
                 exDividendDate: "2024-08-09",
@@ -504,7 +505,7 @@ final class StockRefreshServiceTests: XCTestCase {
                 frequency: 4,
                 dividendType: "CD"
             ),
-            PolygonDividend(
+            MassiveDividend(
                 ticker: "AAPL",
                 cashAmount: Decimal(string: "0.50")!,  // different amount, same ex-date
                 exDividendDate: "2024-08-09",
@@ -541,6 +542,36 @@ final class StockRefreshServiceTests: XCTestCase {
         XCTAssertFalse(sut.isRefreshing)
         // The @MainActor guard serialises entry; second call sees isRefreshing == true
         // and bails, so the ticker details endpoint is hit at most once.
-        XCTAssertLessThanOrEqual(mockPolygon.fetchDetailsCallCount, 1)
+        XCTAssertLessThanOrEqual(mockMassive.fetchDetailsCallCount, 1)
+    }
+
+    // MARK: - Dividend fetch strictness (ISSUE-14)
+
+    func testRefreshSavesPriceAndNameEvenWhenDividendFetchFails() async throws {
+        _ = try insertStock(ticker: "AAPL")
+        mockMassive.tickerDetailsResult = MassiveTickerDetails(
+            ticker: "AAPL", name: "Apple Inc.", sicDescription: nil, marketCap: nil, description: nil
+        )
+        mockMassive.previousCloseResult = Decimal(string: "195.00")
+        mockMassive.shouldThrowDividends = true   // dividends fail, price+name should still save
+
+        await sut.refresh(ticker: "AAPL")
+
+        let context = ModelContext(container)
+        let stocks = try context.fetch(FetchDescriptor<Stock>())
+        XCTAssertEqual(stocks.first?.companyName, "Apple Inc.", "Name should be saved despite dividend failure")
+        XCTAssertEqual(stocks.first?.currentPrice, Decimal(string: "195.00")!, "Price should be saved despite dividend failure")
+        let schedules = try context.fetch(FetchDescriptor<DividendSchedule>())
+        XCTAssertEqual(schedules.count, 0, "No dividend schedules when fetch fails")
+    }
+
+    func testRefreshDoesNotSetLastRefreshErrorWhenOnlyDividendsFail() async throws {
+        _ = try insertStock(ticker: "AAPL")
+        mockMassive.shouldThrowDividends = true
+
+        await sut.refresh(ticker: "AAPL")
+
+        // Dividend failure is logged, not surfaced to the user.
+        XCTAssertNil(sut.lastRefreshError)
     }
 }

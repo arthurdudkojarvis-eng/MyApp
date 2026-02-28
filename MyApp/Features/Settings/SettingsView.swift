@@ -19,7 +19,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Market Data")
                 } footer: {
-                    Text("Required for live stock prices and dividend data. Get a free key at polygon.io.")
+                    Text("Required for live stock prices and dividend data. Get your key at massive.com.")
                 }
 
                 Section {
@@ -70,11 +70,11 @@ struct SettingsView: View {
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
                     .onSubmit { commitAPIKey() }
-                    .accessibilityLabel("Polygon API key")
+                    .accessibilityLabel("Massive API key")
             } else {
                 SecureField("Paste API key", text: $apiKeyInput)
                     .onSubmit { commitAPIKey() }
-                    .accessibilityLabel("Polygon API key")
+                    .accessibilityLabel("Massive API key")
             }
 
             Button {

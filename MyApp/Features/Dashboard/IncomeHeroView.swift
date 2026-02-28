@@ -88,6 +88,7 @@ struct IncomeHeroView: View {
                     .accessibilityLabel("Prices are delayed 15 minutes")
             }
         }
+        .frame(height: 20)   // fixed height prevents card from resizing during cross-fade
         .padding(.top, 10)
         .animation(.easeInOut(duration: 0.2), value: isRefreshing)
     }

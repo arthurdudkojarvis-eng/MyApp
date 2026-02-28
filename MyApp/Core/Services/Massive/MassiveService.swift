@@ -1,7 +1,7 @@
 import Foundation
 
-struct PolygonService: PolygonFetching {
-    private static let baseURL = "https://api.polygon.io"
+struct MassiveService: MassiveFetching {
+    private static let baseURL = "https://api.massive.com"
 
     private static let decoder: JSONDecoder = {
         let d = JSONDecoder()
@@ -15,11 +15,11 @@ struct PolygonService: PolygonFetching {
 
     // MARK: - Ticker Details
 
-    func fetchTickerDetails(ticker: String, apiKey: String) async throws -> PolygonTickerDetails {
+    func fetchTickerDetails(ticker: String, apiKey: String) async throws -> MassiveTickerDetails {
         let encoded = try percentEncode(ticker: ticker)
         let url = try buildURL(path: "/v3/reference/tickers/\(encoded)", apiKey: apiKey)
         let data = try await fetch(url: url)
-        let response = try Self.decoder.decode(PolygonTickerDetailsResponse.self, from: data)
+        let response = try Self.decoder.decode(MassiveTickerDetailsResponse.self, from: data)
         return response.results
     }
 
@@ -32,17 +32,19 @@ struct PolygonService: PolygonFetching {
             apiKey: apiKey
         )
         let data = try await fetch(url: url)
-        let response = try Self.decoder.decode(PolygonSnapshotResponse.self, from: data)
-        // Prefer today's intraday close; fall back to previous day when market is closed.
-        if let dayClose = response.ticker.day?.c, dayClose > 0 {
+        let response = try Self.decoder.decode(MassiveSnapshotResponse.self, from: data)
+        guard let snapshot = response.ticker else { return nil }
+        // Prefer today's intraday close. The API sends day.c = 0 when the market
+        // hasn't opened yet (pre-market / weekend), so fall back to prevDay in that case.
+        if let dayClose = snapshot.day?.c, dayClose > 0 {
             return dayClose
         }
-        return response.ticker.prevDay?.c
+        return snapshot.prevDay?.c
     }
 
     // MARK: - Dividends
 
-    func fetchDividends(ticker: String, limit: Int, apiKey: String) async throws -> [PolygonDividend] {
+    func fetchDividends(ticker: String, limit: Int, apiKey: String) async throws -> [MassiveDividend] {
         guard var components = URLComponents(string: "\(Self.baseURL)/v3/reference/dividends") else {
             throw URLError(.badURL)
         }
@@ -54,13 +56,13 @@ struct PolygonService: PolygonFetching {
         ]
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
-        let response = try Self.decoder.decode(PolygonDividendsResponse.self, from: data)
+        let response = try Self.decoder.decode(MassiveDividendsResponse.self, from: data)
         return response.results ?? []
     }
 
     // MARK: - Ticker Search
 
-    func fetchTickerSearch(query: String, apiKey: String) async throws -> [PolygonTickerSearchResult] {
+    func fetchTickerSearch(query: String, apiKey: String) async throws -> [MassiveTickerSearchResult] {
         guard var components = URLComponents(string: "\(Self.baseURL)/v3/reference/tickers") else {
             throw URLError(.badURL)
         }
@@ -73,13 +75,13 @@ struct PolygonService: PolygonFetching {
         ]
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
-        let response = try Self.decoder.decode(PolygonTickerSearchResponse.self, from: data)
+        let response = try Self.decoder.decode(MassiveTickerSearchResponse.self, from: data)
         return response.results ?? []
     }
 
     // MARK: - News
 
-    func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [PolygonNewsArticle] {
+    func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [MassiveNewsArticle] {
         guard var components = URLComponents(string: "\(Self.baseURL)/v2/reference/news") else {
             throw URLError(.badURL)
         }
@@ -95,7 +97,7 @@ struct PolygonService: PolygonFetching {
         components.queryItems = queryItems
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
-        let response = try Self.decoder.decode(PolygonNewsResponse.self, from: data)
+        let response = try Self.decoder.decode(MassiveNewsResponse.self, from: data)
         return response.results ?? []
     }
 
@@ -124,7 +126,7 @@ struct PolygonService: PolygonFetching {
     private func fetch(url: URL) async throws -> Data {
         let (data, response) = try await URLSession.shared.data(from: url)
         if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
-            throw PolygonError.httpError(statusCode: http.statusCode)
+            throw MassiveError.httpError(statusCode: http.statusCode)
         }
         return data
     }
