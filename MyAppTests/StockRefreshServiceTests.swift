@@ -14,12 +14,33 @@ final class MockMassiveService: MassiveFetching {
     var searchResults: [MassiveTickerSearchResult] = []
     var shouldThrow = false
     var shouldThrowDividends = false
+    var shouldThrowMarketStatus = false
+
+    // STORY-024: New endpoint stubs
+    var financialsResult: [MassiveFinancial] = []
+    var aggregatesResult: [MassiveAggregate] = []
+    var splitsResult: [MassiveSplit] = []
+    var groupedDailyResult: [MassiveGroupedBar] = []
+    var marketStatusResult: MassiveMarketStatus = MassiveMarketStatus(market: "open", serverTime: "2026-01-01T09:30:00Z")
+    var marketHolidaysResult: [MassiveMarketHoliday] = []
+    var relatedCompaniesResult: [String] = []
+    var technicalIndicatorResult: [MassiveIndicatorValue] = []
+    var previousCloseBarResult: MassiveAggregate? = nil
 
     // Call counts let tests verify which endpoints were (or were not) invoked.
     var fetchDetailsCallCount = 0
     var fetchPreviousCloseCallCount = 0
     var fetchDividendsCallCount = 0
     var fetchSearchCallCount = 0
+    var fetchFinancialsCallCount = 0
+    var fetchAggregatesCallCount = 0
+    var fetchSplitsCallCount = 0
+    var fetchGroupedDailyCallCount = 0
+    var fetchMarketStatusCallCount = 0
+    var fetchMarketHolidaysCallCount = 0
+    var fetchRelatedCompaniesCallCount = 0
+    var fetchTechnicalIndicatorCallCount = 0
+    var fetchPreviousCloseBarCallCount = 0
 
     func fetchTickerDetails(ticker: String, apiKey: String) async throws -> MassiveTickerDetails {
         fetchDetailsCallCount += 1
@@ -44,6 +65,54 @@ final class MockMassiveService: MassiveFetching {
     func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [MassiveNewsArticle] {
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return []
+    }
+
+    // STORY-024: New endpoint stubs
+
+    func fetchFinancials(ticker: String, limit: Int, apiKey: String) async throws -> [MassiveFinancial] {
+        fetchFinancialsCallCount += 1
+        if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
+        return financialsResult
+    }
+    func fetchAggregates(ticker: String, from: String, to: String, apiKey: String) async throws -> [MassiveAggregate] {
+        fetchAggregatesCallCount += 1
+        if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
+        return aggregatesResult
+    }
+    func fetchSplits(ticker: String, apiKey: String) async throws -> [MassiveSplit] {
+        fetchSplitsCallCount += 1
+        if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
+        return splitsResult
+    }
+    func fetchGroupedDaily(date: String, apiKey: String) async throws -> [MassiveGroupedBar] {
+        fetchGroupedDailyCallCount += 1
+        if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
+        return groupedDailyResult
+    }
+    func fetchMarketStatus(apiKey: String) async throws -> MassiveMarketStatus {
+        fetchMarketStatusCallCount += 1
+        if shouldThrow || shouldThrowMarketStatus { throw MassiveError.httpError(statusCode: 403) }
+        return marketStatusResult
+    }
+    func fetchMarketHolidays(apiKey: String) async throws -> [MassiveMarketHoliday] {
+        fetchMarketHolidaysCallCount += 1
+        if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
+        return marketHolidaysResult
+    }
+    func fetchRelatedCompanies(ticker: String, apiKey: String) async throws -> [String] {
+        fetchRelatedCompaniesCallCount += 1
+        if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
+        return relatedCompaniesResult
+    }
+    func fetchTechnicalIndicator(type: MassiveIndicatorType, ticker: String, apiKey: String) async throws -> [MassiveIndicatorValue] {
+        fetchTechnicalIndicatorCallCount += 1
+        if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
+        return technicalIndicatorResult
+    }
+    func fetchPreviousCloseBar(ticker: String, apiKey: String) async throws -> MassiveAggregate? {
+        fetchPreviousCloseBarCallCount += 1
+        if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
+        return previousCloseBarResult
     }
 }
 
@@ -364,8 +433,13 @@ final class StockRefreshServiceTests: XCTestCase {
 
         // Both tickers must have been fetched (sequential, not skipped).
         XCTAssertEqual(mockMassive.fetchDetailsCallCount, 2)
-        XCTAssertEqual(mockMassive.fetchPreviousCloseCallCount, 2)
         XCTAssertEqual(mockMassive.fetchDividendsCallCount, 2)
+        // With >= 2 stale tickers, grouped daily is used instead of per-ticker snapshots (STORY-035).
+        XCTAssertEqual(mockMassive.fetchGroupedDailyCallCount, 1)
+        // Per-ticker snapshot is skipped when batch prices are available.
+        // (Empty groupedDailyResult means batchPrice is nil, so fallback kicks in.)
+        // The mock returns empty results, so fetchPreviousClose is still called as fallback.
+        XCTAssertEqual(mockMassive.fetchPreviousCloseCallCount, 2)
     }
 
     func testFreshStocksAreNotRefreshedByStaleQuery() async throws {
@@ -573,5 +647,111 @@ final class StockRefreshServiceTests: XCTestCase {
 
         // Dividend failure is logged, not surfaced to the user.
         XCTAssertNil(sut.lastRefreshError)
+    }
+
+    // MARK: - Market-aware refresh (STORY-034)
+
+    func testRefreshStaleStocksSkipsWhenMarketClosed() async throws {
+        let context = ModelContext(container)
+        let stock = Stock(ticker: "AAPL")
+        stock.lastUpdated = .distantPast
+        context.insert(stock)
+        try context.save()
+
+        mockMassive.marketStatusResult = MassiveMarketStatus(market: "closed", serverTime: "2026-02-28T20:00:00Z")
+
+        await sut.refreshStaleStocks()
+
+        // Market is closed — should skip all refresh work.
+        XCTAssertEqual(mockMassive.fetchMarketStatusCallCount, 1)
+        XCTAssertEqual(mockMassive.fetchDetailsCallCount, 0, "Should not refresh when market is closed")
+    }
+
+    func testRefreshStaleStocksProceedsWhenMarketOpen() async throws {
+        let context = ModelContext(container)
+        let stock = Stock(ticker: "AAPL")
+        stock.lastUpdated = .distantPast
+        context.insert(stock)
+        try context.save()
+
+        mockMassive.marketStatusResult = MassiveMarketStatus(market: "open", serverTime: "2026-02-28T14:00:00Z")
+
+        await sut.refreshStaleStocks()
+
+        XCTAssertEqual(mockMassive.fetchDetailsCallCount, 1, "Should refresh when market is open")
+    }
+
+    func testRefreshStaleStocksProceedsWhenMarketExtendedHours() async throws {
+        let context = ModelContext(container)
+        let stock = Stock(ticker: "AAPL")
+        stock.lastUpdated = .distantPast
+        context.insert(stock)
+        try context.save()
+
+        mockMassive.marketStatusResult = MassiveMarketStatus(market: "extended-hours", serverTime: "2026-02-28T18:00:00Z")
+
+        await sut.refreshStaleStocks()
+
+        XCTAssertEqual(mockMassive.fetchDetailsCallCount, 1, "Should refresh during extended hours")
+    }
+
+    func testRefreshStaleStocksFailsOpenWhenMarketStatusThrows() async throws {
+        let context = ModelContext(container)
+        let stock = Stock(ticker: "AAPL")
+        stock.lastUpdated = .distantPast
+        context.insert(stock)
+        try context.save()
+
+        mockMassive.shouldThrowMarketStatus = true
+
+        await sut.refreshStaleStocks()
+
+        // Market status check failed — should proceed with refresh (fail-open).
+        XCTAssertEqual(mockMassive.fetchDetailsCallCount, 1, "Should fail-open when market status throws")
+    }
+
+    // MARK: - Batch price fetch (STORY-035)
+
+    func testRefreshStaleStocksUsesBatchPriceWhenMultipleTickers() async throws {
+        let context = ModelContext(container)
+        let stock1 = Stock(ticker: "AAPL")
+        let stock2 = Stock(ticker: "MSFT")
+        stock1.lastUpdated = .distantPast
+        stock2.lastUpdated = .distantPast
+        context.insert(stock1)
+        context.insert(stock2)
+        try context.save()
+
+        // Provide batch prices so per-ticker snapshot is not needed.
+        mockMassive.groupedDailyResult = [
+            MassiveGroupedBar(T: "AAPL", o: 260, h: 265, l: 258, c: 264, v: 1000, vw: 262, t: 1000000, n: 100),
+            MassiveGroupedBar(T: "MSFT", o: 410, h: 415, l: 408, c: 412, v: 2000, vw: 411, t: 1000000, n: 200)
+        ]
+
+        await sut.refreshStaleStocks()
+
+        XCTAssertEqual(mockMassive.fetchGroupedDailyCallCount, 1, "Should call grouped daily once for batch")
+        XCTAssertEqual(mockMassive.fetchPreviousCloseCallCount, 0, "Should skip per-ticker snapshot when batch prices available")
+
+        // Verify prices were written
+        let stocks = try context.fetch(FetchDescriptor<Stock>())
+        let aapl = stocks.first(where: { $0.ticker == "AAPL" })
+        let msft = stocks.first(where: { $0.ticker == "MSFT" })
+        XCTAssertEqual(aapl?.currentPrice, 264, "Batch price should be written to stock")
+        XCTAssertEqual(msft?.currentPrice, 412, "Batch price should be written to stock")
+    }
+
+    func testRefreshSingleStaleStockSkipsBatchFetch() async throws {
+        let context = ModelContext(container)
+        let stock = Stock(ticker: "AAPL")
+        stock.lastUpdated = .distantPast
+        context.insert(stock)
+        try context.save()
+
+        await sut.refreshStaleStocks()
+
+        // Only 1 stale stock — should use per-ticker snapshot, not grouped daily.
+        XCTAssertEqual(mockMassive.fetchGroupedDailyCallCount, 0, "Should not call grouped daily for single ticker")
+        XCTAssertEqual(mockMassive.fetchPreviousCloseCallCount, 1, "Should use per-ticker snapshot for single ticker")
     }
 }

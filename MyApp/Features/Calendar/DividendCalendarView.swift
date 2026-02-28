@@ -62,10 +62,13 @@ struct CalendarDividendEvent: Identifiable {
 
 struct DividendCalendarView: View {
     @Query(sort: \DividendSchedule.payDate) private var schedules: [DividendSchedule]
+    @Environment(SettingsStore.self) private var settings
+    @Environment(\.massiveService) private var massive
 
     // Cached once; updated only when `schedules` changes.
     @State private var eventsByDay: [Date: [CalendarDividendEvent]] = [:]
     @State private var hasEvents = false
+    @State private var holidays: [Date: MassiveMarketHoliday] = [:]
 
     @State private var selectedDayEvents: [CalendarDividendEvent] = []
     @State private var showDetail = false
@@ -103,6 +106,7 @@ struct DividendCalendarView: View {
         }
         .onAppear { rebuildEvents() }
         .onChange(of: schedules) { rebuildEvents() }
+        .task { await loadHolidays() }
     }
 
     private var calendarScrollView: some View {
@@ -110,7 +114,7 @@ struct DividendCalendarView: View {
             ScrollView {
                 LazyVStack(spacing: 24) {
                     ForEach(Self.months, id: \.timeIntervalSinceReferenceDate) { month in
-                        MonthGridView(month: month, eventsByDay: eventsByDay) { dayEvents in
+                        MonthGridView(month: month, eventsByDay: eventsByDay, holidays: holidays) { dayEvents in
                             selectedDayEvents = dayEvents
                             showDetail = true
                         }
@@ -152,6 +156,32 @@ struct DividendCalendarView: View {
         hasEvents = !byDay.isEmpty
     }
 
+    private static let holidayDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(identifier: "UTC")
+        return f
+    }()
+
+    private func loadHolidays() async {
+        guard settings.hasAPIKey else { return }
+        let formatter = Self.holidayDateFormatter
+        do {
+            let results = try await massive.service.fetchMarketHolidays(apiKey: settings.apiKey)
+            var byDay: [Date: MassiveMarketHoliday] = [:]
+            for holiday in results {
+                if let date = formatter.date(from: holiday.date) {
+                    let key = Calendar.current.startOfDay(for: date)
+                    byDay[key] = holiday
+                }
+            }
+            holidays = byDay
+        } catch {
+            // Non-critical — holidays just won't show
+        }
+    }
+
     private func monthKey(for date: Date) -> Int {
         let c = Calendar.current.dateComponents([.year, .month], from: date)
         return (c.year ?? 0) * 100 + (c.month ?? 0)
@@ -163,6 +193,7 @@ struct DividendCalendarView: View {
 private struct MonthGridView: View {
     let month: Date
     let eventsByDay: [Date: [CalendarDividendEvent]]
+    let holidays: [Date: MassiveMarketHoliday]
     let onDayTap: ([CalendarDividendEvent]) -> Void
 
     private static let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
@@ -214,10 +245,12 @@ private struct MonthGridView: View {
                     if let date = grid[index] {
                         let start = cal.startOfDay(for: date)
                         let dayEvents = eventsByDay[start] ?? []
+                        let holiday = holidays[start]
                         CalendarDayCell(
                             day: cal.component(.day, from: date),
                             isToday: cal.isDateInToday(date),
-                            events: dayEvents
+                            events: dayEvents,
+                            holiday: holiday
                         ) {
                             if !dayEvents.isEmpty { onDayTap(dayEvents) }
                         }
@@ -237,7 +270,16 @@ private struct CalendarDayCell: View {
     let day: Int
     let isToday: Bool
     let events: [CalendarDividendEvent]
+    let holiday: MassiveMarketHoliday?
     let onTap: () -> Void
+
+    private var isMarketClosed: Bool {
+        holiday?.status.lowercased() == "closed"
+    }
+
+    private var isEarlyClose: Bool {
+        holiday?.status.lowercased() == "early-close"
+    }
 
     /// Dominant dot color: declared beats estimated; blue only when all are paid.
     private var dotColor: Color? {
@@ -259,12 +301,21 @@ private struct CalendarDayCell: View {
                     }
                     Text("\(day)")
                         .font(.callout)
-                        .foregroundStyle(isToday ? .white : .primary)
+                        .foregroundStyle(
+                            isToday ? .white :
+                            isMarketClosed ? .red :
+                            isEarlyClose ? .orange : .primary
+                        )
                 }
                 if let color = dotColor {
                     Circle()
                         .fill(color)
                         .frame(width: 5, height: 5)
+                } else if isMarketClosed {
+                    Rectangle()
+                        .fill(Color.red.opacity(0.5))
+                        .frame(width: 12, height: 2)
+                        .clipShape(Capsule())
                 } else {
                     Spacer().frame(height: 5)
                 }
@@ -273,15 +324,20 @@ private struct CalendarDayCell: View {
             .frame(height: 46)
         }
         .buttonStyle(.plain)
-        .disabled(events.isEmpty)
+        .disabled(events.isEmpty && holiday == nil)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint(events.isEmpty ? "" : "Opens payment details")
-        .accessibilityHidden(events.isEmpty)
     }
 
     private var accessibilityLabel: String {
-        guard !events.isEmpty else { return "\(day)" }
-        return "\(day), \(events.count) dividend\(events.count == 1 ? "" : "s")"
+        var parts: [String] = ["\(day)"]
+        if !events.isEmpty {
+            parts.append("\(events.count) dividend\(events.count == 1 ? "" : "s")")
+        }
+        if let h = holiday {
+            parts.append("Market \(h.status): \(h.name)")
+        }
+        return parts.joined(separator: ", ")
     }
 }
 

@@ -101,7 +101,191 @@ struct MassiveService: MassiveFetching {
         return response.results ?? []
     }
 
+    // MARK: - Financials (STORY-023)
+    // /vX/reference/financials?ticker=AAPL&limit=1
+    // Uses a custom decoder because the financial data nesting requires
+    // convertFromSnakeCase to reach income_statement sub-keys.
+
+    func fetchFinancials(ticker: String, limit: Int, apiKey: String) async throws -> [MassiveFinancial] {
+        guard var components = URLComponents(string: "\(Self.baseURL)/vX/reference/financials") else {
+            throw URLError(.badURL)
+        }
+        components.queryItems = [
+            URLQueryItem(name: "ticker", value: ticker),
+            URLQueryItem(name: "limit", value: "\(limit)"),
+            URLQueryItem(name: "apiKey", value: apiKey)
+        ]
+        guard let url = components.url else { throw URLError(.badURL) }
+        let data = try await fetch(url: url)
+        let response = try Self.decoder.decode(MassiveFinancialsResponse.self, from: data)
+        return (response.results ?? []).map { MassiveFinancial(result: $0) }
+    }
+
+    // MARK: - Aggregates / Historical Prices (STORY-023)
+    // /v2/aggs/ticker/{ticker}/range/1/day/{from}/{to}
+    // Default: adjusted=true, limit=90 bars.
+
+    func fetchAggregates(ticker: String, from: String, to: String, apiKey: String) async throws -> [MassiveAggregate] {
+        let encoded = try percentEncode(ticker: ticker)
+        try validateDateParam(from)
+        try validateDateParam(to)
+        guard var components = URLComponents(
+            string: "\(Self.baseURL)/v2/aggs/ticker/\(encoded)/range/1/day/\(from)/\(to)"
+        ) else {
+            throw URLError(.badURL)
+        }
+        components.queryItems = [
+            URLQueryItem(name: "adjusted", value: "true"),
+            URLQueryItem(name: "sort", value: "asc"),
+            URLQueryItem(name: "limit", value: "90"),
+            URLQueryItem(name: "apiKey", value: apiKey)
+        ]
+        guard let url = components.url else { throw URLError(.badURL) }
+        let data = try await fetch(url: url)
+        let response = try Self.decoder.decode(MassiveAggregatesResponse.self, from: data)
+        return response.results ?? []
+    }
+
+    // MARK: - Stock Splits (STORY-023)
+    // /v3/reference/splits?ticker=AAPL
+
+    func fetchSplits(ticker: String, apiKey: String) async throws -> [MassiveSplit] {
+        guard var components = URLComponents(string: "\(Self.baseURL)/v3/reference/splits") else {
+            throw URLError(.badURL)
+        }
+        components.queryItems = [
+            URLQueryItem(name: "ticker", value: ticker),
+            URLQueryItem(name: "order", value: "desc"),
+            URLQueryItem(name: "apiKey", value: apiKey)
+        ]
+        guard let url = components.url else { throw URLError(.badURL) }
+        let data = try await fetch(url: url)
+        let response = try Self.decoder.decode(MassiveSplitsResponse.self, from: data)
+        return response.results ?? []
+    }
+
+    // MARK: - Grouped Daily (STORY-023)
+    // /v2/aggs/grouped/locale/us/market/stocks/{date}
+    // Note: MassiveGroupedBar uses uppercase "T" for ticker — the JSON decoder's
+    // convertFromSnakeCase does NOT alter single-character uppercase keys, so "T" decodes
+    // correctly into the `T` property without a custom CodingKeys definition.
+
+    func fetchGroupedDaily(date: String, apiKey: String) async throws -> [MassiveGroupedBar] {
+        try validateDateParam(date)
+        guard var components = URLComponents(
+            string: "\(Self.baseURL)/v2/aggs/grouped/locale/us/market/stocks/\(date)"
+        ) else {
+            throw URLError(.badURL)
+        }
+        components.queryItems = [
+            URLQueryItem(name: "adjusted", value: "true"),
+            URLQueryItem(name: "apiKey", value: apiKey)
+        ]
+        guard let url = components.url else { throw URLError(.badURL) }
+        let data = try await fetch(url: url)
+        let response = try Self.decoder.decode(MassiveGroupedDailyResponse.self, from: data)
+        return response.results ?? []
+    }
+
+    // MARK: - Market Status (STORY-023)
+    // /v1/marketstatus/now
+
+    func fetchMarketStatus(apiKey: String) async throws -> MassiveMarketStatus {
+        let url = try buildURL(path: "/v1/marketstatus/now", apiKey: apiKey)
+        let data = try await fetch(url: url)
+        return try Self.decoder.decode(MassiveMarketStatus.self, from: data)
+    }
+
+    // MARK: - Market Holidays (STORY-023)
+    // /v1/marketstatus/upcoming
+    // Response is a top-level JSON array — no "results" wrapper.
+
+    func fetchMarketHolidays(apiKey: String) async throws -> [MassiveMarketHoliday] {
+        let url = try buildURL(path: "/v1/marketstatus/upcoming", apiKey: apiKey)
+        let data = try await fetch(url: url)
+        return try Self.decoder.decode([MassiveMarketHoliday].self, from: data)
+    }
+
+    // MARK: - Related Companies (STORY-023)
+    // /v1/related-companies/{ticker}
+
+    func fetchRelatedCompanies(ticker: String, apiKey: String) async throws -> [String] {
+        let encoded = try percentEncode(ticker: ticker)
+        let url = try buildURL(path: "/v1/related-companies/\(encoded)", apiKey: apiKey)
+        let data = try await fetch(url: url)
+        let response = try Self.decoder.decode(MassiveRelatedCompaniesResponse.self, from: data)
+        return (response.results ?? []).map(\.ticker)
+    }
+
+    // MARK: - Technical Indicators (STORY-023)
+    // /v1/indicators/{sma|ema|rsi|macd}/{ticker}
+
+    func fetchTechnicalIndicator(
+        type: MassiveIndicatorType,
+        ticker: String,
+        apiKey: String
+    ) async throws -> [MassiveIndicatorValue] {
+        let encoded = try percentEncode(ticker: ticker)
+        guard var components = URLComponents(
+            string: "\(Self.baseURL)/v1/indicators/\(type.rawValue)/\(encoded)"
+        ) else {
+            throw URLError(.badURL)
+        }
+        // Default window sizes that suit the dividend-investor use case.
+        // SMA/EMA use 20-day; RSI uses 14-day; MACD uses standard 12/26/9.
+        let windowSize: String
+        switch type {
+        case .sma:  windowSize = "20"
+        case .ema:  windowSize = "20"
+        case .rsi:  windowSize = "14"
+        case .macd: windowSize = "12"   // fast period; slow=26 and signal=9 are API defaults
+        }
+        components.queryItems = [
+            URLQueryItem(name: "timespan", value: "day"),
+            URLQueryItem(name: "adjusted", value: "true"),
+            URLQueryItem(name: "window", value: windowSize),
+            URLQueryItem(name: "series_type", value: "close"),
+            URLQueryItem(name: "limit", value: "50"),
+            URLQueryItem(name: "order", value: "desc"),
+            URLQueryItem(name: "apiKey", value: apiKey)
+        ]
+        guard let url = components.url else { throw URLError(.badURL) }
+        let data = try await fetch(url: url)
+        let response = try Self.decoder.decode(MassiveTechnicalResponse.self, from: data)
+        return response.results?.values ?? []
+    }
+
+    // MARK: - Previous Close Bar (STORY-023)
+    // Lightweight alternative to the full snapshot: /v2/aggs/ticker/{ticker}/prev
+    // Returns a single aggregate bar for the most recent completed trading day.
+
+    func fetchPreviousCloseBar(ticker: String, apiKey: String) async throws -> MassiveAggregate? {
+        let encoded = try percentEncode(ticker: ticker)
+        guard var components = URLComponents(
+            string: "\(Self.baseURL)/v2/aggs/ticker/\(encoded)/prev"
+        ) else {
+            throw URLError(.badURL)
+        }
+        components.queryItems = [
+            URLQueryItem(name: "adjusted", value: "true"),
+            URLQueryItem(name: "apiKey", value: apiKey)
+        ]
+        guard let url = components.url else { throw URLError(.badURL) }
+        let data = try await fetch(url: url)
+        let response = try Self.decoder.decode(MassiveAggregatesResponse.self, from: data)
+        return response.results?.first
+    }
+
     // MARK: - Helpers
+
+    /// Validates that a date string matches the expected `yyyy-MM-dd` format.
+    /// Rejects anything that could alter the URL path structure (e.g. `/`, `..`).
+    private func validateDateParam(_ date: String) throws {
+        guard date.count == 10,
+              date.allSatisfy({ $0.isNumber || $0 == "-" }),
+              date.filter({ $0 == "-" }).count == 2
+        else { throw URLError(.badURL) }
+    }
 
     /// Percent-encodes `ticker` so only alphanumerics, `.`, and `-` remain unencoded.
     /// Rejects anything that would alter the URL path structure (e.g. `/`, `..`, `%`).

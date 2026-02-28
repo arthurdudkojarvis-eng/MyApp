@@ -127,6 +127,35 @@ private struct ArticleCard: View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top, spacing: 12) {
+                    // STORY-025: Thumbnail image when imageUrl is available.
+                    // AsyncImage handles loading and failure gracefully; the layout
+                    // is identical whether or not an image is present.
+                    if let rawURL = article.imageUrl,
+                       let imageURL = URL(string: rawURL),
+                       imageURL.scheme == "https" {
+                        AsyncImage(url: imageURL) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 56, height: 56)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                    .accessibilityHidden(true)
+                            case .failure, .empty:
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .fill(Color(.tertiarySystemGroupedBackground))
+                                    .frame(width: 56, height: 56)
+                                    .accessibilityHidden(true)
+                            @unknown default:
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .fill(Color(.tertiarySystemGroupedBackground))
+                                    .frame(width: 56, height: 56)
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                    }
+
                     VStack(alignment: .leading, spacing: 4) {
                         Text(article.title)
                             .font(.subheadline.bold())

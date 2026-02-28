@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Charts
 import OSLog
 
 private let detailLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.myapp.MyApp",
@@ -115,8 +116,20 @@ private struct StockSearchRowView: View {
     var body: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(result.ticker)
-                    .font(.headline)
+                HStack(spacing: 6) {
+                    Text(result.ticker)
+                        .font(.headline)
+                    // STORY-026: Security-type badge (CS / ETF / PFD / etc.)
+                    if let type = result.type, !type.isEmpty {
+                        Text(type)
+                            .font(.caption2.bold())
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.accentColor.opacity(0.12))
+                            .foregroundStyle(Color.accentColor)
+                            .clipShape(Capsule())
+                    }
+                }
                 Text(result.name)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -131,7 +144,71 @@ private struct StockSearchRowView: View {
         }
         .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(result.ticker), \(result.name)")
+        // STORY-026: Include type in accessibility label when present
+        .accessibilityLabel([result.ticker, result.name, result.type].compactMap { $0 }.joined(separator: ", "))
+    }
+}
+
+// MARK: - Chart Range
+
+enum ChartRange: String, CaseIterable, Identifiable {
+    case oneWeek = "1W"
+    case oneMonth = "1M"
+    case threeMonths = "3M"
+    case sixMonths = "6M"
+    case oneYear = "1Y"
+
+    var id: String { rawValue }
+
+    var calendarComponent: (Calendar.Component, Int) {
+        switch self {
+        case .oneWeek:     return (.day, -7)
+        case .oneMonth:    return (.month, -1)
+        case .threeMonths: return (.month, -3)
+        case .sixMonths:   return (.month, -6)
+        case .oneYear:     return (.year, -1)
+        }
+    }
+
+    private static let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(identifier: "UTC")
+        return f
+    }()
+
+    var dateRange: (from: String, to: String) {
+        let today = Date()
+        let (component, value) = calendarComponent
+        let from = Calendar.current.date(byAdding: component, value: value, to: today) ?? today
+        return (Self.dateFormatter.string(from: from), Self.dateFormatter.string(from: today))
+    }
+}
+
+// MARK: - Indicator Data
+
+struct IndicatorData {
+    var sma: Decimal?
+    var ema: Decimal?
+    var rsi: Decimal?
+    var macdValue: Decimal?
+    var macdSignal: Decimal?
+    var macdHistogram: Decimal?
+
+    static let empty = IndicatorData()
+
+    var rsiLabel: String? {
+        guard let rsi else { return nil }
+        let val = (rsi as NSDecimalNumber).doubleValue
+        if val >= 70 { return "Overbought" }
+        if val <= 30 { return "Oversold" }
+        return "Neutral"
+    }
+
+    var macdTrend: String? {
+        guard let h = macdHistogram else { return nil }
+        return h > 0 ? "Bullish" : h < 0 ? "Bearish" : "Neutral"
     }
 }
 
@@ -157,6 +234,12 @@ struct StockDetailView: View {
     @State private var details: MassiveTickerDetails?
     @State private var currentPrice: Decimal?
     @State private var dividends: [MassiveDividend] = []
+    @State private var latestFinancial: MassiveFinancial?
+    @State private var priceHistory: [MassiveAggregate] = []
+    @State private var selectedChartRange: ChartRange = .threeMonths
+    @State private var relatedTickers: [String] = []
+    @State private var splits: [MassiveSplit] = []
+    @State private var indicators: IndicatorData = .empty
     @State private var isLoading = true
     @State private var loadError: String?
 
@@ -216,6 +299,17 @@ struct StockDetailView: View {
         return (annual / price) * 100
     }
 
+    // STORY-027: Real payout ratio from financials endpoint.
+    // Formula: (annualDividendPerShare / dilutedEarningsPerShare) * 100
+    // Returns nil when either input is missing or EPS is non-positive (avoids divide-by-zero
+    // and nonsensical ratios for loss-making companies).
+    private var payoutRatio: Decimal? {
+        guard let annual = annualDividendPerShare,
+              let eps = latestFinancial?.dilutedEarningsPerShare,
+              eps > 0 else { return nil }
+        return (annual / eps) * 100
+    }
+
     private var nextExDate: String? {
         let today = Date()
         return dividends
@@ -243,7 +337,15 @@ struct StockDetailView: View {
                     )
                 } else {
                     headerSection
+                    priceChartSection
                     criteriaGrid
+                    indicatorsSection
+                    if !relatedTickers.isEmpty {
+                        relatedCompaniesSection
+                    }
+                    if !splits.isEmpty {
+                        splitHistorySection
+                    }
                     if let desc = details?.description, !desc.isEmpty {
                         descriptionSection(desc)
                     }
@@ -325,7 +427,204 @@ struct StockDetailView: View {
                 value: details?.marketCap.map { formatMarketCap($0) } ?? "—"
             )
             CriteriaCell(label: "Sector", value: details?.sicDescription ?? "—")
+            // STORY-027: Real financials cells
+            CriteriaCell(
+                label: "Payout Ratio",
+                value: payoutRatio.map {
+                    "\(($0 as NSDecimalNumber).doubleValue.formatted(.number.precision(.fractionLength(1))))%"
+                } ?? "—"
+            )
+            CriteriaCell(
+                label: "EPS (diluted)",
+                value: latestFinancial?.dilutedEarningsPerShare.map {
+                    $0.formatted(.currency(code: "USD").precision(.fractionLength(2)))
+                } ?? "—"
+            )
+            CriteriaCell(
+                label: "Revenue (TTM)",
+                value: latestFinancial?.revenues.map { formatMarketCap($0) } ?? "—"
+            )
         }
+    }
+
+    // MARK: - Price Chart (STORY-028)
+
+    private var priceChartSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Price History").font(.headline)
+
+            Picker("Range", selection: $selectedChartRange) {
+                ForEach(ChartRange.allCases) { range in
+                    Text(range.rawValue).tag(range)
+                }
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: selectedChartRange) { _, _ in
+                Task { await loadPriceChart() }
+            }
+
+            if priceHistory.isEmpty {
+                Text("No price data available")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .frame(maxWidth: .infinity, minHeight: 150)
+            } else {
+                Chart(priceHistory, id: \.t) { bar in
+                    LineMark(
+                        x: .value("Date", Date(timeIntervalSince1970: TimeInterval(bar.t) / 1000)),
+                        y: .value("Price", (bar.c as NSDecimalNumber).doubleValue)
+                    )
+                    .foregroundStyle(Color.accentColor)
+
+                    AreaMark(
+                        x: .value("Date", Date(timeIntervalSince1970: TimeInterval(bar.t) / 1000)),
+                        y: .value("Price", (bar.c as NSDecimalNumber).doubleValue)
+                    )
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.accentColor.opacity(0.2), Color.accentColor.opacity(0.0)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                }
+                .chartYScale(domain: .automatic(includesZero: false))
+                .chartXAxis {
+                    AxisMarks(values: .automatic(desiredCount: 5)) { _ in
+                        AxisGridLine()
+                        AxisValueLabel(format: .dateTime.month(.abbreviated).day())
+                    }
+                }
+                .chartYAxis {
+                    AxisMarks(position: .leading) { _ in
+                        AxisGridLine()
+                        AxisValueLabel()
+                    }
+                }
+                .frame(height: 200)
+            }
+        }
+        .padding()
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    // MARK: - Technical Indicators (STORY-029)
+
+    private var indicatorsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Technical Indicators").font(.headline)
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                indicatorCell(
+                    label: "SMA (20)",
+                    value: indicators.sma.map { $0.formatted(.currency(code: "USD")) }
+                )
+                indicatorCell(
+                    label: "EMA (20)",
+                    value: indicators.ema.map { $0.formatted(.currency(code: "USD")) }
+                )
+                indicatorCell(
+                    label: "RSI (14)",
+                    value: indicators.rsi.map {
+                        "\(($0 as NSDecimalNumber).doubleValue.formatted(.number.precision(.fractionLength(1))))"
+                    },
+                    subtitle: indicators.rsiLabel
+                )
+                indicatorCell(
+                    label: "MACD",
+                    value: indicators.macdValue.map {
+                        ($0 as NSDecimalNumber).doubleValue.formatted(.number.precision(.fractionLength(2)))
+                    },
+                    subtitle: indicators.macdTrend
+                )
+            }
+        }
+        .padding()
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private func indicatorCell(label: String, value: String?, subtitle: String? = nil) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Text(value ?? "—")
+                .font(.subheadline.bold())
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            if let subtitle {
+                Text(subtitle)
+                    .font(.caption2)
+                    .foregroundStyle(subtitle == "Overbought" || subtitle == "Bearish" ? .red :
+                                    subtitle == "Oversold" || subtitle == "Bullish" ? .green : .secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Related Companies (STORY-030)
+
+    private var relatedCompaniesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Related Stocks").font(.headline)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(relatedTickers.prefix(10), id: \.self) { ticker in
+                        NavigationLink {
+                            StockDetailView(result: MassiveTickerSearchResult(
+                                ticker: ticker, name: ticker, market: "stocks",
+                                type: nil, primaryExchange: nil
+                            ))
+                        } label: {
+                            Text(ticker)
+                                .font(.caption.bold())
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color.accentColor.opacity(0.1))
+                                .foregroundStyle(Color.accentColor)
+                                .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    // MARK: - Split History (STORY-031)
+
+    private var splitHistorySection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Stock Splits").font(.headline)
+
+            ForEach(splits.prefix(5), id: \.executionDate) { split in
+                HStack {
+                    Text(split.executionDate)
+                        .font(.subheadline)
+                    Spacer()
+                    Text("\(formatSplitRatio(split.splitFrom)):\(formatSplitRatio(split.splitTo))")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(Color.accentColor)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private func formatSplitRatio(_ value: Decimal) -> String {
+        let d = (value as NSDecimalNumber).doubleValue
+        if d == d.rounded() {
+            return "\(Int(d))"
+        }
+        return d.formatted(.number.precision(.fractionLength(0...2)))
     }
 
     private func descriptionSection(_ text: String) -> some View {
@@ -427,10 +726,14 @@ struct StockDetailView: View {
             isLoading = false
             return
         }
-        // Fetch details and price together — these are required for the page to render.
+        let api = massive.service
+        let ticker = result.ticker
+        let key = settings.apiKey
+
+        // Fetch details and price together — required for the page to render.
         do {
-            async let detailsTask = massive.service.fetchTickerDetails(ticker: result.ticker, apiKey: settings.apiKey)
-            async let priceTask   = massive.service.fetchPreviousClose(ticker: result.ticker, apiKey: settings.apiKey)
+            async let detailsTask = api.fetchTickerDetails(ticker: ticker, apiKey: key)
+            async let priceTask   = api.fetchPreviousClose(ticker: ticker, apiKey: key)
             (details, currentPrice) = try await (detailsTask, priceTask)
         } catch {
             loadError = error.localizedDescription
@@ -440,15 +743,66 @@ struct StockDetailView: View {
         isLoading = false
         reloadExistingStock()
 
-        // Fetch dividends separately — failure shows "—" rather than hiding the whole page.
-        // Limit 13 covers one full year for monthly payers plus one extra record.
+        // Secondary fetches — all run concurrently, each fails gracefully.
+        async let dividendsTask: [MassiveDividend] = {
+            do { return try await api.fetchDividends(ticker: ticker, limit: 13, apiKey: key) }
+            catch { detailLogger.warning("Dividend fetch failed: \(error.localizedDescription)"); return [] }
+        }()
+        async let financialsTask: MassiveFinancial? = {
+            do { return try await api.fetchFinancials(ticker: ticker, limit: 1, apiKey: key).first }
+            catch { detailLogger.warning("Financials fetch failed: \(error.localizedDescription)"); return nil }
+        }()
+        async let splitsTask: [MassiveSplit] = {
+            do { return try await api.fetchSplits(ticker: ticker, apiKey: key) }
+            catch { detailLogger.warning("Splits fetch failed: \(error.localizedDescription)"); return [] }
+        }()
+        async let relatedTask: [String] = {
+            do { return try await api.fetchRelatedCompanies(ticker: ticker, apiKey: key) }
+            catch { detailLogger.warning("Related companies fetch failed: \(error.localizedDescription)"); return [] }
+        }()
+        async let indicatorsTask: IndicatorData = {
+            await loadIndicators(api: api, ticker: ticker, key: key)
+        }()
+
+        (dividends, latestFinancial, splits, relatedTickers, indicators) =
+            await (dividendsTask, financialsTask, splitsTask, relatedTask, indicatorsTask)
+
+        // Load initial price chart
+        await loadPriceChart()
+    }
+
+    private func loadPriceChart() async {
+        guard settings.hasAPIKey else { return }
+        let range = selectedChartRange.dateRange
         do {
-            dividends = try await massive.service.fetchDividends(
-                ticker: result.ticker, limit: 13, apiKey: settings.apiKey
+            priceHistory = try await massive.service.fetchAggregates(
+                ticker: result.ticker, from: range.from, to: range.to, apiKey: settings.apiKey
             )
         } catch {
-            detailLogger.warning("Dividend fetch failed for \(result.ticker): \(error.localizedDescription)")
+            detailLogger.warning("Price chart fetch failed: \(error.localizedDescription)")
+            priceHistory = []
         }
+    }
+
+    private func loadIndicators(api: any MassiveFetching, ticker: String, key: String) async -> IndicatorData {
+        async let smaTask: Decimal? = {
+            (try? await api.fetchTechnicalIndicator(type: .sma, ticker: ticker, apiKey: key))?.first?.value
+        }()
+        async let emaTask: Decimal? = {
+            (try? await api.fetchTechnicalIndicator(type: .ema, ticker: ticker, apiKey: key))?.first?.value
+        }()
+        async let rsiTask: Decimal? = {
+            (try? await api.fetchTechnicalIndicator(type: .rsi, ticker: ticker, apiKey: key))?.first?.value
+        }()
+        async let macdTask: MassiveIndicatorValue? = {
+            (try? await api.fetchTechnicalIndicator(type: .macd, ticker: ticker, apiKey: key))?.first
+        }()
+
+        let (sma, ema, rsi, macd) = await (smaTask, emaTask, rsiTask, macdTask)
+        return IndicatorData(
+            sma: sma, ema: ema, rsi: rsi,
+            macdValue: macd?.value, macdSignal: macd?.signal, macdHistogram: macd?.histogram
+        )
     }
 
     private func reloadExistingStock() {
