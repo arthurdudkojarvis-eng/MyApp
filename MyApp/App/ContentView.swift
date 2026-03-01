@@ -7,13 +7,12 @@ struct ContentView: View {
 
     var body: some View {
         MainTabView()
-            // .preferredColorScheme propagates via SwiftUI preferences.
-            // The explicit UIWindow override below is the reliable fallback
-            // for iOS 17+ where the preference path can be inconsistent.
             .preferredColorScheme(settings.colorScheme.resolvedColorScheme)
-            .onAppear { applyWindowColorScheme(settings.colorScheme) }
-            .onChange(of: settings.colorScheme) { _, scheme in
-                applyWindowColorScheme(scheme)
+            // .task(id:) fires on first appearance AND every time colorScheme
+            // changes — more reliable than .onChange with @Observable on iOS 17.
+            // The UIWindow override ensures UIKit-hosted views also switch.
+            .task(id: settings.colorScheme) {
+                applyWindowColorScheme(settings.colorScheme)
             }
             .fullScreenCover(isPresented: Binding(
                 get: { !settings.hasCompletedOnboarding },
