@@ -62,13 +62,13 @@ struct MassiveService: MassiveFetching {
 
     // MARK: - Ticker Search
 
-    func fetchTickerSearch(query: String, apiKey: String) async throws -> [MassiveTickerSearchResult] {
+    func fetchTickerSearch(query: String, market: String, apiKey: String) async throws -> [MassiveTickerSearchResult] {
         guard var components = URLComponents(string: "\(Self.baseURL)/v3/reference/tickers") else {
             throw URLError(.badURL)
         }
         components.queryItems = [
             URLQueryItem(name: "search", value: query),
-            URLQueryItem(name: "market", value: "stocks"),
+            URLQueryItem(name: "market", value: market),
             URLQueryItem(name: "active", value: "true"),
             URLQueryItem(name: "limit", value: "20"),
             URLQueryItem(name: "apiKey", value: apiKey)

@@ -57,7 +57,7 @@ final class MockMassiveService: MassiveFetching {
         if shouldThrow || shouldThrowDividends { throw MassiveError.httpError(statusCode: 403) }
         return dividendsResult
     }
-    func fetchTickerSearch(query: String, apiKey: String) async throws -> [MassiveTickerSearchResult] {
+    func fetchTickerSearch(query: String, market: String, apiKey: String) async throws -> [MassiveTickerSearchResult] {
         fetchSearchCallCount += 1
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return searchResults

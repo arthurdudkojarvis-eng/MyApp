@@ -7,7 +7,7 @@ protocol MassiveFetching: Sendable {
     func fetchTickerDetails(ticker: String, apiKey: String) async throws -> MassiveTickerDetails
     func fetchPreviousClose(ticker: String, apiKey: String) async throws -> Decimal?
     func fetchDividends(ticker: String, limit: Int, apiKey: String) async throws -> [MassiveDividend]
-    func fetchTickerSearch(query: String, apiKey: String) async throws -> [MassiveTickerSearchResult]
+    func fetchTickerSearch(query: String, market: String, apiKey: String) async throws -> [MassiveTickerSearchResult]
     func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [MassiveNewsArticle]
 
     // STORY-022: New endpoint methods
@@ -20,6 +20,12 @@ protocol MassiveFetching: Sendable {
     func fetchRelatedCompanies(ticker: String, apiKey: String) async throws -> [String]
     func fetchTechnicalIndicator(type: MassiveIndicatorType, ticker: String, apiKey: String) async throws -> [MassiveIndicatorValue]
     func fetchPreviousCloseBar(ticker: String, apiKey: String) async throws -> MassiveAggregate?
+}
+
+extension MassiveFetching {
+    func fetchTickerSearch(query: String, apiKey: String) async throws -> [MassiveTickerSearchResult] {
+        try await fetchTickerSearch(query: query, market: "stocks", apiKey: apiKey)
+    }
 }
 
 // MARK: - Ticker Details

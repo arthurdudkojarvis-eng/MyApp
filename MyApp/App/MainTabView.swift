@@ -24,6 +24,11 @@ struct MainTabView: View {
                     Label("ETFs", systemImage: "chart.pie")
                 }
 
+            CryptoBrowserView()
+                .tabItem {
+                    Label("Crypto", systemImage: "bitcoinsign.circle")
+                }
+
             DividendCalendarView()
                 .tabItem {
                     Label("Calendar", systemImage: "calendar")

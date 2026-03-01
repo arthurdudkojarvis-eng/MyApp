@@ -17,6 +17,7 @@
 		17AE816DDA9521CBBFDFD69B /* WatchlistItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545032ABA0D6C2F77F79D93C /* WatchlistItem.swift */; };
 		1BAA2B119C2179B83EE8A41D /* DividendSafetyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796F34EF1AB763776D0CFDB7 /* DividendSafetyView.swift */; };
 		1ED58B5C130C37C017765788 /* MassiveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC36DA4D1479658B4AC9D33 /* MassiveService.swift */; };
+		1E5B9C3D7A4F2E8B6D0C1A9F /* CryptoBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F2A3C71D6E4B9A0F5C8D2E /* CryptoBrowserView.swift */; };
 		1F3A7B2C4E8D9A1F5B6C0D3E /* ETFBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E4F1B83C2D5A9E6F0B8D1C /* ETFBrowserView.swift */; };
 		2219A3D66CC6A7AE4E870849 /* EditHoldingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8600F9CD4E0ECCF8DA305D42 /* EditHoldingView.swift */; };
 		2811D99258A809FCFBD5EBDB /* OnboardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B301CF32A5E5ECBF36F3E32 /* OnboardingTests.swift */; };
@@ -121,6 +122,7 @@
 		84A74ED20A31232F6646A2A6 /* TaxSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxSummaryView.swift; sourceTree = "<group>"; };
 		8600F9CD4E0ECCF8DA305D42 /* EditHoldingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditHoldingView.swift; sourceTree = "<group>"; };
 		A7E4F1B83C2D5A9E6F0B8D1C /* ETFBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETFBrowserView.swift; sourceTree = "<group>"; };
+		B8F2A3C71D6E4B9A0F5C8D2E /* CryptoBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoBrowserView.swift; sourceTree = "<group>"; };
 		8675B04AE3DD90FFEDA27D5C /* LogPaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPaymentView.swift; sourceTree = "<group>"; };
 		87482738929F14A98BDD0FFE /* DividendCalendarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendCalendarTests.swift; sourceTree = "<group>"; };
 		8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPortfolioTests.swift; sourceTree = "<group>"; };
@@ -191,6 +193,14 @@
 			path = Onboarding;
 			sourceTree = "<group>";
 		};
+		3A1D5F8E2C7B4A6D9E0F3B5C /* Crypto */ = {
+			isa = PBXGroup;
+			children = (
+				B8F2A3C71D6E4B9A0F5C8D2E /* CryptoBrowserView.swift */,
+			);
+			path = Crypto;
+			sourceTree = "<group>";
+		};
 		4D2E8A1F7B3C6D5E9A0F1B2C /* ETFs */ = {
 			isa = PBXGroup;
 			children = (
@@ -212,6 +222,7 @@
 			children = (
 				5F94CAA53B7013FD2D8D4BA4 /* Alerts */,
 				92ECBB5F3C03FB81732FF55A /* Calendar */,
+				3A1D5F8E2C7B4A6D9E0F3B5C /* Crypto */,
 				B87D0602EFCA0EE0BFD1C9A7 /* Dashboard */,
 				4D2E8A1F7B3C6D5E9A0F1B2C /* ETFs */,
 				6A8A1C3CDBBB7E6D8BB63F79 /* Holdings */,
@@ -511,6 +522,7 @@
 				B3AC403AB7E6E5F0F0CCFFFA /* DividendPayment.swift in Sources */,
 				1BAA2B119C2179B83EE8A41D /* DividendSafetyView.swift in Sources */,
 				39CE7770F3D82C44F3117BBF /* DividendSchedule.swift in Sources */,
+				1E5B9C3D7A4F2E8B6D0C1A9F /* CryptoBrowserView.swift in Sources */,
 				2219A3D66CC6A7AE4E870849 /* EditHoldingView.swift in Sources */,
 				1F3A7B2C4E8D9A1F5B6C0D3E /* ETFBrowserView.swift in Sources */,
 				7DA91C0CF5A7B072841A77D8 /* Holding.swift in Sources */,
