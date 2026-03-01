@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -17,6 +17,7 @@
 		17AE816DDA9521CBBFDFD69B /* WatchlistItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545032ABA0D6C2F77F79D93C /* WatchlistItem.swift */; };
 		1BAA2B119C2179B83EE8A41D /* DividendSafetyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796F34EF1AB763776D0CFDB7 /* DividendSafetyView.swift */; };
 		1ED58B5C130C37C017765788 /* MassiveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC36DA4D1479658B4AC9D33 /* MassiveService.swift */; };
+		1F3A7B2C4E8D9A1F5B6C0D3E /* ETFBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E4F1B83C2D5A9E6F0B8D1C /* ETFBrowserView.swift */; };
 		2219A3D66CC6A7AE4E870849 /* EditHoldingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8600F9CD4E0ECCF8DA305D42 /* EditHoldingView.swift */; };
 		2811D99258A809FCFBD5EBDB /* OnboardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B301CF32A5E5ECBF36F3E32 /* OnboardingTests.swift */; };
 		2B2F7F5FE6554DC6CBC1D8B0 /* StockBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBF85C275AC60329CD30EE9A /* StockBrowserView.swift */; };
@@ -92,10 +93,10 @@
 		168A87450CDF38FF8E2931A6 /* DividendPayment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendPayment.swift; sourceTree = "<group>"; };
 		21BA810FCE7AFA87120F016B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		2332EC481425613D04D5FF2A /* SettingsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStoreTests.swift; sourceTree = "<group>"; };
-		237B2E48D363E5FB9B47CB07 /* MyApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MyApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		237B2E48D363E5FB9B47CB07 /* MyApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		278F70129F8930EDBEC972D3 /* DRIPSimulatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRIPSimulatorView.swift; sourceTree = "<group>"; };
 		2D1001A03B6D7EEF85B52F5D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		2F21C600D487BE92833CD1B9 /* MyAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MyAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2F21C600D487BE92833CD1B9 /* MyAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MyAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		37BE0AA6B455F873EB9DE360 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		39954C69C6016976D6D8707B /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
 		3E3B95BDB50172AB02EE93A3 /* HoldingPerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingPerformanceTests.swift; sourceTree = "<group>"; };
@@ -119,6 +120,7 @@
 		82975EBC14257A8D2F34F304 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		84A74ED20A31232F6646A2A6 /* TaxSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxSummaryView.swift; sourceTree = "<group>"; };
 		8600F9CD4E0ECCF8DA305D42 /* EditHoldingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditHoldingView.swift; sourceTree = "<group>"; };
+		A7E4F1B83C2D5A9E6F0B8D1C /* ETFBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETFBrowserView.swift; sourceTree = "<group>"; };
 		8675B04AE3DD90FFEDA27D5C /* LogPaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPaymentView.swift; sourceTree = "<group>"; };
 		87482738929F14A98BDD0FFE /* DividendCalendarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendCalendarTests.swift; sourceTree = "<group>"; };
 		8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPortfolioTests.swift; sourceTree = "<group>"; };
@@ -189,6 +191,14 @@
 			path = Onboarding;
 			sourceTree = "<group>";
 		};
+		4D2E8A1F7B3C6D5E9A0F1B2C /* ETFs */ = {
+			isa = PBXGroup;
+			children = (
+				A7E4F1B83C2D5A9E6F0B8D1C /* ETFBrowserView.swift */,
+			);
+			path = ETFs;
+			sourceTree = "<group>";
+		};
 		5C6AF1D56DD305A8A6443E15 /* Stocks */ = {
 			isa = PBXGroup;
 			children = (
@@ -203,6 +213,7 @@
 				5F94CAA53B7013FD2D8D4BA4 /* Alerts */,
 				92ECBB5F3C03FB81732FF55A /* Calendar */,
 				B87D0602EFCA0EE0BFD1C9A7 /* Dashboard */,
+				4D2E8A1F7B3C6D5E9A0F1B2C /* ETFs */,
 				6A8A1C3CDBBB7E6D8BB63F79 /* Holdings */,
 				6AD0BC9E2D66D93D0ABC0BD1 /* News */,
 				3DE49B8AEA0A9B5C1C851A08 /* Onboarding */,
@@ -346,7 +357,7 @@
 				0E027B60436A61420ED999E3 /* AppColorScheme+SwiftUI.swift */,
 				41C018CC84BEF94F929B042E /* KeychainService.swift */,
 				39954C69C6016976D6D8707B /* SettingsStore.swift */,
-					3BEC3D0DA694EF5C0E131D34 /* Massive */,
+				3BEC3D0DA694EF5C0E131D34 /* Massive */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -428,7 +439,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 2620;
 			};
 			buildConfigurationList = 46AE2DEEF0ACBEB8BC36F81F /* Build configuration list for PBXProject "MyApp" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -440,7 +451,6 @@
 			);
 			mainGroup = 61B286794EC1C95E4FD91338;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -502,6 +512,7 @@
 				1BAA2B119C2179B83EE8A41D /* DividendSafetyView.swift in Sources */,
 				39CE7770F3D82C44F3117BBF /* DividendSchedule.swift in Sources */,
 				2219A3D66CC6A7AE4E870849 /* EditHoldingView.swift in Sources */,
+				1F3A7B2C4E8D9A1F5B6C0D3E /* ETFBrowserView.swift in Sources */,
 				7DA91C0CF5A7B072841A77D8 /* Holding.swift in Sources */,
 				C738D64E338EA2ABBDCAFEF2 /* HoldingDetailView.swift in Sources */,
 				AA0C63AE826F5086197D0657 /* HoldingsView.swift in Sources */,
@@ -547,6 +558,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.myapp.MyAppTests;
@@ -558,12 +570,42 @@
 		53FBB739A03DFDED333E0DA1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.10;
 			};
@@ -573,6 +615,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = MyApp/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -585,6 +628,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				INFOPLIST_FILE = MyApp/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.myapp.MyApp;
@@ -596,6 +640,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.myapp.MyAppTests;
@@ -607,12 +652,41 @@
 		D1199B124EE5FBBDFDAEFF0A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.10;
 			};

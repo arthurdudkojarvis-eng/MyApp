@@ -19,6 +19,11 @@ struct MainTabView: View {
                     Label("Stocks", systemImage: "magnifyingglass")
                 }
 
+            ETFBrowserView()
+                .tabItem {
+                    Label("ETFs", systemImage: "chart.pie")
+                }
+
             DividendCalendarView()
                 .tabItem {
                     Label("Calendar", systemImage: "calendar")
