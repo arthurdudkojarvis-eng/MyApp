@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import Observation
 import OSLog
 
@@ -55,7 +56,24 @@ final class SettingsStore {
     }
 
     var colorScheme: AppColorScheme {
-        didSet { defaults.set(colorScheme.rawValue, forKey: Keys.colorScheme) }
+        didSet {
+            defaults.set(colorScheme.rawValue, forKey: Keys.colorScheme)
+            applyColorSchemeToWindows()
+        }
+    }
+
+    /// Forces all UIWindows to match the stored color scheme.
+    /// Called from didSet (immediate on every change) and once on app launch.
+    func applyColorSchemeToWindows() {
+        let style: UIUserInterfaceStyle
+        switch colorScheme {
+        case .light: style = .light
+        case .dark:  style = .dark
+        }
+        for scene in UIApplication.shared.connectedScenes {
+            guard let windowScene = scene as? UIWindowScene else { continue }
+            windowScene.keyWindow?.overrideUserInterfaceStyle = style
+        }
     }
 
     var hasCompletedOnboarding: Bool {

@@ -7,6 +7,7 @@ struct ContentView: View {
     var body: some View {
         MainTabView()
             .preferredColorScheme(settings.colorScheme.resolvedColorScheme)
+            .onAppear { settings.applyColorSchemeToWindows() }
             .fullScreenCover(isPresented: Binding(
                 get: { !settings.hasCompletedOnboarding },
                 set: { _ in }   // dismissal is driven only by setting the flag
