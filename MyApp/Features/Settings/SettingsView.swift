@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct SettingsView: View {
     @Environment(SettingsStore.self) private var settings
@@ -55,6 +56,7 @@ struct SettingsView: View {
                     : ""
             }
             .onDisappear {
+                showAPIKey = false
                 commitAPIKey()
                 commitExpenseTarget()
             }
@@ -76,6 +78,19 @@ struct SettingsView: View {
                     .onSubmit { commitAPIKey() }
                     .accessibilityLabel("Massive API key")
             }
+
+            Button {
+                guard UIPasteboard.general.hasStrings,
+                      let string = UIPasteboard.general.string else { return }
+                let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmed.isEmpty else { return }
+                apiKeyInput = trimmed
+            } label: {
+                Image(systemName: "doc.on.clipboard")
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Paste from clipboard")
 
             Button {
                 showAPIKey.toggle()
@@ -130,7 +145,7 @@ struct SettingsView: View {
     // MARK: - Helpers
 
     private func commitAPIKey() {
-        settings.apiKey = apiKeyInput
+        settings.apiKey = apiKeyInput.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func commitExpenseTarget() {
