@@ -28,11 +28,6 @@ struct MainTabView: View {
                 .tabItem {
                     Label("Crypto", systemImage: "bitcoinsign.circle")
                 }
-
-            DividendCalendarView()
-                .tabItem {
-                    Label("Calendar", systemImage: "calendar")
-                }
         }
         .tint(Color.accentColor)
     }

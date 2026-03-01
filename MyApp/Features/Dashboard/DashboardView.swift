@@ -271,6 +271,12 @@ private struct DashboardSecondPage: View {
                     destination: AlertsView()
                 )
                 featureLink(
+                    icon: "calendar",
+                    title: "Dividend Calendar",
+                    subtitle: "Upcoming dividend payments and market holidays",
+                    destination: DividendCalendarView()
+                )
+                featureLink(
                     icon: "newspaper.fill",
                     title: "News & Events",
                     subtitle: "Market news for your holdings",

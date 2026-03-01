@@ -83,26 +83,24 @@ struct DividendCalendarView: View {
     }()
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if !hasEvents {
-                    ContentUnavailableView(
-                        "No Dividend Events",
-                        systemImage: "calendar.badge.exclamationmark",
-                        description: Text(
-                            "Add holdings with dividend schedules to see upcoming payments."
-                        )
+        Group {
+            if !hasEvents {
+                ContentUnavailableView(
+                    "No Dividend Events",
+                    systemImage: "calendar.badge.exclamationmark",
+                    description: Text(
+                        "Add holdings with dividend schedules to see upcoming payments."
                     )
-                } else {
-                    calendarScrollView
-                }
+                )
+            } else {
+                calendarScrollView
             }
-            .navigationTitle("Calendar")
-            .sheet(isPresented: $showDetail) {
-                DividendDaySheet(events: selectedDayEvents)
-                    .presentationDetents([.medium, .large])
-                    .presentationDragIndicator(.visible)
-            }
+        }
+        .navigationTitle("Calendar")
+        .sheet(isPresented: $showDetail) {
+            DividendDaySheet(events: selectedDayEvents)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .onAppear { rebuildEvents() }
         .onChange(of: schedules) { rebuildEvents() }
