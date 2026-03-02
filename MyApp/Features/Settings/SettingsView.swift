@@ -5,9 +5,7 @@ struct SettingsView: View {
     @Environment(SettingsStore.self) private var settings
     @Environment(\.dismiss) private var dismiss
 
-    @State private var apiKeyInput: String = ""
     @State private var expenseTargetInput: String = ""
-    @State private var showAPIKey = false
     @State private var expenseInputIsInvalid = false
 
     var body: some View {
@@ -15,16 +13,6 @@ struct SettingsView: View {
 
         NavigationStack {
             List {
-                Section {
-                    apiKeyRow
-                } header: {
-                    Text("Market Data")
-                } footer: {
-                    Text(settings.isUsingCustomKey
-                         ? "Using your custom API key."
-                         : "Using built-in API key. Paste your own key to override.")
-                }
-
                 Section {
                     expenseTargetRow
                 } header: {
@@ -52,70 +40,17 @@ struct SettingsView: View {
                 }
             }
             .onAppear {
-                apiKeyInput = settings.userAPIKey
                 expenseTargetInput = settings.monthlyExpenseTarget > 0
                     ? NSDecimalNumber(decimal: settings.monthlyExpenseTarget).stringValue
                     : ""
             }
             .onDisappear {
-                showAPIKey = false
-                commitAPIKey()
                 commitExpenseTarget()
             }
         }
     }
 
     // MARK: - Rows
-
-    private var apiKeyRow: some View {
-        HStack {
-            if showAPIKey {
-                TextField("Paste API key", text: $apiKeyInput)
-                    .autocorrectionDisabled()
-                    .textInputAutocapitalization(.never)
-                    .onSubmit { commitAPIKey() }
-                    .accessibilityLabel("Massive API key")
-            } else {
-                SecureField("Paste API key", text: $apiKeyInput)
-                    .onSubmit { commitAPIKey() }
-                    .accessibilityLabel("Massive API key")
-            }
-
-            Button {
-                guard UIPasteboard.general.hasStrings,
-                      let string = UIPasteboard.general.string else { return }
-                let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !trimmed.isEmpty else { return }
-                apiKeyInput = trimmed
-            } label: {
-                Image(systemName: "doc.on.clipboard")
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Paste from clipboard")
-
-            Button {
-                showAPIKey.toggle()
-            } label: {
-                Image(systemName: showAPIKey ? "eye.slash" : "eye")
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(showAPIKey ? "Hide API key" : "Show API key")
-
-            if !apiKeyInput.isEmpty {
-                Button {
-                    apiKeyInput = ""
-                    commitAPIKey()
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Clear API key")
-            }
-        }
-    }
 
     private var expenseTargetRow: some View {
         HStack {
@@ -145,10 +80,6 @@ struct SettingsView: View {
     }
 
     // MARK: - Helpers
-
-    private func commitAPIKey() {
-        settings.userAPIKey = apiKeyInput.trimmingCharacters(in: .whitespacesAndNewlines)
-    }
 
     private func commitExpenseTarget() {
         guard !expenseTargetInput.isEmpty,
