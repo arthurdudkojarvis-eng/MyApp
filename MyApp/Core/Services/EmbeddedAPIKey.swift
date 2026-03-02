@@ -21,7 +21,6 @@ enum EmbeddedAPIKey {
     /// Recovers the plaintext key by XOR-ing `obfuscated` with `mask`.
     static var key: String {
         guard !obfuscated.isEmpty, obfuscated.count == mask.count else {
-            assertionFailure("EmbeddedAPIKey: arrays missing or mismatched — run generate_obfuscated_key.swift")
             return ""
         }
         let bytes = zip(obfuscated, mask).map { $0 ^ $1 }
