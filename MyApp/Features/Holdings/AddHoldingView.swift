@@ -130,6 +130,7 @@ struct AddHoldingView: View {
         modelContext.insert(holding)
 
         let tickerToRefresh = trimmedTicker
+        try? modelContext.save()
         dismiss()
 
         Task { await stockRefresh.refresh(ticker: tickerToRefresh) }
