@@ -4,27 +4,27 @@ import Foundation
 
 protocol MassiveFetching: Sendable {
     // Existing methods
-    func fetchTickerDetails(ticker: String, apiKey: String) async throws -> MassiveTickerDetails
-    func fetchPreviousClose(ticker: String, apiKey: String) async throws -> Decimal?
-    func fetchDividends(ticker: String, limit: Int, apiKey: String) async throws -> [MassiveDividend]
-    func fetchTickerSearch(query: String, market: String, apiKey: String) async throws -> [MassiveTickerSearchResult]
-    func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [MassiveNewsArticle]
+    func fetchTickerDetails(ticker: String) async throws -> MassiveTickerDetails
+    func fetchPreviousClose(ticker: String) async throws -> Decimal?
+    func fetchDividends(ticker: String, limit: Int) async throws -> [MassiveDividend]
+    func fetchTickerSearch(query: String, market: String) async throws -> [MassiveTickerSearchResult]
+    func fetchNews(tickers: [String], limit: Int) async throws -> [MassiveNewsArticle]
 
     // STORY-022: New endpoint methods
-    func fetchFinancials(ticker: String, limit: Int, apiKey: String) async throws -> [MassiveFinancial]
-    func fetchAggregates(ticker: String, from: String, to: String, apiKey: String) async throws -> [MassiveAggregate]
-    func fetchSplits(ticker: String, apiKey: String) async throws -> [MassiveSplit]
-    func fetchGroupedDaily(date: String, apiKey: String) async throws -> [MassiveGroupedBar]
-    func fetchMarketStatus(apiKey: String) async throws -> MassiveMarketStatus
-    func fetchMarketHolidays(apiKey: String) async throws -> [MassiveMarketHoliday]
-    func fetchRelatedCompanies(ticker: String, apiKey: String) async throws -> [String]
-    func fetchTechnicalIndicator(type: MassiveIndicatorType, ticker: String, apiKey: String) async throws -> [MassiveIndicatorValue]
-    func fetchPreviousCloseBar(ticker: String, apiKey: String) async throws -> MassiveAggregate?
+    func fetchFinancials(ticker: String, limit: Int) async throws -> [MassiveFinancial]
+    func fetchAggregates(ticker: String, from: String, to: String) async throws -> [MassiveAggregate]
+    func fetchSplits(ticker: String) async throws -> [MassiveSplit]
+    func fetchGroupedDaily(date: String) async throws -> [MassiveGroupedBar]
+    func fetchMarketStatus() async throws -> MassiveMarketStatus
+    func fetchMarketHolidays() async throws -> [MassiveMarketHoliday]
+    func fetchRelatedCompanies(ticker: String) async throws -> [String]
+    func fetchTechnicalIndicator(type: MassiveIndicatorType, ticker: String) async throws -> [MassiveIndicatorValue]
+    func fetchPreviousCloseBar(ticker: String) async throws -> MassiveAggregate?
 }
 
 extension MassiveFetching {
-    func fetchTickerSearch(query: String, apiKey: String) async throws -> [MassiveTickerSearchResult] {
-        try await fetchTickerSearch(query: query, market: "stocks", apiKey: apiKey)
+    func fetchTickerSearch(query: String) async throws -> [MassiveTickerSearchResult] {
+        try await fetchTickerSearch(query: query, market: "stocks")
     }
 }
 
@@ -277,13 +277,11 @@ struct MassiveIndicatorValue: Decodable {
 // MARK: - Errors
 
 enum MassiveError: Error, LocalizedError {
-    case missingAPIKey
     case httpError(statusCode: Int)
     case emptyResponse
 
     var errorDescription: String? {
         switch self {
-        case .missingAPIKey:     return "API key is not configured."
         case .httpError(let c):  return "API returned HTTP \(c)."
         case .emptyResponse:     return "API returned no results."
         }

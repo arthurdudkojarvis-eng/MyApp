@@ -62,7 +62,6 @@ struct CalendarDividendEvent: Identifiable {
 
 struct DividendCalendarView: View {
     @Query(sort: \DividendSchedule.payDate) private var schedules: [DividendSchedule]
-    @Environment(SettingsStore.self) private var settings
     @Environment(\.massiveService) private var massive
 
     // Cached once; updated only when `schedules` changes.
@@ -163,10 +162,9 @@ struct DividendCalendarView: View {
     }()
 
     private func loadHolidays() async {
-        guard settings.hasAPIKey else { return }
         let formatter = Self.holidayDateFormatter
         do {
-            let results = try await massive.service.fetchMarketHolidays(apiKey: settings.apiKey)
+            let results = try await massive.service.fetchMarketHolidays()
             var byDay: [Date: MassiveMarketHoliday] = [:]
             for holiday in results {
                 if let date = formatter.date(from: holiday.date) {

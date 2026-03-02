@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct ETFBrowserView: View {
-    @Environment(SettingsStore.self) private var settings
     @Environment(\.massiveService) private var massive
 
     @State private var query = ""
@@ -62,16 +61,12 @@ struct ETFBrowserView: View {
     }
 
     private func search(query: String) async {
-        guard settings.hasAPIKey else {
-            searchError = "Add a Massive API key in Settings to search ETFs."
-            return
-        }
         isSearching = true
         searchError = nil
         defer { if !Task.isCancelled { isSearching = false } }
         do {
             let fetched = try await massive.service.fetchTickerSearch(
-                query: query, apiKey: settings.apiKey
+                query: query
             )
             guard !Task.isCancelled else { return }
             let etfOnly = fetched.filter { $0.type?.uppercased() == "ETF" }
@@ -124,7 +119,5 @@ private struct ETFSearchRowView: View {
 // MARK: - Preview
 
 #Preview {
-    let settings = SettingsStore()
-    return ETFBrowserView()
-        .environment(settings)
+    ETFBrowserView()
 }

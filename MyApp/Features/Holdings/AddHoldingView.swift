@@ -156,5 +156,5 @@ struct AddHoldingView: View {
     return AddHoldingView(portfolio: portfolio)
         .modelContainer(container)
         .environment(settings)
-        .environment(StockRefreshService(settings: settings, container: container))
+        .environment(StockRefreshService(container: container))
 }

@@ -11,7 +11,7 @@ struct MyAppApp: App {
     init() {
         let s = SettingsStore()
         _settings = State(initialValue: s)
-        _stockRefresh = State(initialValue: StockRefreshService(settings: s))
+        _stockRefresh = State(initialValue: StockRefreshService())
     }
 
     var body: some Scene {

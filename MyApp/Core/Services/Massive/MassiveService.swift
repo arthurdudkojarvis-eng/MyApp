@@ -1,7 +1,12 @@
 import Foundation
 
 struct MassiveService: MassiveFetching {
-    private static let baseURL = "https://api.massive.com"
+    /// Worker proxy URL. Replace with your deployed Cloudflare Worker URL.
+    private static let baseURL = "https://myapp-api-proxy.arthurdudko.workers.dev"
+
+    /// Shared secret the worker validates via X-App-Token header.
+    /// Set this to the same UUID you stored in `npx wrangler secret put APP_TOKEN`.
+    private static let appToken = "F604F620-65D7-493E-BF22-44C35C2B5E86"
 
     private static let decoder: JSONDecoder = {
         let d = JSONDecoder()
@@ -15,9 +20,9 @@ struct MassiveService: MassiveFetching {
 
     // MARK: - Ticker Details
 
-    func fetchTickerDetails(ticker: String, apiKey: String) async throws -> MassiveTickerDetails {
+    func fetchTickerDetails(ticker: String) async throws -> MassiveTickerDetails {
         let encoded = try percentEncode(ticker: ticker)
-        let url = try buildURL(path: "/v3/reference/tickers/\(encoded)", apiKey: apiKey)
+        let url = try buildURL(path: "/v3/reference/tickers/\(encoded)")
         let data = try await fetch(url: url)
         let response = try Self.decoder.decode(MassiveTickerDetailsResponse.self, from: data)
         return response.results
@@ -25,11 +30,10 @@ struct MassiveService: MassiveFetching {
 
     // MARK: - Snapshot (current delayed price)
 
-    func fetchPreviousClose(ticker: String, apiKey: String) async throws -> Decimal? {
+    func fetchPreviousClose(ticker: String) async throws -> Decimal? {
         let encoded = try percentEncode(ticker: ticker)
         let url = try buildURL(
-            path: "/v2/snapshot/locale/us/markets/stocks/tickers/\(encoded)",
-            apiKey: apiKey
+            path: "/v2/snapshot/locale/us/markets/stocks/tickers/\(encoded)"
         )
         let data = try await fetch(url: url)
         let response = try Self.decoder.decode(MassiveSnapshotResponse.self, from: data)
@@ -44,15 +48,14 @@ struct MassiveService: MassiveFetching {
 
     // MARK: - Dividends
 
-    func fetchDividends(ticker: String, limit: Int, apiKey: String) async throws -> [MassiveDividend] {
+    func fetchDividends(ticker: String, limit: Int) async throws -> [MassiveDividend] {
         guard var components = URLComponents(string: "\(Self.baseURL)/v3/reference/dividends") else {
             throw URLError(.badURL)
         }
         components.queryItems = [
             URLQueryItem(name: "ticker", value: ticker),
             URLQueryItem(name: "limit", value: "\(limit)"),
-            URLQueryItem(name: "order", value: "desc"),
-            URLQueryItem(name: "apiKey", value: apiKey)
+            URLQueryItem(name: "order", value: "desc")
         ]
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
@@ -62,7 +65,7 @@ struct MassiveService: MassiveFetching {
 
     // MARK: - Ticker Search
 
-    func fetchTickerSearch(query: String, market: String, apiKey: String) async throws -> [MassiveTickerSearchResult] {
+    func fetchTickerSearch(query: String, market: String) async throws -> [MassiveTickerSearchResult] {
         guard var components = URLComponents(string: "\(Self.baseURL)/v3/reference/tickers") else {
             throw URLError(.badURL)
         }
@@ -70,8 +73,7 @@ struct MassiveService: MassiveFetching {
             URLQueryItem(name: "search", value: query),
             URLQueryItem(name: "market", value: market),
             URLQueryItem(name: "active", value: "true"),
-            URLQueryItem(name: "limit", value: "20"),
-            URLQueryItem(name: "apiKey", value: apiKey)
+            URLQueryItem(name: "limit", value: "20")
         ]
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
@@ -81,14 +83,13 @@ struct MassiveService: MassiveFetching {
 
     // MARK: - News
 
-    func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [MassiveNewsArticle] {
+    func fetchNews(tickers: [String], limit: Int) async throws -> [MassiveNewsArticle] {
         guard var components = URLComponents(string: "\(Self.baseURL)/v2/reference/news") else {
             throw URLError(.badURL)
         }
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "limit", value: "\(limit)"),
-            URLQueryItem(name: "order", value: "desc"),
-            URLQueryItem(name: "apiKey", value: apiKey)
+            URLQueryItem(name: "order", value: "desc")
         ]
         // Pass the first ticker for more relevant results; omit for general market news.
         if let first = tickers.first {
@@ -106,14 +107,13 @@ struct MassiveService: MassiveFetching {
     // Uses a custom decoder because the financial data nesting requires
     // convertFromSnakeCase to reach income_statement sub-keys.
 
-    func fetchFinancials(ticker: String, limit: Int, apiKey: String) async throws -> [MassiveFinancial] {
+    func fetchFinancials(ticker: String, limit: Int) async throws -> [MassiveFinancial] {
         guard var components = URLComponents(string: "\(Self.baseURL)/vX/reference/financials") else {
             throw URLError(.badURL)
         }
         components.queryItems = [
             URLQueryItem(name: "ticker", value: ticker),
-            URLQueryItem(name: "limit", value: "\(limit)"),
-            URLQueryItem(name: "apiKey", value: apiKey)
+            URLQueryItem(name: "limit", value: "\(limit)")
         ]
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
@@ -125,7 +125,7 @@ struct MassiveService: MassiveFetching {
     // /v2/aggs/ticker/{ticker}/range/1/day/{from}/{to}
     // Default: adjusted=true, limit=90 bars.
 
-    func fetchAggregates(ticker: String, from: String, to: String, apiKey: String) async throws -> [MassiveAggregate] {
+    func fetchAggregates(ticker: String, from: String, to: String) async throws -> [MassiveAggregate] {
         let encoded = try percentEncode(ticker: ticker)
         try validateDateParam(from)
         try validateDateParam(to)
@@ -137,8 +137,7 @@ struct MassiveService: MassiveFetching {
         components.queryItems = [
             URLQueryItem(name: "adjusted", value: "true"),
             URLQueryItem(name: "sort", value: "asc"),
-            URLQueryItem(name: "limit", value: "90"),
-            URLQueryItem(name: "apiKey", value: apiKey)
+            URLQueryItem(name: "limit", value: "90")
         ]
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
@@ -149,14 +148,13 @@ struct MassiveService: MassiveFetching {
     // MARK: - Stock Splits (STORY-023)
     // /v3/reference/splits?ticker=AAPL
 
-    func fetchSplits(ticker: String, apiKey: String) async throws -> [MassiveSplit] {
+    func fetchSplits(ticker: String) async throws -> [MassiveSplit] {
         guard var components = URLComponents(string: "\(Self.baseURL)/v3/reference/splits") else {
             throw URLError(.badURL)
         }
         components.queryItems = [
             URLQueryItem(name: "ticker", value: ticker),
-            URLQueryItem(name: "order", value: "desc"),
-            URLQueryItem(name: "apiKey", value: apiKey)
+            URLQueryItem(name: "order", value: "desc")
         ]
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
@@ -170,7 +168,7 @@ struct MassiveService: MassiveFetching {
     // convertFromSnakeCase does NOT alter single-character uppercase keys, so "T" decodes
     // correctly into the `T` property without a custom CodingKeys definition.
 
-    func fetchGroupedDaily(date: String, apiKey: String) async throws -> [MassiveGroupedBar] {
+    func fetchGroupedDaily(date: String) async throws -> [MassiveGroupedBar] {
         try validateDateParam(date)
         guard var components = URLComponents(
             string: "\(Self.baseURL)/v2/aggs/grouped/locale/us/market/stocks/\(date)"
@@ -178,8 +176,7 @@ struct MassiveService: MassiveFetching {
             throw URLError(.badURL)
         }
         components.queryItems = [
-            URLQueryItem(name: "adjusted", value: "true"),
-            URLQueryItem(name: "apiKey", value: apiKey)
+            URLQueryItem(name: "adjusted", value: "true")
         ]
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
@@ -190,8 +187,8 @@ struct MassiveService: MassiveFetching {
     // MARK: - Market Status (STORY-023)
     // /v1/marketstatus/now
 
-    func fetchMarketStatus(apiKey: String) async throws -> MassiveMarketStatus {
-        let url = try buildURL(path: "/v1/marketstatus/now", apiKey: apiKey)
+    func fetchMarketStatus() async throws -> MassiveMarketStatus {
+        let url = try buildURL(path: "/v1/marketstatus/now")
         let data = try await fetch(url: url)
         return try Self.decoder.decode(MassiveMarketStatus.self, from: data)
     }
@@ -200,8 +197,8 @@ struct MassiveService: MassiveFetching {
     // /v1/marketstatus/upcoming
     // Response is a top-level JSON array — no "results" wrapper.
 
-    func fetchMarketHolidays(apiKey: String) async throws -> [MassiveMarketHoliday] {
-        let url = try buildURL(path: "/v1/marketstatus/upcoming", apiKey: apiKey)
+    func fetchMarketHolidays() async throws -> [MassiveMarketHoliday] {
+        let url = try buildURL(path: "/v1/marketstatus/upcoming")
         let data = try await fetch(url: url)
         return try Self.decoder.decode([MassiveMarketHoliday].self, from: data)
     }
@@ -209,9 +206,9 @@ struct MassiveService: MassiveFetching {
     // MARK: - Related Companies (STORY-023)
     // /v1/related-companies/{ticker}
 
-    func fetchRelatedCompanies(ticker: String, apiKey: String) async throws -> [String] {
+    func fetchRelatedCompanies(ticker: String) async throws -> [String] {
         let encoded = try percentEncode(ticker: ticker)
-        let url = try buildURL(path: "/v1/related-companies/\(encoded)", apiKey: apiKey)
+        let url = try buildURL(path: "/v1/related-companies/\(encoded)")
         let data = try await fetch(url: url)
         let response = try Self.decoder.decode(MassiveRelatedCompaniesResponse.self, from: data)
         return (response.results ?? []).map(\.ticker)
@@ -222,8 +219,7 @@ struct MassiveService: MassiveFetching {
 
     func fetchTechnicalIndicator(
         type: MassiveIndicatorType,
-        ticker: String,
-        apiKey: String
+        ticker: String
     ) async throws -> [MassiveIndicatorValue] {
         let encoded = try percentEncode(ticker: ticker)
         guard var components = URLComponents(
@@ -246,8 +242,7 @@ struct MassiveService: MassiveFetching {
             URLQueryItem(name: "window", value: windowSize),
             URLQueryItem(name: "series_type", value: "close"),
             URLQueryItem(name: "limit", value: "50"),
-            URLQueryItem(name: "order", value: "desc"),
-            URLQueryItem(name: "apiKey", value: apiKey)
+            URLQueryItem(name: "order", value: "desc")
         ]
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
@@ -259,7 +254,7 @@ struct MassiveService: MassiveFetching {
     // Lightweight alternative to the full snapshot: /v2/aggs/ticker/{ticker}/prev
     // Returns a single aggregate bar for the most recent completed trading day.
 
-    func fetchPreviousCloseBar(ticker: String, apiKey: String) async throws -> MassiveAggregate? {
+    func fetchPreviousCloseBar(ticker: String) async throws -> MassiveAggregate? {
         let encoded = try percentEncode(ticker: ticker)
         guard var components = URLComponents(
             string: "\(Self.baseURL)/v2/aggs/ticker/\(encoded)/prev"
@@ -267,8 +262,7 @@ struct MassiveService: MassiveFetching {
             throw URLError(.badURL)
         }
         components.queryItems = [
-            URLQueryItem(name: "adjusted", value: "true"),
-            URLQueryItem(name: "apiKey", value: apiKey)
+            URLQueryItem(name: "adjusted", value: "true")
         ]
         guard let url = components.url else { throw URLError(.badURL) }
         let data = try await fetch(url: url)
@@ -298,17 +292,18 @@ struct MassiveService: MassiveFetching {
         return encoded
     }
 
-    private func buildURL(path: String, apiKey: String) throws -> URL {
-        guard var components = URLComponents(string: "\(Self.baseURL)\(path)") else {
+    private func buildURL(path: String) throws -> URL {
+        guard let components = URLComponents(string: "\(Self.baseURL)\(path)") else {
             throw URLError(.badURL)
         }
-        components.queryItems = [URLQueryItem(name: "apiKey", value: apiKey)]
         guard let url = components.url else { throw URLError(.badURL) }
         return url
     }
 
     private func fetch(url: URL) async throws -> Data {
-        let (data, response) = try await URLSession.shared.data(from: url)
+        var request = URLRequest(url: url)
+        request.setValue(Self.appToken, forHTTPHeaderField: "X-App-Token")
+        let (data, response) = try await URLSession.shared.data(for: request)
         if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
             throw MassiveError.httpError(statusCode: http.statusCode)
         }

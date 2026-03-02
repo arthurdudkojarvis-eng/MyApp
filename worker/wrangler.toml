@@ -1,0 +1,7 @@
+name = "myapp-api-proxy"
+main = "src/index.ts"
+compatibility_date = "2024-05-12"
+
+# Secrets (set via `npx wrangler secret put <NAME>`):
+#   MASSIVE_API_KEY  — real Massive API key
+#   APP_TOKEN        — shared secret the iOS app sends in X-App-Token header

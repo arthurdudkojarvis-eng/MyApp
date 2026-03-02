@@ -23,7 +23,6 @@ final class StockRefreshService {
     func dismissRefreshError() { lastRefreshError = nil }
 
     private let massive: any MassiveFetching
-    private let settings: SettingsStore
     private let container: ModelContainer
     /// Optional delay between consecutive ticker refreshes. Defaults to zero
     /// because the Massive paid plan offers unlimited API calls. Override in tests
@@ -31,12 +30,10 @@ final class StockRefreshService {
     private let interTickerDelay: Duration
 
     init(
-        settings: SettingsStore,
         container: ModelContainer = .app,
         massive: any MassiveFetching = MassiveService(),
         interTickerDelay: Duration = .milliseconds(0)
     ) {
-        self.settings = settings
         self.container = container
         self.massive = massive
         self.interTickerDelay = interTickerDelay
@@ -52,11 +49,7 @@ final class StockRefreshService {
             logger.info("Skipping single-ticker refresh for \(ticker): bulk refresh in progress.")
             return
         }
-        guard settings.hasAPIKey else {
-            logger.info("Skipping refresh for \(ticker): API key not configured.")
-            return
-        }
-        await refreshTicker(ticker, apiKey: settings.apiKey)
+        await refreshTicker(ticker)
     }
 
     /// Refresh all stale stocks. Call when the app returns to foreground.
@@ -64,13 +57,11 @@ final class StockRefreshService {
     /// Uses grouped daily endpoint for batch price fetch when multiple tickers are stale (STORY-035).
     func refreshStaleStocks() async {
         guard !isRefreshing else { return }
-        guard settings.hasAPIKey else { return }
         lastRefreshError = nil   // clear previous error on every new refresh attempt
-        let apiKey = settings.apiKey
 
         // STORY-034: Check market status — skip refresh when market is closed.
         // Fail-open: if the status check fails, proceed with refresh anyway.
-        let shouldSkip = await checkMarketClosed(apiKey: apiKey)
+        let shouldSkip = await checkMarketClosed()
         if shouldSkip {
             logger.info("Market is closed — skipping stale stock refresh.")
             return
@@ -103,13 +94,13 @@ final class StockRefreshService {
         // Single call replaces N per-ticker snapshot calls.
         let batchPrices: [String: Decimal]
         if staleStocks.count >= 2 {
-            batchPrices = await fetchBatchPrices(apiKey: apiKey)
+            batchPrices = await fetchBatchPrices()
         } else {
             batchPrices = [:]
         }
 
         for (index, stock) in staleStocks.enumerated() {
-            await refreshTicker(stock.ticker, apiKey: apiKey, batchPrice: batchPrices[stock.ticker])
+            await refreshTicker(stock.ticker, batchPrice: batchPrices[stock.ticker])
             if index < staleStocks.count - 1 {
                 do {
                     try await Task.sleep(for: interTickerDelay)
@@ -125,9 +116,9 @@ final class StockRefreshService {
     /// STORY-034: Check if the market is currently closed.
     /// Returns true only when we get a definitive "closed" status.
     /// Fails open (returns false) on network errors so refresh proceeds.
-    private func checkMarketClosed(apiKey: String) async -> Bool {
+    private func checkMarketClosed() async -> Bool {
         do {
-            let status = try await massive.fetchMarketStatus(apiKey: apiKey)
+            let status = try await massive.fetchMarketStatus()
             return status.market.lowercased() == "closed"
         } catch {
             logger.warning("Market status check failed — proceeding with refresh: \(error.localizedDescription)")
@@ -137,11 +128,11 @@ final class StockRefreshService {
 
     /// STORY-035: Fetch all ticker prices in one API call using the grouped daily endpoint.
     /// Returns a dictionary of ticker → close price. Falls back to empty on failure.
-    private func fetchBatchPrices(apiKey: String) async -> [String: Decimal] {
+    private func fetchBatchPrices() async -> [String: Decimal] {
         let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: .now) ?? .now
         let dateStr = dateFormatter.string(from: yesterday)
         do {
-            let bars = try await massive.fetchGroupedDaily(date: dateStr, apiKey: apiKey)
+            let bars = try await massive.fetchGroupedDaily(date: dateStr)
             var prices: [String: Decimal] = [:]
             for bar in bars {
                 prices[bar.ticker] = bar.c
@@ -154,16 +145,16 @@ final class StockRefreshService {
         }
     }
 
-    private func refreshTicker(_ ticker: String, apiKey: String, batchPrice: Decimal? = nil) async {
+    private func refreshTicker(_ ticker: String, batchPrice: Decimal? = nil) async {
         let context = ModelContext(container)
         do {
             // If we already have a batch price, skip the per-ticker snapshot call.
-            let detailsTask = Task { try await massive.fetchTickerDetails(ticker: ticker, apiKey: apiKey) }
+            let detailsTask = Task { try await massive.fetchTickerDetails(ticker: ticker) }
             let priceTask: Task<Decimal?, Error>
             if let batchPrice {
                 priceTask = Task { batchPrice }
             } else {
-                priceTask = Task { try await massive.fetchPreviousClose(ticker: ticker, apiKey: apiKey) }
+                priceTask = Task { try await massive.fetchPreviousClose(ticker: ticker) }
             }
             let details = try await detailsTask.value
             let price = try await priceTask.value
@@ -185,7 +176,7 @@ final class StockRefreshService {
             // Fetch dividends separately so a network hiccup doesn't discard the
             // price/name update already written above.
             do {
-                let dividends = try await massive.fetchDividends(ticker: ticker, limit: 8, apiKey: apiKey)
+                let dividends = try await massive.fetchDividends(ticker: ticker, limit: 8)
                 updateDividendSchedules(stock: stock, dividends: dividends, context: context)
             } catch {
                 logger.warning("Dividend fetch failed for \(ticker): \(error.localizedDescription)")
@@ -198,7 +189,7 @@ final class StockRefreshService {
             // Report the first failure; subsequent failures are logged but not shown
             // to the user to avoid overwriting a message the user hasn't seen yet.
             if lastRefreshError == nil {
-                lastRefreshError = "Could not refresh \(ticker). Check your connection or API key."
+                lastRefreshError = "Could not refresh \(ticker). Check your connection."
             }
         }
     }

@@ -11,10 +11,7 @@ final class OnboardingTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         defaults = UserDefaults(suiteName: suite)!
-        sut = SettingsStore(
-            keychain: KeychainService(service: "com.myapp.tests.onboarding.\(UUID().uuidString)"),
-            defaults: defaults
-        )
+        sut = SettingsStore(defaults: defaults)
     }
 
     override func tearDown() async throws {
@@ -38,8 +35,7 @@ final class OnboardingTests: XCTestCase {
 
     func testOnboardingStateRoundTrip() {
         sut.hasCompletedOnboarding = true
-        let reloaded = SettingsStore(keychain: KeychainService(service: "com.myapp.tests.rt.\(UUID().uuidString)"),
-                                     defaults: defaults)
+        let reloaded = SettingsStore(defaults: defaults)
         XCTAssertTrue(reloaded.hasCompletedOnboarding)
     }
 

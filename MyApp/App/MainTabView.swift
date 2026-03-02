@@ -39,5 +39,5 @@ struct MainTabView: View {
     return MainTabView()
         .modelContainer(container)
         .environment(settings)
-        .environment(StockRefreshService(settings: settings, container: container))
+        .environment(StockRefreshService(container: container))
 }

@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct CryptoBrowserView: View {
-    @Environment(SettingsStore.self) private var settings
     @Environment(\.massiveService) private var massive
 
     @State private var query = ""
@@ -62,16 +61,12 @@ struct CryptoBrowserView: View {
     }
 
     private func search(query: String) async {
-        guard settings.hasAPIKey else {
-            searchError = "Add a Massive API key in Settings to search crypto."
-            return
-        }
         isSearching = true
         searchError = nil
         defer { if !Task.isCancelled { isSearching = false } }
         do {
             let fetched = try await massive.service.fetchTickerSearch(
-                query: query, market: "crypto", apiKey: settings.apiKey
+                query: query, market: "crypto"
             )
             guard !Task.isCancelled else { return }
             let upper = query.uppercased()
@@ -123,7 +118,5 @@ private struct CryptoSearchRowView: View {
 // MARK: - Preview
 
 #Preview {
-    let settings = SettingsStore()
-    return CryptoBrowserView()
-        .environment(settings)
+    CryptoBrowserView()
 }

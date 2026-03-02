@@ -25,7 +25,7 @@ struct ContentView: View {
     return ContentView()
         .modelContainer(container)
         .environment(settings)
-        .environment(StockRefreshService(settings: settings, container: container))
+        .environment(StockRefreshService(container: container))
 }
 
 #Preview("Onboarding") {

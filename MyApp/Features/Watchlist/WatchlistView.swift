@@ -212,5 +212,5 @@ private struct AddToWatchlistSheet: View {
     }
     .modelContainer(container)
     .environment(settings)
-    .environment(StockRefreshService(settings: settings, container: container))
+    .environment(StockRefreshService(container: container))
 }

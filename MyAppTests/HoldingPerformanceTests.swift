@@ -206,7 +206,7 @@ final class HoldingPerformanceTests: XCTestCase {
         mock.searchResults = [
             MassiveTickerSearchResult(ticker: "AAPL", name: "Apple Inc.", market: "stocks", type: "CS", primaryExchange: "XNAS")
         ]
-        let results = try await mock.fetchTickerSearch(query: "Apple", apiKey: "test")
+        let results = try await mock.fetchTickerSearch(query: "Apple")
         XCTAssertEqual(results.count, 1)
         XCTAssertEqual(results.first?.ticker, "AAPL")
         XCTAssertEqual(mock.fetchSearchCallCount, 1)
@@ -216,7 +216,7 @@ final class HoldingPerformanceTests: XCTestCase {
         let mock = MockMassiveService()
         mock.shouldThrow = true
         do {
-            _ = try await mock.fetchTickerSearch(query: "AAPL", apiKey: "test")
+            _ = try await mock.fetchTickerSearch(query: "AAPL")
             XCTFail("Expected throw")
         } catch MassiveError.httpError(statusCode: let code) {
             XCTAssertEqual(code, 403)

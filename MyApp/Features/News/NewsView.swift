@@ -3,7 +3,6 @@ import SwiftData
 
 struct NewsView: View {
     @Query(sort: \Portfolio.createdAt) private var portfolios: [Portfolio]
-    @Environment(SettingsStore.self) private var settings
     @Environment(\.massiveService) private var massive
     @Environment(\.openURL) private var openURL
 
@@ -93,10 +92,6 @@ struct NewsView: View {
     // MARK: - Data loading
 
     private func loadNews() async {
-        guard settings.hasAPIKey else {
-            loadError = "Add a Massive API key in Settings to load news."
-            return
-        }
         let tickers = selectedTicker.map { [$0] } ?? heldTickers
         guard !tickers.isEmpty else {
             articles = []
@@ -108,8 +103,7 @@ struct NewsView: View {
         do {
             articles = try await massive.service.fetchNews(
                 tickers: tickers,
-                limit: 20,
-                apiKey: settings.apiKey
+                limit: 20
             )
         } catch {
             loadError = error.localizedDescription
@@ -260,11 +254,9 @@ private extension Array where Element: Hashable {
 
 #Preview {
     let container = ModelContainer.preview
-    let settings = SettingsStore()
     return NavigationStack {
         NewsView()
     }
     .modelContainer(container)
-    .environment(settings)
-    .environment(StockRefreshService(settings: settings, container: container))
+    .environment(StockRefreshService(container: container))
 }

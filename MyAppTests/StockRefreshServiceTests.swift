@@ -42,74 +42,74 @@ final class MockMassiveService: MassiveFetching {
     var fetchTechnicalIndicatorCallCount = 0
     var fetchPreviousCloseBarCallCount = 0
 
-    func fetchTickerDetails(ticker: String, apiKey: String) async throws -> MassiveTickerDetails {
+    func fetchTickerDetails(ticker: String) async throws -> MassiveTickerDetails {
         fetchDetailsCallCount += 1
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return tickerDetailsResult
     }
-    func fetchPreviousClose(ticker: String, apiKey: String) async throws -> Decimal? {
+    func fetchPreviousClose(ticker: String) async throws -> Decimal? {
         fetchPreviousCloseCallCount += 1
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return previousCloseResult
     }
-    func fetchDividends(ticker: String, limit: Int, apiKey: String) async throws -> [MassiveDividend] {
+    func fetchDividends(ticker: String, limit: Int) async throws -> [MassiveDividend] {
         fetchDividendsCallCount += 1
         if shouldThrow || shouldThrowDividends { throw MassiveError.httpError(statusCode: 403) }
         return dividendsResult
     }
-    func fetchTickerSearch(query: String, market: String, apiKey: String) async throws -> [MassiveTickerSearchResult] {
+    func fetchTickerSearch(query: String, market: String) async throws -> [MassiveTickerSearchResult] {
         fetchSearchCallCount += 1
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return searchResults
     }
-    func fetchNews(tickers: [String], limit: Int, apiKey: String) async throws -> [MassiveNewsArticle] {
+    func fetchNews(tickers: [String], limit: Int) async throws -> [MassiveNewsArticle] {
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return []
     }
 
     // STORY-024: New endpoint stubs
 
-    func fetchFinancials(ticker: String, limit: Int, apiKey: String) async throws -> [MassiveFinancial] {
+    func fetchFinancials(ticker: String, limit: Int) async throws -> [MassiveFinancial] {
         fetchFinancialsCallCount += 1
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return financialsResult
     }
-    func fetchAggregates(ticker: String, from: String, to: String, apiKey: String) async throws -> [MassiveAggregate] {
+    func fetchAggregates(ticker: String, from: String, to: String) async throws -> [MassiveAggregate] {
         fetchAggregatesCallCount += 1
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return aggregatesResult
     }
-    func fetchSplits(ticker: String, apiKey: String) async throws -> [MassiveSplit] {
+    func fetchSplits(ticker: String) async throws -> [MassiveSplit] {
         fetchSplitsCallCount += 1
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return splitsResult
     }
-    func fetchGroupedDaily(date: String, apiKey: String) async throws -> [MassiveGroupedBar] {
+    func fetchGroupedDaily(date: String) async throws -> [MassiveGroupedBar] {
         fetchGroupedDailyCallCount += 1
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return groupedDailyResult
     }
-    func fetchMarketStatus(apiKey: String) async throws -> MassiveMarketStatus {
+    func fetchMarketStatus() async throws -> MassiveMarketStatus {
         fetchMarketStatusCallCount += 1
         if shouldThrow || shouldThrowMarketStatus { throw MassiveError.httpError(statusCode: 403) }
         return marketStatusResult
     }
-    func fetchMarketHolidays(apiKey: String) async throws -> [MassiveMarketHoliday] {
+    func fetchMarketHolidays() async throws -> [MassiveMarketHoliday] {
         fetchMarketHolidaysCallCount += 1
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return marketHolidaysResult
     }
-    func fetchRelatedCompanies(ticker: String, apiKey: String) async throws -> [String] {
+    func fetchRelatedCompanies(ticker: String) async throws -> [String] {
         fetchRelatedCompaniesCallCount += 1
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return relatedCompaniesResult
     }
-    func fetchTechnicalIndicator(type: MassiveIndicatorType, ticker: String, apiKey: String) async throws -> [MassiveIndicatorValue] {
+    func fetchTechnicalIndicator(type: MassiveIndicatorType, ticker: String) async throws -> [MassiveIndicatorValue] {
         fetchTechnicalIndicatorCallCount += 1
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return technicalIndicatorResult
     }
-    func fetchPreviousCloseBar(ticker: String, apiKey: String) async throws -> MassiveAggregate? {
+    func fetchPreviousCloseBar(ticker: String) async throws -> MassiveAggregate? {
         fetchPreviousCloseBarCallCount += 1
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return previousCloseBarResult
@@ -121,27 +121,20 @@ final class MockMassiveService: MassiveFetching {
 @MainActor
 final class StockRefreshServiceTests: XCTestCase {
     private var container: ModelContainer!
-    private var settings: SettingsStore!
     private var mockMassive: MockMassiveService!
     private var sut: StockRefreshService!
 
     override func setUp() async throws {
         try await super.setUp()
         container = try ModelContainer.makeContainer(inMemory: true)
-        settings = SettingsStore(
-            keychain: KeychainService(service: "com.myapp.tests.refresh.\(UUID().uuidString)"),
-            defaults: UserDefaults(suiteName: "com.myapp.tests.refresh.\(UUID().uuidString)")!
-        )
-        settings.userAPIKey = "test-api-key"
         mockMassive = MockMassiveService()
-        sut = StockRefreshService(settings: settings, container: container, massive: mockMassive,
+        sut = StockRefreshService(container: container, massive: mockMassive,
                                   interTickerDelay: .zero)
     }
 
     override func tearDown() async throws {
         sut = nil
         mockMassive = nil
-        settings = nil
         container = nil
         try await super.tearDown()
     }
@@ -193,17 +186,6 @@ final class StockRefreshServiceTests: XCTestCase {
         let context = ModelContext(container)
         let stocks = try context.fetch(FetchDescriptor<Stock>())
         XCTAssertEqual(stocks.first?.sector, "Technology")
-    }
-
-    func testRefreshUsesEmbeddedKeyWhenUserKeyEmpty() async throws {
-        _ = try insertStock(ticker: "AAPL")
-        settings.userAPIKey = ""
-
-        // hasAPIKey is always true now — refresh proceeds with embedded key.
-        await sut.refresh(ticker: "AAPL")
-
-        XCTAssertTrue(settings.hasAPIKey, "hasAPIKey should always be true with embedded key")
-        XCTAssertEqual(mockMassive.fetchDetailsCallCount, 1, "Should refresh using embedded key")
     }
 
     func testRefreshHandlesNetworkError() async throws {

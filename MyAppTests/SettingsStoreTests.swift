@@ -3,22 +3,18 @@ import XCTest
 
 @MainActor
 final class SettingsStoreTests: XCTestCase {
-    private var keychain: KeychainService!
     private var defaults: UserDefaults!
     private var sut: SettingsStore!
 
-    private let keychainService = "com.myapp.tests.settings.\(UUID().uuidString)"
-    private let defaultsSuite  = "com.myapp.tests.settings.\(UUID().uuidString)"
+    private let defaultsSuite = "com.myapp.tests.settings.\(UUID().uuidString)"
 
     override func setUp() async throws {
         try await super.setUp()
-        keychain = KeychainService(service: keychainService)
         defaults = UserDefaults(suiteName: defaultsSuite)!
-        sut = SettingsStore(keychain: keychain, defaults: defaults)
+        sut = SettingsStore(defaults: defaults)
     }
 
     override func tearDown() async throws {
-        keychain.delete(forKey: "apiKey")
         defaults.removePersistentDomain(forName: defaultsSuite)
         sut = nil
         try await super.tearDown()
@@ -26,28 +22,9 @@ final class SettingsStoreTests: XCTestCase {
 
     // MARK: - Initialization
 
-    func testInitLoadsUserAPIKeyFromKeychain() throws {
-        try keychain.save("test-api-key", forKey: "apiKey")
-        let store = SettingsStore(keychain: keychain, defaults: defaults)
-        XCTAssertEqual(store.userAPIKey, "test-api-key")
-        XCTAssertEqual(store.apiKey, "test-api-key")
-    }
-
-    func testInitMigratesLegacyFMPAPIKey() throws {
-        try keychain.save("legacy-fmp-key", forKey: "fmpAPIKey")
-        let store = SettingsStore(keychain: keychain, defaults: defaults)
-        XCTAssertEqual(store.userAPIKey, "legacy-fmp-key")
-        XCTAssertNil(keychain.load(forKey: "fmpAPIKey"), "Legacy key should be deleted after migration")
-        XCTAssertEqual(keychain.load(forKey: "apiKey"), "legacy-fmp-key")
-    }
-
-    func testInitDefaultsUserAPIKeyToEmptyStringWhenKeychainEmpty() {
-        XCTAssertEqual(sut.userAPIKey, "")
-    }
-
     func testInitLoadsExpenseTargetFromDefaults() {
         defaults.set("250.75", forKey: "monthlyExpenseTarget")
-        let store = SettingsStore(keychain: keychain, defaults: defaults)
+        let store = SettingsStore(defaults: defaults)
         XCTAssertEqual(store.monthlyExpenseTarget, Decimal(string: "250.75")!)
     }
 
@@ -57,56 +34,14 @@ final class SettingsStoreTests: XCTestCase {
 
     func testInitDefaultsExpenseTargetToZeroWhenStoredValueIsNegative() {
         defaults.set("-10", forKey: "monthlyExpenseTarget")
-        let store = SettingsStore(keychain: keychain, defaults: defaults)
+        let store = SettingsStore(defaults: defaults)
         XCTAssertEqual(store.monthlyExpenseTarget, 0)
     }
 
     func testInitDefaultsExpenseTargetToZeroWhenStoredValueIsInvalid() {
         defaults.set("not-a-number", forKey: "monthlyExpenseTarget")
-        let store = SettingsStore(keychain: keychain, defaults: defaults)
+        let store = SettingsStore(defaults: defaults)
         XCTAssertEqual(store.monthlyExpenseTarget, 0)
-    }
-
-    // MARK: - userAPIKey mutations
-
-    func testSettingUserAPIKeyPersistsToKeychain() {
-        sut.userAPIKey = "new-key"
-        XCTAssertEqual(keychain.load(forKey: "apiKey"), "new-key")
-    }
-
-    func testSettingUserAPIKeyToEmptyStringPersistsEmptyString() {
-        sut.userAPIKey = "some-key"
-        sut.userAPIKey = ""
-        XCTAssertEqual(keychain.load(forKey: "apiKey"), "")
-    }
-
-    func testHasAPIKeyReflectsEffectiveKey() {
-        // With placeholder empty arrays, EmbeddedAPIKey.key is "" so hasAPIKey depends on userAPIKey.
-        // With real embedded bytes, hasAPIKey would be true even when userAPIKey is empty.
-        sut.userAPIKey = "abc"
-        XCTAssertTrue(sut.hasAPIKey)
-    }
-
-    // MARK: - apiKey fallback
-
-    func testAPIKeyFallsBackToEmbeddedKeyWhenUserKeyEmpty() {
-        sut.userAPIKey = ""
-        XCTAssertEqual(sut.apiKey, EmbeddedAPIKey.key)
-    }
-
-    func testAPIKeyReturnsUserKeyWhenSet() {
-        sut.userAPIKey = "custom-key"
-        XCTAssertEqual(sut.apiKey, "custom-key")
-    }
-
-    func testIsUsingCustomKeyIsFalseWhenUserKeyEmpty() {
-        sut.userAPIKey = ""
-        XCTAssertFalse(sut.isUsingCustomKey)
-    }
-
-    func testIsUsingCustomKeyIsTrueWhenUserKeySet() {
-        sut.userAPIKey = "my-key"
-        XCTAssertTrue(sut.isUsingCustomKey)
     }
 
     // MARK: - monthlyExpenseTarget mutations
@@ -129,7 +64,7 @@ final class SettingsStoreTests: XCTestCase {
         let original = Decimal(string: "1234.56")!
         sut.monthlyExpenseTarget = original
         // Re-create the store from the same defaults to simulate app relaunch.
-        let reloaded = SettingsStore(keychain: keychain, defaults: defaults)
+        let reloaded = SettingsStore(defaults: defaults)
         XCTAssertEqual(reloaded.monthlyExpenseTarget, original)
     }
 
@@ -147,13 +82,13 @@ final class SettingsStoreTests: XCTestCase {
 
     func testColorSchemeRoundTrip() {
         sut.colorScheme = .light
-        let reloaded = SettingsStore(keychain: keychain, defaults: defaults)
+        let reloaded = SettingsStore(defaults: defaults)
         XCTAssertEqual(reloaded.colorScheme, .light)
     }
 
     func testColorSchemeCorruptedValueFallsBackToLight() {
         defaults.set("invalid-value", forKey: "colorScheme")
-        let store = SettingsStore(keychain: keychain, defaults: defaults)
+        let store = SettingsStore(defaults: defaults)
         XCTAssertEqual(store.colorScheme, .light)
     }
 

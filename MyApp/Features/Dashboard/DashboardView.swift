@@ -100,7 +100,7 @@ struct DashboardView: View {
     }
 
     private func loadMarketStatus() async {
-        marketStatus = try? await massive.service.fetchMarketStatus(apiKey: settings.apiKey)
+        marketStatus = try? await massive.service.fetchMarketStatus()
     }
 }
 
@@ -301,7 +301,7 @@ private struct DashboardSecondPage: View {
     return DashboardView()
         .modelContainer(container)
         .environment(settings)
-        .environment(StockRefreshService(settings: settings, container: container))
+        .environment(StockRefreshService(container: container))
 }
 
 #Preview("Empty state") {
@@ -310,6 +310,6 @@ private struct DashboardSecondPage: View {
     return DashboardView()
         .modelContainer(container)
         .environment(settings)
-        .environment(StockRefreshService(settings: settings, container: container))
+        .environment(StockRefreshService(container: container))
 }
 

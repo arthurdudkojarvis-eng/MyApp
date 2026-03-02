@@ -9,7 +9,6 @@ private let detailLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "co
 // MARK: - StockBrowserView
 
 struct StockBrowserView: View {
-    @Environment(SettingsStore.self) private var settings
     @Environment(\.massiveService) private var massive
 
     @State private var query = ""
@@ -73,10 +72,6 @@ struct StockBrowserView: View {
     }
 
     private func search(query: String) async {
-        guard settings.hasAPIKey else {
-            searchError = "Add a Massive API key in Settings to search stocks."
-            return
-        }
         isSearching = true
         searchError = nil
         // Only reset the spinner if this task ran to completion (not cancelled).
@@ -85,7 +80,7 @@ struct StockBrowserView: View {
         defer { if !Task.isCancelled { isSearching = false } }
         do {
             let fetched = try await massive.service.fetchTickerSearch(
-                query: query, apiKey: settings.apiKey
+                query: query
             )
             // Discard stale responses superseded by a newer query.
             guard !Task.isCancelled else { return }
@@ -218,7 +213,6 @@ struct StockDetailView: View {
     let result: MassiveTickerSearchResult
 
     @Environment(\.modelContext) private var modelContext
-    @Environment(SettingsStore.self) private var settings
     @Environment(StockRefreshService.self) private var stockRefresh
     @Environment(\.massiveService) private var massive
     @Query(sort: \Portfolio.createdAt) private var portfolios: [Portfolio]
@@ -721,19 +715,13 @@ struct StockDetailView: View {
     // MARK: - Data loading
 
     private func load() async {
-        guard settings.hasAPIKey else {
-            loadError = "Add a Massive API key in Settings."
-            isLoading = false
-            return
-        }
         let api = massive.service
         let ticker = result.ticker
-        let key = settings.apiKey
 
         // Fetch details and price together — required for the page to render.
         do {
-            async let detailsTask = api.fetchTickerDetails(ticker: ticker, apiKey: key)
-            async let priceTask   = api.fetchPreviousClose(ticker: ticker, apiKey: key)
+            async let detailsTask = api.fetchTickerDetails(ticker: ticker)
+            async let priceTask   = api.fetchPreviousClose(ticker: ticker)
             (details, currentPrice) = try await (detailsTask, priceTask)
         } catch {
             loadError = error.localizedDescription
@@ -745,23 +733,23 @@ struct StockDetailView: View {
 
         // Secondary fetches — all run concurrently, each fails gracefully.
         async let dividendsTask: [MassiveDividend] = {
-            do { return try await api.fetchDividends(ticker: ticker, limit: 13, apiKey: key) }
+            do { return try await api.fetchDividends(ticker: ticker, limit: 13) }
             catch { detailLogger.warning("Dividend fetch failed: \(error.localizedDescription)"); return [] }
         }()
         async let financialsTask: MassiveFinancial? = {
-            do { return try await api.fetchFinancials(ticker: ticker, limit: 1, apiKey: key).first }
+            do { return try await api.fetchFinancials(ticker: ticker, limit: 1).first }
             catch { detailLogger.warning("Financials fetch failed: \(error.localizedDescription)"); return nil }
         }()
         async let splitsTask: [MassiveSplit] = {
-            do { return try await api.fetchSplits(ticker: ticker, apiKey: key) }
+            do { return try await api.fetchSplits(ticker: ticker) }
             catch { detailLogger.warning("Splits fetch failed: \(error.localizedDescription)"); return [] }
         }()
         async let relatedTask: [String] = {
-            do { return try await api.fetchRelatedCompanies(ticker: ticker, apiKey: key) }
+            do { return try await api.fetchRelatedCompanies(ticker: ticker) }
             catch { detailLogger.warning("Related companies fetch failed: \(error.localizedDescription)"); return [] }
         }()
         async let indicatorsTask: IndicatorData = {
-            await loadIndicators(api: api, ticker: ticker, key: key)
+            await loadIndicators(api: api, ticker: ticker)
         }()
 
         (dividends, latestFinancial, splits, relatedTickers, indicators) =
@@ -772,11 +760,10 @@ struct StockDetailView: View {
     }
 
     private func loadPriceChart() async {
-        guard settings.hasAPIKey else { return }
         let range = selectedChartRange.dateRange
         do {
             priceHistory = try await massive.service.fetchAggregates(
-                ticker: result.ticker, from: range.from, to: range.to, apiKey: settings.apiKey
+                ticker: result.ticker, from: range.from, to: range.to
             )
         } catch {
             detailLogger.warning("Price chart fetch failed: \(error.localizedDescription)")
@@ -784,18 +771,18 @@ struct StockDetailView: View {
         }
     }
 
-    private func loadIndicators(api: any MassiveFetching, ticker: String, key: String) async -> IndicatorData {
+    private func loadIndicators(api: any MassiveFetching, ticker: String) async -> IndicatorData {
         async let smaTask: Decimal? = {
-            (try? await api.fetchTechnicalIndicator(type: .sma, ticker: ticker, apiKey: key))?.first?.value
+            (try? await api.fetchTechnicalIndicator(type: .sma, ticker: ticker))?.first?.value
         }()
         async let emaTask: Decimal? = {
-            (try? await api.fetchTechnicalIndicator(type: .ema, ticker: ticker, apiKey: key))?.first?.value
+            (try? await api.fetchTechnicalIndicator(type: .ema, ticker: ticker))?.first?.value
         }()
         async let rsiTask: Decimal? = {
-            (try? await api.fetchTechnicalIndicator(type: .rsi, ticker: ticker, apiKey: key))?.first?.value
+            (try? await api.fetchTechnicalIndicator(type: .rsi, ticker: ticker))?.first?.value
         }()
         async let macdTask: MassiveIndicatorValue? = {
-            (try? await api.fetchTechnicalIndicator(type: .macd, ticker: ticker, apiKey: key))?.first
+            (try? await api.fetchTechnicalIndicator(type: .macd, ticker: ticker))?.first
         }()
 
         let (sma, ema, rsi, macd) = await (smaTask, emaTask, rsiTask, macdTask)
@@ -928,5 +915,5 @@ private struct HoldingPickerSheet: View {
     return StockBrowserView()
         .modelContainer(container)
         .environment(settings)
-        .environment(StockRefreshService(settings: settings, container: container))
+        .environment(StockRefreshService(container: container))
 }

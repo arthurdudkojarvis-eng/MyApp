@@ -285,5 +285,5 @@ private struct PortfolioHoldingRowView: View {
     return PortfoliosView()
         .modelContainer(container)
         .environment(settings)
-        .environment(StockRefreshService(settings: settings, container: container))
+        .environment(StockRefreshService(container: container))
 }
