@@ -38,15 +38,24 @@ final class SettingsStore {
     private let defaults: UserDefaults
 
     // MARK: - Published state
-    var apiKey: String {
+
+    /// User-provided API key stored in Keychain. When empty, `apiKey` falls back
+    /// to the built-in embedded key.
+    var userAPIKey: String {
         didSet {
             do {
-                try keychain.save(apiKey, forKey: Keys.apiKey)
+                try keychain.save(userAPIKey, forKey: Keys.apiKey)
             } catch {
                 logger.error("Failed to save API key to Keychain: \(error.localizedDescription)")
             }
         }
     }
+
+    /// Effective API key: prefers user-provided key, falls back to embedded key.
+    var apiKey: String { userAPIKey.isEmpty ? EmbeddedAPIKey.key : userAPIKey }
+
+    /// Whether the user has entered their own custom API key.
+    var isUsingCustomKey: Bool { !userAPIKey.isEmpty }
 
     /// Monthly expense target in the user's base currency (USD). 0 means unset.
     var monthlyExpenseTarget: Decimal {
@@ -92,9 +101,9 @@ final class SettingsStore {
         if let legacy = keychain.load(forKey: "fmpAPIKey"), !legacy.isEmpty {
             try? keychain.save(legacy, forKey: Keys.apiKey)
             keychain.delete(forKey: "fmpAPIKey")
-            self.apiKey = legacy
+            self.userAPIKey = legacy
         } else {
-            self.apiKey = keychain.load(forKey: Keys.apiKey) ?? ""
+            self.userAPIKey = keychain.load(forKey: Keys.apiKey) ?? ""
         }
 
         // Store as String to avoid Decimal → Double precision loss.

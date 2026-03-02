@@ -13,6 +13,7 @@
 		0979E0EFC122A65E87B6D040 /* KeychainServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */; };
 		0F2DA6D72E887A177DAF9D58 /* WatchlistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE273883E50C4F702B8DA93 /* WatchlistView.swift */; };
 		10C70E33FFDEDB066F21DFC4 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39954C69C6016976D6D8707B /* SettingsStore.swift */; };
+		E1A2B3C4D5E6F7A8B9C0D1E2 /* EmbeddedAPIKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* EmbeddedAPIKey.swift */; };
 		14BF60D0BA98FE81C5979572 /* TaxSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A74ED20A31232F6646A2A6 /* TaxSummaryView.swift */; };
 		17AE816DDA9521CBBFDFD69B /* WatchlistItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545032ABA0D6C2F77F79D93C /* WatchlistItem.swift */; };
 		1BAA2B119C2179B83EE8A41D /* DividendSafetyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796F34EF1AB763776D0CFDB7 /* DividendSafetyView.swift */; };
@@ -86,6 +87,7 @@
 		0C74261CC2EEDEDF87E15DF9 /* DividendFrequency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendFrequency.swift; sourceTree = "<group>"; };
 		0CE273883E50C4F702B8DA93 /* WatchlistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistView.swift; sourceTree = "<group>"; };
 		0E027B60436A61420ED999E3 /* AppColorScheme+SwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppColorScheme+SwiftUI.swift"; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* EmbeddedAPIKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddedAPIKey.swift; sourceTree = "<group>"; };
 		10DAE0AC3A6D2BC5044E3789 /* DashboardMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardMetricsTests.swift; sourceTree = "<group>"; };
 		11AE850638057BE756C41B92 /* ModelContainerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerFactory.swift; sourceTree = "<group>"; };
 		1337F25AFB67ACEE25AF311F /* Stock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Stock.swift; sourceTree = "<group>"; };
@@ -366,6 +368,7 @@
 			isa = PBXGroup;
 			children = (
 				0E027B60436A61420ED999E3 /* AppColorScheme+SwiftUI.swift */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* EmbeddedAPIKey.swift */,
 				41C018CC84BEF94F929B042E /* KeychainService.swift */,
 				39954C69C6016976D6D8707B /* SettingsStore.swift */,
 				3BEC3D0DA694EF5C0E131D34 /* Massive */,
@@ -523,6 +526,7 @@
 				1BAA2B119C2179B83EE8A41D /* DividendSafetyView.swift in Sources */,
 				39CE7770F3D82C44F3117BBF /* DividendSchedule.swift in Sources */,
 				1E5B9C3D7A4F2E8B6D0C1A9F /* CryptoBrowserView.swift in Sources */,
+				E1A2B3C4D5E6F7A8B9C0D1E2 /* EmbeddedAPIKey.swift in Sources */,
 				2219A3D66CC6A7AE4E870849 /* EditHoldingView.swift in Sources */,
 				1F3A7B2C4E8D9A1F5B6C0D3E /* ETFBrowserView.swift in Sources */,
 				7DA91C0CF5A7B072841A77D8 /* Holding.swift in Sources */,

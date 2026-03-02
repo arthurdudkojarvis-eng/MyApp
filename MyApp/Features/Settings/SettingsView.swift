@@ -20,7 +20,9 @@ struct SettingsView: View {
                 } header: {
                     Text("Market Data")
                 } footer: {
-                    Text("Required for live stock prices and dividend data. Get your key at massive.com.")
+                    Text(settings.isUsingCustomKey
+                         ? "Using your custom API key."
+                         : "Using built-in API key. Paste your own key to override.")
                 }
 
                 Section {
@@ -50,7 +52,7 @@ struct SettingsView: View {
                 }
             }
             .onAppear {
-                apiKeyInput = settings.apiKey
+                apiKeyInput = settings.userAPIKey
                 expenseTargetInput = settings.monthlyExpenseTarget > 0
                     ? NSDecimalNumber(decimal: settings.monthlyExpenseTarget).stringValue
                     : ""
@@ -145,7 +147,7 @@ struct SettingsView: View {
     // MARK: - Helpers
 
     private func commitAPIKey() {
-        settings.apiKey = apiKeyInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        settings.userAPIKey = apiKeyInput.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func commitExpenseTarget() {

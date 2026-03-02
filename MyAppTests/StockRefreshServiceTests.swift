@@ -132,7 +132,7 @@ final class StockRefreshServiceTests: XCTestCase {
             keychain: KeychainService(service: "com.myapp.tests.refresh.\(UUID().uuidString)"),
             defaults: UserDefaults(suiteName: "com.myapp.tests.refresh.\(UUID().uuidString)")!
         )
-        settings.apiKey = "test-api-key"
+        settings.userAPIKey = "test-api-key"
         mockMassive = MockMassiveService()
         sut = StockRefreshService(settings: settings, container: container, massive: mockMassive,
                                   interTickerDelay: .zero)
@@ -195,16 +195,15 @@ final class StockRefreshServiceTests: XCTestCase {
         XCTAssertEqual(stocks.first?.sector, "Technology")
     }
 
-    func testRefreshSkipsWhenNoAPIKey() async throws {
+    func testRefreshUsesEmbeddedKeyWhenUserKeyEmpty() async throws {
         _ = try insertStock(ticker: "AAPL")
-        settings.apiKey = ""
+        settings.userAPIKey = ""
 
+        // hasAPIKey is always true now — refresh proceeds with embedded key.
         await sut.refresh(ticker: "AAPL")
 
-        let context = ModelContext(container)
-        let stocks = try context.fetch(FetchDescriptor<Stock>())
-        XCTAssertEqual(stocks.first?.companyName, "") // unchanged
-        XCTAssertEqual(mockMassive.fetchDetailsCallCount, 0) // no API call
+        XCTAssertTrue(settings.hasAPIKey, "hasAPIKey should always be true with embedded key")
+        XCTAssertEqual(mockMassive.fetchDetailsCallCount, 1, "Should refresh using embedded key")
     }
 
     func testRefreshHandlesNetworkError() async throws {

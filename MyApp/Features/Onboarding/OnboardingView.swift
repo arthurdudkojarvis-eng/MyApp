@@ -3,8 +3,7 @@ import SwiftUI
 // MARK: - OnboardingView
 
 /// Full-screen onboarding shown on first launch.
-/// Navigation is button-driven only — no free swipe — so users
-/// cannot accidentally skip the API key page.
+/// Welcome → Ready (2 pages). API key is built-in so no key entry needed.
 struct OnboardingView: View {
     @Environment(SettingsStore.self) private var settings
     @State private var page = 0
@@ -14,9 +13,6 @@ struct OnboardingView: View {
             switch page {
             case 0:
                 WelcomePage { advance() }
-                    .transition(.push(from: .trailing))
-            case 1:
-                APIKeyPage { advance() }
                     .transition(.push(from: .trailing))
             default:
                 ReadyPage()
@@ -78,96 +74,7 @@ private struct WelcomePage: View {
     }
 }
 
-// MARK: - Page 2: API Key
-
-private struct APIKeyPage: View {
-    @Environment(SettingsStore.self) private var settings
-    let onNext: () -> Void
-
-    @State private var apiKeyInput = ""
-    @State private var showKey = false
-
-    private static let massiveURL = URL(string: "https://massive.com")!
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            Image(systemName: "key.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(Color.accentColor)
-                .padding(.bottom, 24)
-
-            Text("Get Live Prices")
-                .font(.largeTitle.bold())
-                .padding(.bottom, 12)
-
-            Text("Paste your Massive API key to fetch live stock prices and dividend data.")
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
-                .padding(.bottom, 8)
-
-            Link("Get a key at massive.com →", destination: Self.massiveURL)
-                .font(.subheadline)
-                .padding(.bottom, 36)
-
-            HStack {
-                Group {
-                    if showKey {
-                        TextField("Paste API key", text: $apiKeyInput)
-                            .autocorrectionDisabled()
-                            .textInputAutocapitalization(.never)
-                            .accessibilityLabel("Massive API key")
-                    } else {
-                        SecureField("Paste API key", text: $apiKeyInput)
-                            .accessibilityLabel("Massive API key")
-                    }
-                }
-                .padding()
-                .background(Color(.secondarySystemGroupedBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-
-                Button {
-                    showKey.toggle()
-                } label: {
-                    Image(systemName: showKey ? "eye.slash" : "eye")
-                        .foregroundStyle(.secondary)
-                        .padding(14)
-                        .background(Color(.secondarySystemGroupedBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                }
-                .accessibilityLabel(showKey ? "Hide API key" : "Show API key")
-            }
-            .padding(.horizontal, 24)
-
-            Spacer()
-
-            VStack(spacing: 12) {
-                PrimaryButton(apiKeyInput.isEmpty ? "Continue" : "Save & Continue",
-                              action: saveAndContinue)
-
-                Button("Skip for now", action: onNext)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 48)
-        }
-        .onAppear { apiKeyInput = settings.apiKey }
-    }
-
-    private func saveAndContinue() {
-        let trimmed = apiKeyInput.trimmingCharacters(in: .whitespaces)
-        if !trimmed.isEmpty {
-            settings.apiKey = trimmed
-        }
-        onNext()
-    }
-}
-
-// MARK: - Page 3: Ready
+// MARK: - Page 2: Ready
 
 private struct ReadyPage: View {
     @Environment(SettingsStore.self) private var settings

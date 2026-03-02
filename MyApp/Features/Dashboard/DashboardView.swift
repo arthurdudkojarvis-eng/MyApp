@@ -74,9 +74,6 @@ struct DashboardView: View {
     private var mainContent: some View {
         ScrollView {
             VStack(spacing: 16) {
-                if !settings.hasAPIKey {
-                    NoAPIKeyBannerView { showSettings = true }
-                }
                 if let error = stockRefresh.lastRefreshError {
                     RefreshErrorBannerView(message: error) {
                         stockRefresh.dismissRefreshError()
@@ -103,43 +100,11 @@ struct DashboardView: View {
     }
 
     private func loadMarketStatus() async {
-        guard settings.hasAPIKey else { return }
         marketStatus = try? await massive.service.fetchMarketStatus(apiKey: settings.apiKey)
     }
 }
 
 // MARK: - Banners
-
-private struct NoAPIKeyBannerView: View {
-    let onTapSettings: () -> Void
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "key.slash")
-                .foregroundStyle(.orange)
-                .font(.title3)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("No API Key")
-                    .font(.subheadline.bold())
-                Text("Live prices unavailable. Add a Massive API key in Settings.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 8)
-            Button("Settings", action: onTapSettings)
-                .font(.caption.bold())
-                .buttonStyle(.bordered)
-                .tint(.orange)
-        }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.orange.opacity(0.1))
-        )
-        .padding(.horizontal)
-    }
-}
 
 private struct RefreshErrorBannerView: View {
     let message: String
@@ -348,17 +313,3 @@ private struct DashboardSecondPage: View {
         .environment(StockRefreshService(settings: settings, container: container))
 }
 
-#Preview("No API key") {
-    let container = ModelContainer.preview
-    let settings = SettingsStore()
-    settings.apiKey = ""          // force banner regardless of Keychain state
-    settings.monthlyExpenseTarget = Decimal(string: "2000")!
-
-    let portfolio = Portfolio(name: "Main")
-    container.mainContext.insert(portfolio)
-
-    return DashboardView()
-        .modelContainer(container)
-        .environment(settings)
-        .environment(StockRefreshService(settings: settings, container: container))
-}

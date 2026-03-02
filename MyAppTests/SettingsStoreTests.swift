@@ -26,22 +26,23 @@ final class SettingsStoreTests: XCTestCase {
 
     // MARK: - Initialization
 
-    func testInitLoadsAPIKeyFromKeychain() throws {
+    func testInitLoadsUserAPIKeyFromKeychain() throws {
         try keychain.save("test-api-key", forKey: "apiKey")
         let store = SettingsStore(keychain: keychain, defaults: defaults)
+        XCTAssertEqual(store.userAPIKey, "test-api-key")
         XCTAssertEqual(store.apiKey, "test-api-key")
     }
 
     func testInitMigratesLegacyFMPAPIKey() throws {
         try keychain.save("legacy-fmp-key", forKey: "fmpAPIKey")
         let store = SettingsStore(keychain: keychain, defaults: defaults)
-        XCTAssertEqual(store.apiKey, "legacy-fmp-key")
+        XCTAssertEqual(store.userAPIKey, "legacy-fmp-key")
         XCTAssertNil(keychain.load(forKey: "fmpAPIKey"), "Legacy key should be deleted after migration")
         XCTAssertEqual(keychain.load(forKey: "apiKey"), "legacy-fmp-key")
     }
 
-    func testInitDefaultsAPIKeyToEmptyStringWhenKeychainEmpty() {
-        XCTAssertEqual(sut.apiKey, "")
+    func testInitDefaultsUserAPIKeyToEmptyStringWhenKeychainEmpty() {
+        XCTAssertEqual(sut.userAPIKey, "")
     }
 
     func testInitLoadsExpenseTargetFromDefaults() {
@@ -66,26 +67,46 @@ final class SettingsStoreTests: XCTestCase {
         XCTAssertEqual(store.monthlyExpenseTarget, 0)
     }
 
-    // MARK: - apiKey mutations
+    // MARK: - userAPIKey mutations
 
-    func testSettingAPIKeyPersistsToKeychain() {
-        sut.apiKey = "new-key"
+    func testSettingUserAPIKeyPersistsToKeychain() {
+        sut.userAPIKey = "new-key"
         XCTAssertEqual(keychain.load(forKey: "apiKey"), "new-key")
     }
 
-    func testSettingAPIKeyToEmptyStringPersistsEmptyString() {
-        sut.apiKey = "some-key"
-        sut.apiKey = ""
+    func testSettingUserAPIKeyToEmptyStringPersistsEmptyString() {
+        sut.userAPIKey = "some-key"
+        sut.userAPIKey = ""
         XCTAssertEqual(keychain.load(forKey: "apiKey"), "")
     }
 
-    func testHasAPIKeyIsFalseWhenEmpty() {
-        XCTAssertFalse(sut.hasAPIKey)
+    func testHasAPIKeyReflectsEffectiveKey() {
+        // With placeholder empty arrays, EmbeddedAPIKey.key is "" so hasAPIKey depends on userAPIKey.
+        // With real embedded bytes, hasAPIKey would be true even when userAPIKey is empty.
+        sut.userAPIKey = "abc"
+        XCTAssertTrue(sut.hasAPIKey)
     }
 
-    func testHasAPIKeyIsTrueWhenNonEmpty() {
-        sut.apiKey = "abc"
-        XCTAssertTrue(sut.hasAPIKey)
+    // MARK: - apiKey fallback
+
+    func testAPIKeyFallsBackToEmbeddedKeyWhenUserKeyEmpty() {
+        sut.userAPIKey = ""
+        XCTAssertEqual(sut.apiKey, EmbeddedAPIKey.key)
+    }
+
+    func testAPIKeyReturnsUserKeyWhenSet() {
+        sut.userAPIKey = "custom-key"
+        XCTAssertEqual(sut.apiKey, "custom-key")
+    }
+
+    func testIsUsingCustomKeyIsFalseWhenUserKeyEmpty() {
+        sut.userAPIKey = ""
+        XCTAssertFalse(sut.isUsingCustomKey)
+    }
+
+    func testIsUsingCustomKeyIsTrueWhenUserKeySet() {
+        sut.userAPIKey = "my-key"
+        XCTAssertTrue(sut.isUsingCustomKey)
     }
 
     // MARK: - monthlyExpenseTarget mutations
