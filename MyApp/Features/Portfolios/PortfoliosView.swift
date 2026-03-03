@@ -159,6 +159,8 @@ struct PortfolioHoldingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(StockRefreshService.self) private var stockRefresh
     @State private var showAddHolding = false
+    @State private var holdingToEdit: Holding?
+    @State private var holdingToDelete: Holding?
 
     private var sortedHoldings: [Holding] {
         portfolio.holdings.sorted { ($0.stock?.ticker ?? "") < ($1.stock?.ticker ?? "") }
@@ -176,15 +178,22 @@ struct PortfolioHoldingsView: View {
                 List {
                     Section {
                         ForEach(sortedHoldings) { holding in
-                            NavigationLink(value: holding) {
-                                PortfolioHoldingRowView(holding: holding)
-                            }
-                        }
-                        .onDelete { offsets in
-                            let snapshot = sortedHoldings
-                            for index in offsets {
-                                modelContext.delete(snapshot[index])
-                            }
+                            PortfolioHoldingRowView(holding: holding)
+                                .swipeActions(edge: .leading) {
+                                    Button {
+                                        holdingToEdit = holding
+                                    } label: {
+                                        Label("Edit", systemImage: "pencil")
+                                    }
+                                    .tint(.blue)
+                                }
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button(role: .destructive) {
+                                        holdingToDelete = holding
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
                         }
                     } footer: {
                         if portfolio.totalMarketValue > 0 {
@@ -205,9 +214,6 @@ struct PortfolioHoldingsView: View {
                     }
                 }
                 .listStyle(.insetGrouped)
-                .navigationDestination(for: Holding.self) { holding in
-                    HoldingDetailView(holding: holding)
-                }
             }
         }
         .navigationTitle(portfolio.name)
@@ -224,6 +230,27 @@ struct PortfolioHoldingsView: View {
         }
         .sheet(isPresented: $showAddHolding) {
             AddHoldingView(portfolio: portfolio)
+        }
+        .sheet(item: $holdingToEdit) { holding in
+            EditHoldingView(holding: holding)
+        }
+        .confirmationDialog(
+            "Delete Holding",
+            isPresented: Binding(
+                get: { holdingToDelete != nil },
+                set: { if !$0 { holdingToDelete = nil } }
+            ),
+            presenting: holdingToDelete
+        ) { holding in
+            Button("Delete", role: .destructive) {
+                modelContext.delete(holding)
+                holdingToDelete = nil
+            }
+            Button("Cancel", role: .cancel) {
+                holdingToDelete = nil
+            }
+        } message: { holding in
+            Text("Remove \(holding.stock?.ticker ?? "this holding") from \(portfolio.name)?")
         }
     }
 }
