@@ -20,6 +20,7 @@ protocol MassiveFetching: Sendable {
     func fetchRelatedCompanies(ticker: String) async throws -> [String]
     func fetchTechnicalIndicator(type: MassiveIndicatorType, ticker: String) async throws -> [MassiveIndicatorValue]
     func fetchPreviousCloseBar(ticker: String) async throws -> MassiveAggregate?
+    func fetchImageData(from url: URL) async throws -> Data
 }
 
 extension MassiveFetching {
@@ -40,6 +41,12 @@ struct MassiveTickerDetails: Decodable {
     let sicDescription: String?   // maps to sector
     let marketCap: Decimal?       // may be absent for small/unlisted tickers
     let description: String?      // company description
+    let branding: Branding?
+
+    struct Branding: Decodable {
+        let iconUrl: String?      // PNG, square — preferred for logo display
+        let logoUrl: String?      // often SVG/wide — fallback
+    }
 }
 
 // MARK: - Ticker Search

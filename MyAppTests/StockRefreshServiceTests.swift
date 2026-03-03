@@ -7,7 +7,7 @@ import SwiftData
 final class MockMassiveService: MassiveFetching {
     var tickerDetailsResult: MassiveTickerDetails = MassiveTickerDetails(
         ticker: "AAPL", name: "Apple Inc.", sicDescription: "Technology",
-        marketCap: nil, description: nil
+        marketCap: nil, description: nil, branding: nil
     )
     var previousCloseResult: Decimal? = Decimal(string: "185.00")
     var dividendsResult: [MassiveDividend] = []
@@ -41,6 +41,7 @@ final class MockMassiveService: MassiveFetching {
     var fetchRelatedCompaniesCallCount = 0
     var fetchTechnicalIndicatorCallCount = 0
     var fetchPreviousCloseBarCallCount = 0
+    var fetchImageDataCallCount = 0
 
     func fetchTickerDetails(ticker: String) async throws -> MassiveTickerDetails {
         fetchDetailsCallCount += 1
@@ -114,6 +115,11 @@ final class MockMassiveService: MassiveFetching {
         if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
         return previousCloseBarResult
     }
+    func fetchImageData(from url: URL) async throws -> Data {
+        fetchImageDataCallCount += 1
+        if shouldThrow { throw MassiveError.httpError(statusCode: 403) }
+        return Data()
+    }
 }
 
 // MARK: - Tests
@@ -154,7 +160,7 @@ final class StockRefreshServiceTests: XCTestCase {
     func testRefreshUpdatesCompanyName() async throws {
         _ = try insertStock(ticker: "AAPL")
         mockMassive.tickerDetailsResult = MassiveTickerDetails(
-            ticker: "AAPL", name: "Apple Inc.", sicDescription: nil, marketCap: nil, description: nil
+            ticker: "AAPL", name: "Apple Inc.", sicDescription: nil, marketCap: nil, description: nil, branding: nil
         )
 
         await sut.refresh(ticker: "AAPL")
@@ -178,7 +184,7 @@ final class StockRefreshServiceTests: XCTestCase {
     func testRefreshUpdatesSector() async throws {
         _ = try insertStock(ticker: "AAPL")
         mockMassive.tickerDetailsResult = MassiveTickerDetails(
-            ticker: "AAPL", name: "Apple Inc.", sicDescription: "Technology", marketCap: nil, description: nil
+            ticker: "AAPL", name: "Apple Inc.", sicDescription: "Technology", marketCap: nil, description: nil, branding: nil
         )
 
         await sut.refresh(ticker: "AAPL")
@@ -407,7 +413,7 @@ final class StockRefreshServiceTests: XCTestCase {
         try context.save()
 
         mockMassive.tickerDetailsResult = MassiveTickerDetails(
-            ticker: "AAPL", name: "Updated", sicDescription: nil, marketCap: nil, description: nil
+            ticker: "AAPL", name: "Updated", sicDescription: nil, marketCap: nil, description: nil, branding: nil
         )
 
         await sut.refreshStaleStocks()
@@ -518,7 +524,7 @@ final class StockRefreshServiceTests: XCTestCase {
 
         // API returns a completely different ex-date.
         mockMassive.tickerDetailsResult = MassiveTickerDetails(
-            ticker: "O", name: "Realty Income Corp.", sicDescription: nil, marketCap: nil, description: nil
+            ticker: "O", name: "Realty Income Corp.", sicDescription: nil, marketCap: nil, description: nil, branding: nil
         )
         mockMassive.dividendsResult = [
             MassiveDividend(
@@ -605,7 +611,7 @@ final class StockRefreshServiceTests: XCTestCase {
     func testRefreshSavesPriceAndNameEvenWhenDividendFetchFails() async throws {
         _ = try insertStock(ticker: "AAPL")
         mockMassive.tickerDetailsResult = MassiveTickerDetails(
-            ticker: "AAPL", name: "Apple Inc.", sicDescription: nil, marketCap: nil, description: nil
+            ticker: "AAPL", name: "Apple Inc.", sicDescription: nil, marketCap: nil, description: nil, branding: nil
         )
         mockMassive.previousCloseResult = Decimal(string: "195.00")
         mockMassive.shouldThrowDividends = true   // dividends fail, price+name should still save

@@ -2,7 +2,7 @@ import Foundation
 
 struct MassiveService: MassiveFetching {
     /// Worker proxy URL. Replace with your deployed Cloudflare Worker URL.
-    private static let baseURL = "https://myapp-api-proxy.arthurdudko.workers.dev"
+    static let baseURL = "https://myapp-api-proxy.arthurdudko.workers.dev"
 
     /// Shared secret the worker validates via X-App-Token header.
     /// Set this to the same UUID you stored in `npx wrangler secret put APP_TOKEN`.
@@ -66,19 +66,64 @@ struct MassiveService: MassiveFetching {
     // MARK: - Ticker Search
 
     func fetchTickerSearch(query: String, market: String) async throws -> [MassiveTickerSearchResult] {
-        guard var components = URLComponents(string: "\(Self.baseURL)/v3/reference/tickers") else {
-            throw URLError(.badURL)
+        let trimmed = query.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return [] }
+
+        // Two parallel calls: ticker prefix match + text search.
+        // The text-only `search` parameter often misses exact ticker matches,
+        // so we add a prefix query using ticker.gte / ticker.lt comparison operators.
+        let upper = trimmed.uppercased()
+
+        async let byTicker: [MassiveTickerSearchResult] = {
+            guard var c = URLComponents(string: "\(Self.baseURL)/v3/reference/tickers") else { return [] }
+            c.queryItems = [
+                URLQueryItem(name: "ticker.gte", value: upper),
+                URLQueryItem(name: "ticker.lt", value: Self.nextPrefix(upper)),
+                URLQueryItem(name: "market", value: market),
+                URLQueryItem(name: "active", value: "true"),
+                URLQueryItem(name: "order", value: "asc"),
+                URLQueryItem(name: "sort", value: "ticker"),
+                URLQueryItem(name: "limit", value: "10")
+            ]
+            guard let url = c.url else { return [] }
+            guard let data = try? await fetch(url: url) else { return [] }
+            return (try? Self.decoder.decode(MassiveTickerSearchResponse.self, from: data))?.results ?? []
+        }()
+
+        async let bySearch: [MassiveTickerSearchResult] = {
+            guard var c = URLComponents(string: "\(Self.baseURL)/v3/reference/tickers") else { return [] }
+            c.queryItems = [
+                URLQueryItem(name: "search", value: trimmed),
+                URLQueryItem(name: "market", value: market),
+                URLQueryItem(name: "active", value: "true"),
+                URLQueryItem(name: "limit", value: "10")
+            ]
+            guard let url = c.url else { return [] }
+            guard let data = try? await fetch(url: url) else { return [] }
+            return (try? Self.decoder.decode(MassiveTickerSearchResponse.self, from: data))?.results ?? []
+        }()
+
+        let (tickerResults, searchResults) = await (byTicker, bySearch)
+
+        // Merge: ticker prefix matches first, then text search (deduped).
+        var seen = Set<String>()
+        var merged: [MassiveTickerSearchResult] = []
+        for result in tickerResults + searchResults {
+            if seen.insert(result.ticker).inserted {
+                merged.append(result)
+            }
         }
-        components.queryItems = [
-            URLQueryItem(name: "search", value: query),
-            URLQueryItem(name: "market", value: market),
-            URLQueryItem(name: "active", value: "true"),
-            URLQueryItem(name: "limit", value: "20")
-        ]
-        guard let url = components.url else { throw URLError(.badURL) }
-        let data = try await fetch(url: url)
-        let response = try Self.decoder.decode(MassiveTickerSearchResponse.self, from: data)
-        return response.results ?? []
+        return merged
+    }
+
+    /// Returns the next string after `prefix` for use as an exclusive upper bound.
+    /// e.g. "AAPL" → "AAPM", "AA" → "AB"
+    private static func nextPrefix(_ prefix: String) -> String {
+        guard !prefix.isEmpty else { return "" }
+        var chars = Array(prefix)
+        // Increment the last character.
+        chars[chars.count - 1] = Character(UnicodeScalar(chars.last!.asciiValue! + 1))
+        return String(chars)
     }
 
     // MARK: - News
@@ -268,6 +313,22 @@ struct MassiveService: MassiveFetching {
         let data = try await fetch(url: url)
         let response = try Self.decoder.decode(MassiveAggregatesResponse.self, from: data)
         return response.results?.first
+    }
+
+    // MARK: - Branding Image
+
+    /// Rewrites an absolute Massive/Polygon branding URL to go through our proxy worker.
+    /// Returns nil for URLs that don't belong to a known branding host.
+    static func proxiedBrandingURL(from absoluteURL: String) -> URL? {
+        guard let original = URL(string: absoluteURL),
+              let host = original.host,
+              host.contains("polygon") || host.contains("massive")
+        else { return nil }
+        return URL(string: "\(baseURL)\(original.path)")
+    }
+
+    func fetchImageData(from url: URL) async throws -> Data {
+        try await fetch(url: url)
     }
 
     // MARK: - Helpers

@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import Charts
+import UIKit
 import OSLog
 
 private let detailLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.myapp.MyApp",
@@ -236,6 +237,7 @@ struct StockDetailView: View {
     @State private var indicators: IndicatorData = .empty
     @State private var isLoading = true
     @State private var loadError: String?
+    @State private var showDescription = false
 
     /// Loaded once on appear; refreshed after the add-holding sheet dismisses.
     @State private var existingStock: Stock?
@@ -319,18 +321,22 @@ struct StockDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
-                if isLoading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, minHeight: 200)
-                } else if let error = loadError {
-                    ContentUnavailableView(
-                        "Could Not Load",
-                        systemImage: "exclamationmark.triangle",
-                        description: Text(error)
-                    )
-                } else {
-                    headerSection
+            if isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, minHeight: 200)
+                    .padding()
+            } else if let error = loadError {
+                ContentUnavailableView(
+                    "Could Not Load",
+                    systemImage: "exclamationmark.triangle",
+                    description: Text(error)
+                )
+                .padding()
+            } else {
+                // Hero banner sits outside padding for full-width bleed
+                heroBanner
+
+                VStack(spacing: 20) {
                     priceChartSection
                     criteriaGrid
                     indicatorsSection
@@ -340,18 +346,15 @@ struct StockDetailView: View {
                     if !splits.isEmpty {
                         splitHistorySection
                     }
-                    if let desc = details?.description, !desc.isEmpty {
-                        descriptionSection(desc)
-                    }
                     addRemoveButton
                     watchlistButton
                 }
+                .padding()
             }
-            .padding()
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle(result.ticker)
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .task { await load() }
         // Reload existingStock after the add-holding sheet is dismissed so the
         // button state updates without requiring a full view reload.
@@ -386,17 +389,57 @@ struct StockDetailView: View {
 
     // MARK: - Sections
 
-    private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(details?.name ?? result.name)
-                .font(.title2.bold())
-            if let sector = details?.sicDescription, !sector.isEmpty {
-                Text(sector)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+    private var heroBanner: some View {
+        ZStack(alignment: .bottom) {
+            LinearGradient(
+                colors: [Color.accentColor.opacity(0.25), Color.accentColor.opacity(0)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+
+            VStack(spacing: 8) {
+                CompanyLogoView(
+                    branding: details?.branding,
+                    ticker: result.ticker,
+                    service: massive.service,
+                    size: 72
+                )
+
+                if let sector = details?.sicDescription, !sector.isEmpty {
+                    Text(sector)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                HStack(spacing: 6) {
+                    Text(details?.name ?? result.name)
+                        .font(.title2.bold())
+                        .multilineTextAlignment(.center)
+
+                    if let desc = details?.description, !desc.isEmpty {
+                        Button {
+                            showDescription.toggle()
+                        } label: {
+                            Image(systemName: "info.circle")
+                                .font(.body)
+                                .foregroundStyle(.secondary)
+                        }
+                        .popover(isPresented: $showDescription) {
+                            ScrollView {
+                                Text(desc)
+                                    .font(.subheadline)
+                                    .padding()
+                            }
+                            .frame(idealWidth: 320, idealHeight: 300)
+                            .presentationCompactAdaptation(.popover)
+                        }
+                    }
+                }
             }
+            .padding(.vertical, 24)
+            .padding(.horizontal, 16)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity)
     }
 
     private var criteriaGrid: some View {
@@ -621,20 +664,6 @@ struct StockDetailView: View {
         return d.formatted(.number.precision(.fractionLength(0...2)))
     }
 
-    private func descriptionSection(_ text: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("About").font(.headline)
-            Text(text)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(5)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-    }
-
     private var addRemoveButton: some View {
         Group {
             if isAlreadyAdded {
@@ -809,6 +838,65 @@ struct StockDetailView: View {
         case 1_000_000_000...:     return String(format: "%.1fB", d / 1_000_000_000)
         case 1_000_000...:         return String(format: "%.1fM", d / 1_000_000)
         default:                   return value.formatted(.currency(code: "USD"))
+        }
+    }
+}
+
+// MARK: - Company Logo
+
+private struct CompanyLogoView: View {
+    let branding: MassiveTickerDetails.Branding?
+    let ticker: String
+    let service: any MassiveFetching
+    let size: CGFloat
+
+    @State private var logoImage: UIImage?
+
+    // In-memory cache shared across all instances
+    private static let cache = NSCache<NSString, UIImage>()
+
+    var body: some View {
+        Group {
+            if let image = logoImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: size, height: size)
+                    .clipShape(RoundedRectangle(cornerRadius: size * 0.2, style: .continuous))
+            } else {
+                // Fallback: ticker initials in accent circle
+                Text(String(ticker.prefix(2)))
+                    .font(.system(size: size * 0.35, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(width: size, height: size)
+                    .background(Color.accentColor)
+                    .clipShape(RoundedRectangle(cornerRadius: size * 0.2, style: .continuous))
+            }
+        }
+        .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+        .task { await loadLogo() }
+    }
+
+    private func loadLogo() async {
+        let cacheKey = ticker as NSString
+        if let cached = Self.cache.object(forKey: cacheKey) {
+            logoImage = cached
+            return
+        }
+
+        // Prefer iconUrl (PNG, square) over logoUrl (often SVG, wide)
+        let urlString = branding?.iconUrl ?? branding?.logoUrl
+        guard let urlString,
+              let proxied = MassiveService.proxiedBrandingURL(from: urlString)
+        else { return }
+
+        do {
+            let data = try await service.fetchImageData(from: proxied)
+            guard let image = UIImage(data: data) else { return }
+            Self.cache.setObject(image, forKey: cacheKey)
+            logoImage = image
+        } catch {
+            // Silently fall back to initials
         }
     }
 }

@@ -25,14 +25,18 @@ export default {
 
     const upstreamResponse = await fetch(upstream.toString(), {
       headers: {
-        "Accept": "application/json",
+        "Accept": "*/*",
         "User-Agent": "MyApp-Worker/1.0",
       },
     });
 
     // Clone response with cache headers.
+    // Images are immutable branding assets — cache for 24 hours.
+    // JSON API responses change frequently — cache for 30 seconds.
+    const contentType = upstreamResponse.headers.get("Content-Type") ?? "";
+    const isImage = contentType.startsWith("image/");
     const headers = new Headers(upstreamResponse.headers);
-    headers.set("Cache-Control", "public, max-age=30");
+    headers.set("Cache-Control", isImage ? "public, max-age=86400" : "public, max-age=30");
     // Strip any upstream Set-Cookie or server headers.
     headers.delete("Set-Cookie");
 
