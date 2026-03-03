@@ -11,16 +11,19 @@ struct AddHoldingView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.massiveService) private var massive
     @Environment(StockRefreshService.self) private var stockRefresh
 
     @State private var ticker: String = ""
     @State private var sharesText: String = ""
-    @State private var costBasisText: String = ""
     @State private var purchaseDate: Date = .now
+    @State private var currentPrice: Decimal?
+    @State private var isFetchingPrice: Bool = false
+    @State private var priceFetchTask: Task<Void, Never>?
 
     @FocusState private var focusedField: Field?
 
-    private enum Field { case ticker, shares, costBasis }
+    private enum Field { case ticker, shares }
 
     // MARK: - Derived state
 
@@ -32,12 +35,8 @@ struct AddHoldingView: View {
         Decimal(string: sharesText).flatMap { $0 > 0 ? $0 : nil }
     }
 
-    private var costBasisDecimal: Decimal? {
-        Decimal(string: costBasisText).flatMap { $0 > 0 ? $0 : nil }
-    }
-
     private var isValid: Bool {
-        !trimmedTicker.isEmpty && sharesDecimal != nil && costBasisDecimal != nil
+        !trimmedTicker.isEmpty && sharesDecimal != nil && (currentPrice ?? 0) > 0
     }
 
     // MARK: - Body
@@ -50,7 +49,10 @@ struct AddHoldingView: View {
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.characters)
                         .focused($focusedField, equals: .ticker)
-                        .onChange(of: ticker) { _, new in ticker = new.uppercased() }
+                        .onChange(of: ticker) { _, new in
+                            ticker = new.uppercased()
+                            fetchPrice(for: new)
+                        }
                         .accessibilityLabel("Ticker symbol")
                 } header: {
                     Text("Ticker")
@@ -67,14 +69,28 @@ struct AddHoldingView: View {
 
                 Section {
                     HStack {
-                        Text("$").foregroundStyle(.secondary)
-                        TextField("0.00", text: $costBasisText)
-                            .keyboardType(.decimalPad)
-                            .focused($focusedField, equals: .costBasis)
-                            .accessibilityLabel("Cost basis per share")
+                        Text("Current Price")
+                        Spacer()
+                        if isFetchingPrice {
+                            ProgressView()
+                        } else if let price = currentPrice, price > 0 {
+                            Text(price, format: .currency(code: "USD"))
+                                .foregroundStyle(.secondary)
+                        } else if !trimmedTicker.isEmpty {
+                            Text("—")
+                                .foregroundStyle(.secondary)
+                        }
                     }
-                } header: {
-                    Text("Cost Basis per Share")
+                    .accessibilityLabel("Current price")
+
+                    if let price = currentPrice, price > 0, let shares = sharesDecimal {
+                        HStack {
+                            Text("Total Cost")
+                            Spacer()
+                            Text(shares * price, format: .currency(code: "USD"))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
 
                 Section {
@@ -99,7 +115,10 @@ struct AddHoldingView: View {
                 }
             }
             .onAppear {
-                if !initialTicker.isEmpty { ticker = initialTicker }
+                if !initialTicker.isEmpty {
+                    ticker = initialTicker
+                    fetchPrice(for: initialTicker)
+                }
                 focusedField = initialTicker.isEmpty ? .ticker : .shares
             }
         }
@@ -110,7 +129,7 @@ struct AddHoldingView: View {
     private func save() {
         guard isValid,
               let shares = sharesDecimal,
-              let costBasis = costBasisDecimal else { return }
+              let price = currentPrice else { return }
 
         let stock: Stock
         if let existing = existingStock(ticker: trimmedTicker) {
@@ -122,7 +141,7 @@ struct AddHoldingView: View {
 
         let holding = Holding(
             shares: shares,
-            averageCostBasis: costBasis,
+            averageCostBasis: price,
             purchaseDate: purchaseDate
         )
         holding.portfolio = portfolio
@@ -134,6 +153,40 @@ struct AddHoldingView: View {
         dismiss()
 
         Task { await stockRefresh.refresh(ticker: tickerToRefresh) }
+    }
+
+    private func fetchPrice(for rawTicker: String) {
+        priceFetchTask?.cancel()
+        let cleaned = rawTicker.trimmingCharacters(in: .whitespaces).uppercased()
+        guard !cleaned.isEmpty else {
+            currentPrice = nil
+            isFetchingPrice = false
+            return
+        }
+
+        // Check if stock already exists in DB with a valid price
+        if let existing = existingStock(ticker: cleaned), existing.currentPrice > 0 {
+            currentPrice = existing.currentPrice
+            return
+        }
+
+        let service = massive.service
+        priceFetchTask = Task {
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else { return }
+            isFetchingPrice = true
+            defer { isFetchingPrice = false }
+
+            do {
+                let price = try await service.fetchPreviousClose(ticker: cleaned)
+                guard !Task.isCancelled else { return }
+                currentPrice = price
+            } catch {
+                guard !Task.isCancelled else { return }
+                logger.error("Failed to fetch price for \(cleaned): \(error.localizedDescription)")
+                currentPrice = nil
+            }
+        }
     }
 
     private func existingStock(ticker: String) -> Stock? {
