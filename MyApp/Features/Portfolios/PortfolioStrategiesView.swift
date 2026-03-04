@@ -40,13 +40,13 @@ private struct StrategyRowView: View {
             HStack(spacing: 12) {
                 Label(strategy.riskProfile, systemImage: "shield")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(riskColor(for: strategy.riskProfile))
                 Label(strategy.expectedYieldRange, systemImage: "percent")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.orange)
                 Label("\(strategy.constituents.count) stocks", systemImage: "list.number")
                     .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.blue)
             }
         }
         .padding(.vertical, 4)
@@ -91,6 +91,7 @@ private struct StrategyDetailView: View {
                         .foregroundStyle(.secondary)
                     Text(strategy.riskProfile)
                         .font(.subheadline.bold())
+                        .foregroundStyle(riskColor(for: strategy.riskProfile))
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Expected Yield")
@@ -98,6 +99,7 @@ private struct StrategyDetailView: View {
                         .foregroundStyle(.secondary)
                     Text(strategy.expectedYieldRange)
                         .font(.subheadline.bold())
+                        .foregroundStyle(.orange)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Stocks")
@@ -105,6 +107,7 @@ private struct StrategyDetailView: View {
                         .foregroundStyle(.secondary)
                     Text("\(strategy.constituents.count)")
                         .font(.subheadline.bold())
+                        .foregroundStyle(.blue)
                 }
             }
         }
@@ -141,6 +144,7 @@ private struct StrategyDetailView: View {
                     VStack(alignment: .trailing, spacing: 2) {
                         Text("\(Int(constituent.allocationPercent))%")
                             .font(.subheadline.bold())
+                            .foregroundStyle(.purple)
                         if let price = prices[constituent.ticker] {
                             Text(price, format: .currency(code: "USD"))
                                 .font(.caption)
@@ -177,5 +181,18 @@ private struct StrategyDetailView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Helpers
+
+private func riskColor(for profile: String) -> Color {
+    switch profile {
+    case "Conservative": return .green
+    case "Moderate-Low": return .mint
+    case "Moderate": return .yellow
+    case "Moderate-High": return .orange
+    case "High": return .red
+    default: return .secondary
     }
 }
