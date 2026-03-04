@@ -69,16 +69,28 @@ struct CryptoBrowserView: View {
                 query: query, market: "crypto"
             )
             guard !Task.isCancelled else { return }
+            // Crypto tickers are "X:BTCUSD", "X:BTCEUR", etc.
+            // Prioritize USD pairs, then sort by relevance.
             let upper = query.uppercased()
-            results = fetched.sorted { a, b in
-                let aExact = a.ticker == upper
-                let bExact = b.ticker == upper
-                if aExact != bExact { return aExact }
-                let aPrefix = a.ticker.hasPrefix(upper)
-                let bPrefix = b.ticker.hasPrefix(upper)
-                if aPrefix != bPrefix { return aPrefix }
-                return false
+            results = fetched
+                .filter { $0.ticker.hasSuffix("USD") }
+                .sorted { a, b in
+                    let aExact = a.ticker == "X:\(upper)USD"
+                    let bExact = b.ticker == "X:\(upper)USD"
+                    if aExact != bExact { return aExact }
+                    let aPrefix = a.ticker.hasPrefix("X:\(upper)")
+                    let bPrefix = b.ticker.hasPrefix("X:\(upper)")
+                    if aPrefix != bPrefix { return aPrefix }
+                    return false
+                }
+        } catch let error as MassiveError {
+            guard !Task.isCancelled else { return }
+            if case .httpError(let code) = error, code == 403 {
+                searchError = "Crypto data is not available on the current API plan."
+            } else {
+                searchError = error.localizedDescription
             }
+            results = []
         } catch {
             guard !Task.isCancelled else { return }
             searchError = error.localizedDescription
@@ -92,10 +104,15 @@ struct CryptoBrowserView: View {
 private struct CryptoSearchRowView: View {
     let result: MassiveTickerSearchResult
 
+    /// Strips "X:" prefix for display — "X:BTCUSD" → "BTCUSD"
+    private var displayTicker: String {
+        result.ticker.hasPrefix("X:") ? String(result.ticker.dropFirst(2)) : result.ticker
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(result.ticker)
+                Text(displayTicker)
                     .font(.headline)
                 Text(result.name)
                     .font(.caption)
@@ -103,15 +120,17 @@ private struct CryptoSearchRowView: View {
                     .lineLimit(1)
             }
             Spacer()
-            if let exchange = result.primaryExchange {
-                Text(exchange)
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
+            Text("USD")
+                .font(.caption2.bold())
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Color.accentColor.opacity(0.12))
+                .foregroundStyle(Color.accentColor)
+                .clipShape(Capsule())
         }
         .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(result.ticker), \(result.name)")
+        .accessibilityLabel("\(displayTicker), \(result.name)")
     }
 }
 

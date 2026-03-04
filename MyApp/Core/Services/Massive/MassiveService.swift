@@ -78,6 +78,20 @@ struct MassiveService: MassiveFetching {
         let upper = trimmed.uppercased()
         let useTickerPrefix = market == "stocks"
 
+        // The text search is the primary path — errors must propagate so the UI
+        // can show a meaningful message instead of an empty "no results" state.
+        guard var searchComponents = URLComponents(string: "\(Self.baseURL)/v3/reference/tickers") else {
+            throw URLError(.badURL)
+        }
+        searchComponents.queryItems = [
+            URLQueryItem(name: "search", value: trimmed),
+            URLQueryItem(name: "market", value: market),
+            URLQueryItem(name: "active", value: "true"),
+            URLQueryItem(name: "limit", value: "10")
+        ]
+        guard let searchURL = searchComponents.url else { throw URLError(.badURL) }
+
+        // Ticker prefix match (stocks only) runs in parallel but fails gracefully.
         async let byTicker: [MassiveTickerSearchResult] = {
             guard useTickerPrefix else { return [] }
             guard var c = URLComponents(string: "\(Self.baseURL)/v3/reference/tickers") else { return [] }
@@ -95,20 +109,13 @@ struct MassiveService: MassiveFetching {
             return (try? Self.decoder.decode(MassiveTickerSearchResponse.self, from: data))?.results ?? []
         }()
 
+        // Text search — propagate errors (throws on HTTP 403, network failure, etc.)
         async let bySearch: [MassiveTickerSearchResult] = {
-            guard var c = URLComponents(string: "\(Self.baseURL)/v3/reference/tickers") else { return [] }
-            c.queryItems = [
-                URLQueryItem(name: "search", value: trimmed),
-                URLQueryItem(name: "market", value: market),
-                URLQueryItem(name: "active", value: "true"),
-                URLQueryItem(name: "limit", value: "10")
-            ]
-            guard let url = c.url else { return [] }
-            guard let data = try? await fetch(url: url) else { return [] }
+            let data = try await fetch(url: searchURL)
             return (try? Self.decoder.decode(MassiveTickerSearchResponse.self, from: data))?.results ?? []
         }()
 
-        let (tickerResults, searchResults) = await (byTicker, bySearch)
+        let (tickerResults, searchResults) = try await (byTicker, bySearch)
 
         // Merge: ticker prefix matches first, then text search (deduped).
         var seen = Set<String>()
