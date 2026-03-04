@@ -2,7 +2,10 @@ import SwiftUI
 import SwiftData
 
 struct MainTabView: View {
+    @Environment(SettingsStore.self) private var settings
+
     var body: some View {
+        let tintColor = settings.fontTheme.color ?? Color.accentColor
         TabView {
             DashboardView()
                 .tabItem {
@@ -29,7 +32,7 @@ struct MainTabView: View {
                     Label("Crypto", systemImage: "bitcoinsign.circle")
                 }
         }
-        .tint(Color.accentColor)
+        .tint(tintColor)
     }
 }
 

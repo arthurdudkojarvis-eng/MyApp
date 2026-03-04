@@ -160,7 +160,9 @@ struct AlertsView: View {
 
                 let content = UNMutableNotificationContent()
                 content.title = "Ex-Dividend Tomorrow: \(alert.ticker)"
-                content.body = "You must own \(alert.ticker) by today to receive \(alert.estimatedPayment.formatted(.currency(code: "USD")))."
+                let quote = investingQuotes.randomElement()
+                let quoteText = quote.map { "\"\($0.text)\" — \($0.author)" } ?? ""
+                content.body = "You must own \(alert.ticker) by today to receive \(alert.estimatedPayment.formatted(.currency(code: "USD"))).\(quoteText.isEmpty ? "" : "\n\n\(quoteText)")"
                 content.sound = .default
 
                 let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)

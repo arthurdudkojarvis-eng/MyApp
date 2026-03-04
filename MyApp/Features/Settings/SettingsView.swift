@@ -29,6 +29,21 @@ struct SettingsView: View {
                     }
                     .pickerStyle(.segmented)
                     .accessibilityLabel("Color scheme")
+
+                    Picker("Font Theme", selection: $settings.fontTheme) {
+                        ForEach(FontTheme.allCases) { theme in
+                            HStack {
+                                if let color = theme.color {
+                                    Circle()
+                                        .fill(color)
+                                        .frame(width: 12, height: 12)
+                                }
+                                Text(theme.label)
+                            }
+                            .tag(theme)
+                        }
+                    }
+                    .accessibilityLabel("Font theme")
                 }
             }
             .listStyle(.insetGrouped)

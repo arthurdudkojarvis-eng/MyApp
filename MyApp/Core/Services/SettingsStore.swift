@@ -17,6 +17,37 @@ enum AppColorScheme: String, CaseIterable {
     }
 }
 
+// MARK: - FontTheme (STORY-050)
+
+import SwiftUI
+
+enum FontTheme: String, CaseIterable, Identifiable {
+    case defaultTheme = "default"
+    case teal = "teal"
+    case gold = "gold"
+    case rose = "rose"
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .defaultTheme: return "Default"
+        case .teal: return "Teal"
+        case .gold: return "Gold"
+        case .rose: return "Rose"
+        }
+    }
+
+    var color: Color? {
+        switch self {
+        case .defaultTheme: return nil
+        case .teal: return Color(red: 0.0, green: 0.59, blue: 0.65)
+        case .gold: return Color(red: 0.80, green: 0.65, blue: 0.20)
+        case .rose: return Color(red: 0.85, green: 0.30, blue: 0.45)
+        }
+    }
+}
+
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.myapp.MyApp",
                             category: "SettingsStore")
 
@@ -30,6 +61,8 @@ final class SettingsStore {
         static let monthlyExpenseTarget   = "monthlyExpenseTarget"
         static let colorScheme            = "colorScheme"
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
+        static let fontTheme              = "fontTheme"
+        static let lastActivePortfolioID  = "lastActivePortfolioID"
     }
 
     // MARK: - Dependencies
@@ -69,6 +102,16 @@ final class SettingsStore {
         didSet { defaults.set(hasCompletedOnboarding, forKey: Keys.hasCompletedOnboarding) }
     }
 
+    // STORY-050: Font theme
+    var fontTheme: FontTheme {
+        didSet { defaults.set(fontTheme.rawValue, forKey: Keys.fontTheme) }
+    }
+
+    // STORY-044: Last active portfolio UUID string
+    var lastActivePortfolioID: String {
+        didSet { defaults.set(lastActivePortfolioID, forKey: Keys.lastActivePortfolioID) }
+    }
+
     // MARK: - Init
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -86,5 +129,10 @@ final class SettingsStore {
         self.colorScheme = AppColorScheme(rawValue: raw) ?? .light
 
         self.hasCompletedOnboarding = defaults.bool(forKey: Keys.hasCompletedOnboarding)
+
+        let themeRaw = defaults.string(forKey: Keys.fontTheme) ?? FontTheme.defaultTheme.rawValue
+        self.fontTheme = FontTheme(rawValue: themeRaw) ?? .defaultTheme
+
+        self.lastActivePortfolioID = defaults.string(forKey: Keys.lastActivePortfolioID) ?? ""
     }
 }

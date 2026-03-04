@@ -5,7 +5,13 @@ import SwiftData
 
 struct PortfoliosView: View {
     @Query(sort: \Portfolio.createdAt) private var portfolios: [Portfolio]
+    @Environment(SettingsStore.self) private var settings
     @State private var showAddPortfolio = false
+    @State private var showStrategies = false
+
+    private var activePortfolioID: String {
+        settings.lastActivePortfolioID
+    }
 
     var body: some View {
         NavigationStack {
@@ -23,9 +29,15 @@ struct PortfoliosView: View {
                                 NavigationLink {
                                     PortfolioHoldingsView(portfolio: portfolio)
                                 } label: {
-                                    PortfolioCardView(portfolio: portfolio)
+                                    PortfolioCardView(
+                                        portfolio: portfolio,
+                                        isActive: portfolio.id.uuidString == activePortfolioID
+                                    )
                                 }
                                 .buttonStyle(.plain)
+                                .simultaneousGesture(TapGesture().onEnded {
+                                    settings.lastActivePortfolioID = portfolio.id.uuidString
+                                })
                             }
                         }
                         .padding(.horizontal)
@@ -36,6 +48,14 @@ struct PortfoliosView: View {
             }
             .navigationTitle("Portfolios")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showStrategies = true
+                    } label: {
+                        Image(systemName: "lightbulb")
+                    }
+                    .accessibilityLabel("Dividend strategies")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showAddPortfolio = true
@@ -48,6 +68,15 @@ struct PortfoliosView: View {
             .sheet(isPresented: $showAddPortfolio) {
                 AddPortfolioView()
             }
+            .sheet(isPresented: $showStrategies) {
+                PortfolioStrategiesView()
+            }
+            .onAppear {
+                // Auto-select if only one portfolio and none selected
+                if portfolios.count == 1, settings.lastActivePortfolioID.isEmpty {
+                    settings.lastActivePortfolioID = portfolios[0].id.uuidString
+                }
+            }
         }
     }
 }
@@ -56,6 +85,7 @@ struct PortfoliosView: View {
 
 private struct PortfolioCardView: View {
     let portfolio: Portfolio
+    var isActive: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -64,6 +94,11 @@ private struct PortfolioCardView: View {
                 Text(portfolio.name)
                     .font(.headline)
                     .foregroundStyle(.primary)
+                if isActive {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.caption)
+                        .foregroundStyle(Color.accentColor)
+                }
                 Spacer()
                 Image(systemName: "chevron.right")
                     .font(.caption)
@@ -161,6 +196,8 @@ struct PortfolioHoldingsView: View {
     @State private var showAddHolding = false
     @State private var holdingToEdit: Holding?
     @State private var holdingToDelete: Holding?
+    @State private var holdingForFutureValue: Holding?
+    @State private var showIncomeHistory = false
 
     private var sortedHoldings: [Holding] {
         portfolio.holdings.sorted { ($0.stock?.ticker ?? "") < ($1.stock?.ticker ?? "") }
@@ -179,6 +216,24 @@ struct PortfolioHoldingsView: View {
                     Section {
                         ForEach(sortedHoldings) { holding in
                             PortfolioHoldingRowView(holding: holding)
+                                .contextMenu {
+                                    Button {
+                                        holdingToEdit = holding
+                                    } label: {
+                                        Label("Edit Holding", systemImage: "pencil")
+                                    }
+                                    Button {
+                                        holdingForFutureValue = holding
+                                    } label: {
+                                        Label("Future Value", systemImage: "chart.line.uptrend.xyaxis")
+                                    }
+                                    Divider()
+                                    Button(role: .destructive) {
+                                        holdingToDelete = holding
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
                                 .swipeActions(edge: .leading) {
                                     Button {
                                         holdingToEdit = holding
@@ -220,12 +275,20 @@ struct PortfolioHoldingsView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    showAddHolding = true
-                } label: {
-                    Image(systemName: "plus")
+                HStack(spacing: 16) {
+                    Button {
+                        showIncomeHistory = true
+                    } label: {
+                        Image(systemName: "chart.bar")
+                    }
+                    .accessibilityLabel("Income history")
+                    Button {
+                        showAddHolding = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel("Add holding")
                 }
-                .accessibilityLabel("Add holding")
             }
         }
         .sheet(isPresented: $showAddHolding) {
@@ -233,6 +296,12 @@ struct PortfolioHoldingsView: View {
         }
         .sheet(item: $holdingToEdit) { holding in
             EditHoldingView(holding: holding)
+        }
+        .sheet(item: $holdingForFutureValue) { holding in
+            HoldingFutureValueView(holding: holding)
+        }
+        .sheet(isPresented: $showIncomeHistory) {
+            DividendIncomeHistoryView(portfolio: portfolio)
         }
         .confirmationDialog(
             "Delete Holding",
