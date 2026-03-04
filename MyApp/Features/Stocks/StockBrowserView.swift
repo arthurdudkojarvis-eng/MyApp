@@ -7,6 +7,40 @@ import OSLog
 private let detailLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.myapp.MyApp",
                                   category: "StockDetailView")
 
+// MARK: - MarketCapRange
+
+enum MarketCapRange: String, CaseIterable, Identifiable {
+    case any   = "Any"
+    case mega  = "Mega"    // >= 200B
+    case large = "Large"   // 10B–200B
+    case mid   = "Mid"     // 2B–10B
+    case small = "Small"   // 300M–2B
+    case micro = "Micro"   // < 300M
+
+    var id: String { rawValue }
+
+    func matches(marketCap: Decimal?) -> Bool {
+        guard self != .any else { return true }
+        guard let mc = marketCap else { return false }
+        switch self {
+        case .any:   return true
+        case .mega:  return mc >= 200_000_000_000
+        case .large: return mc >= 10_000_000_000 && mc < 200_000_000_000
+        case .mid:   return mc >= 2_000_000_000 && mc < 10_000_000_000
+        case .small: return mc >= 300_000_000 && mc < 2_000_000_000
+        case .micro: return mc < 300_000_000
+        }
+    }
+}
+
+// MARK: - Sector Chips
+
+private let sectorChips: [String] = [
+    "Technology", "Healthcare", "Finance", "Energy",
+    "Consumer Cyclical", "Industrials", "Real Estate",
+    "Utilities", "Communication", "Materials"
+]
+
 // MARK: - StockBrowserView
 
 struct StockBrowserView: View {
@@ -17,6 +51,46 @@ struct StockBrowserView: View {
     @State private var isSearching = false
     @State private var searchError: String?
     @State private var searchTask: Task<Void, Never>?
+
+    // STORY-043: Filter state
+    @State private var showFilters = false
+    @State private var selectedSector: String?
+    @State private var minDividendYield: Double = 0
+    @State private var marketCapRange: MarketCapRange = .any
+    @State private var enrichedDetails: [String: MassiveTickerDetails] = [:]
+    @State private var enrichedYields: [String: Decimal] = [:]
+    @State private var isEnriching = false
+    @State private var enrichTask: Task<Void, Never>?
+
+    private var hasActiveFilters: Bool {
+        selectedSector != nil || minDividendYield > 0 || marketCapRange != .any
+    }
+
+    private var filteredResults: [MassiveTickerSearchResult] {
+        guard hasActiveFilters else { return results }
+        return results.filter { result in
+            let details = enrichedDetails[result.ticker]
+
+            // Sector filter
+            if let sector = selectedSector {
+                guard let sic = details?.sicDescription,
+                      sic.localizedCaseInsensitiveContains(sector) else { return false }
+            }
+
+            // Market cap filter
+            if marketCapRange != .any {
+                guard marketCapRange.matches(marketCap: details?.marketCap) else { return false }
+            }
+
+            // Yield filter
+            if minDividendYield > 0 {
+                guard let yield = enrichedYields[result.ticker],
+                      (yield as NSDecimalNumber).doubleValue >= minDividendYield else { return false }
+            }
+
+            return true
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -39,28 +113,37 @@ struct StockBrowserView: View {
                 } else if results.isEmpty {
                     ContentUnavailableView.search(text: query)
                 } else {
-                    List(results) { result in
-                        NavigationLink {
-                            StockDetailView(result: result)
-                        } label: {
-                            StockSearchRowView(result: result)
-                        }
+                    let displayed = filteredResults
+                    if displayed.isEmpty && hasActiveFilters {
+                        ContentUnavailableView(
+                            "No Matches",
+                            systemImage: "line.3.horizontal.decrease.circle",
+                            description: Text("Try adjusting your filters.")
+                        )
+                    } else {
+                        resultsList(displayed)
                     }
-                    .listStyle(.plain)
                 }
             }
             .navigationTitle("Stocks")
             .searchable(text: $query, prompt: "Ticker or company name")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        withAnimation { showFilters.toggle() }
+                    } label: {
+                        Image(systemName: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                    }
+                    .accessibilityLabel("Filters")
+                }
+            }
             .onChange(of: query) { _, newValue in
-                // Cancel the previous in-flight search before starting a new one.
-                // The 350 ms sleep absorbs fast keystrokes so we only hit the API
-                // once the user has paused — important for Massive's free tier (5 req/min).
                 searchTask?.cancel()
                 let trimmed = newValue.trimmingCharacters(in: .whitespaces)
                 guard !trimmed.isEmpty else {
                     results = []
                     searchError = nil
-                    isSearching = false     // cancel may leave spinner visible
+                    isSearching = false
                     return
                 }
                 searchTask = Task {
@@ -72,20 +155,117 @@ struct StockBrowserView: View {
         }
     }
 
+    // MARK: - Results List
+
+    @ViewBuilder
+    private func resultsList(_ displayed: [MassiveTickerSearchResult]) -> some View {
+        List {
+            if showFilters {
+                filterSection
+            }
+
+            ForEach(displayed) { result in
+                NavigationLink {
+                    StockDetailView(result: result)
+                } label: {
+                    StockSearchRowView(result: result)
+                }
+            }
+
+            if isEnriching {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Loading details…")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+                .listRowSeparator(.hidden)
+            }
+        }
+        .listStyle(.plain)
+    }
+
+    // MARK: - Filter Section
+
+    private var filterSection: some View {
+        Section {
+            // Sector chips
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Sector").font(.caption.bold()).foregroundStyle(.secondary)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(sectorChips, id: \.self) { sector in
+                            Button {
+                                withAnimation {
+                                    selectedSector = selectedSector == sector ? nil : sector
+                                }
+                                triggerEnrichIfNeeded()
+                            } label: {
+                                Text(sector)
+                                    .font(.caption)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(selectedSector == sector ? Color.accentColor : Color(.tertiarySystemFill))
+                                    .foregroundStyle(selectedSector == sector ? .white : .primary)
+                                    .clipShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
+
+            // Market cap picker
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Market Cap").font(.caption.bold()).foregroundStyle(.secondary)
+                Picker("Market Cap", selection: $marketCapRange) {
+                    ForEach(MarketCapRange.allCases) { range in
+                        Text(range.rawValue).tag(range)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .onChange(of: marketCapRange) { _, _ in triggerEnrichIfNeeded() }
+            }
+
+            // Dividend yield slider
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Min Dividend Yield: \(minDividendYield, specifier: "%.1f")%")
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+                Slider(value: $minDividendYield, in: 0...15, step: 0.5)
+                    .onChange(of: minDividendYield) { _, _ in triggerEnrichIfNeeded() }
+            }
+
+            // Clear all
+            if hasActiveFilters {
+                Button("Clear All Filters", role: .destructive) {
+                    withAnimation {
+                        selectedSector = nil
+                        minDividendYield = 0
+                        marketCapRange = .any
+                    }
+                }
+                .font(.caption)
+            }
+        } header: {
+            Text("Filters")
+        }
+    }
+
+    // MARK: - Search
+
     private func search(query: String) async {
         isSearching = true
         searchError = nil
-        // Only reset the spinner if this task ran to completion (not cancelled).
-        // A cancelled task skips the reset so the newer task's defer handles it —
-        // preventing the spinner from flickering off while the next search is running.
         defer { if !Task.isCancelled { isSearching = false } }
         do {
             let fetched = try await massive.service.fetchTickerSearch(
                 query: query
             )
-            // Discard stale responses superseded by a newer query.
             guard !Task.isCancelled else { return }
-            // Re-sort: exact ticker match first, then starts-with, then Massive's order.
             let upper = query.uppercased()
             results = fetched.sorted { a, b in
                 let aExact = a.ticker == upper
@@ -94,12 +274,71 @@ struct StockBrowserView: View {
                 let aPrefix = a.ticker.hasPrefix(upper)
                 let bPrefix = b.ticker.hasPrefix(upper)
                 if aPrefix != bPrefix { return aPrefix }
-                return false // preserve Massive order within each tier
+                return false
+            }
+            if showFilters && hasActiveFilters {
+                triggerEnrichIfNeeded()
             }
         } catch {
             guard !Task.isCancelled else { return }
             searchError = error.localizedDescription
             results = []
+        }
+    }
+
+    // MARK: - Enrichment Pipeline
+
+    private func triggerEnrichIfNeeded() {
+        guard showFilters, !results.isEmpty else { return }
+        enrichTask?.cancel()
+        enrichTask = Task { await enrichResults() }
+    }
+
+    private func enrichResults() async {
+        isEnriching = true
+        defer { if !Task.isCancelled { isEnriching = false } }
+
+        let api = massive.service
+        let toEnrich = Array(results.prefix(20))
+        let needYield = minDividendYield > 0
+
+        await withTaskGroup(of: (String, MassiveTickerDetails?, Decimal?).self) { group in
+            for result in toEnrich {
+                // Skip tickers we already have details for (unless yield is now needed)
+                let hasDetails = enrichedDetails[result.ticker] != nil
+                let hasYield = enrichedYields[result.ticker] != nil
+                if hasDetails && (!needYield || hasYield) { continue }
+
+                group.addTask { @Sendable in
+                    let ticker = result.ticker
+                    var details: MassiveTickerDetails?
+                    var yield: Decimal?
+
+                    if !hasDetails {
+                        details = try? await api.fetchTickerDetails(ticker: ticker)
+                    }
+
+                    if needYield && !hasYield {
+                        // Compute yield: latest dividend * frequency / price
+                        let divs = (try? await api.fetchDividends(ticker: ticker, limit: 4)) ?? []
+                        let price = try? await api.fetchPreviousClose(ticker: ticker)
+
+                        if let latest = divs.first, let p = price, p > 0 {
+                            let freq = Decimal(latest.frequency ?? 4)
+                            let annual = latest.cashAmount * freq
+                            yield = (annual / p) * 100
+                        }
+                    }
+
+                    return (ticker, details, yield)
+                }
+            }
+
+            for await (ticker, details, yield) in group {
+                guard !Task.isCancelled else { return }
+                if let details { enrichedDetails[ticker] = details }
+                if let yield { enrichedYields[ticker] = yield }
+            }
         }
     }
 }
@@ -838,65 +1077,6 @@ struct StockDetailView: View {
         case 1_000_000_000...:     return String(format: "%.1fB", d / 1_000_000_000)
         case 1_000_000...:         return String(format: "%.1fM", d / 1_000_000)
         default:                   return value.formatted(.currency(code: "USD"))
-        }
-    }
-}
-
-// MARK: - Company Logo
-
-private struct CompanyLogoView: View {
-    let branding: MassiveTickerDetails.Branding?
-    let ticker: String
-    let service: any MassiveFetching
-    let size: CGFloat
-
-    @State private var logoImage: UIImage?
-
-    // In-memory cache shared across all instances
-    private static let cache = NSCache<NSString, UIImage>()
-
-    var body: some View {
-        Group {
-            if let image = logoImage {
-                Image(uiImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: size, height: size)
-                    .clipShape(RoundedRectangle(cornerRadius: size * 0.2, style: .continuous))
-            } else {
-                // Fallback: ticker initials in accent circle
-                Text(String(ticker.prefix(2)))
-                    .font(.system(size: size * 0.35, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .frame(width: size, height: size)
-                    .background(Color.accentColor)
-                    .clipShape(RoundedRectangle(cornerRadius: size * 0.2, style: .continuous))
-            }
-        }
-        .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
-        .task { await loadLogo() }
-    }
-
-    private func loadLogo() async {
-        let cacheKey = ticker as NSString
-        if let cached = Self.cache.object(forKey: cacheKey) {
-            logoImage = cached
-            return
-        }
-
-        // Prefer iconUrl (PNG, square) over logoUrl (often SVG, wide)
-        let urlString = branding?.iconUrl ?? branding?.logoUrl
-        guard let urlString,
-              let proxied = MassiveService.proxiedBrandingURL(from: urlString)
-        else { return }
-
-        do {
-            let data = try await service.fetchImageData(from: proxied)
-            guard let image = UIImage(data: data) else { return }
-            Self.cache.setObject(image, forKey: cacheKey)
-            logoImage = image
-        } catch {
-            // Silently fall back to initials
         }
     }
 }

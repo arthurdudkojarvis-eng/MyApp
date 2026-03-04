@@ -202,6 +202,16 @@ struct DividendCalendarView: View {
     }
 }
 
+// MARK: - MonthStockSummary
+
+private struct MonthStockSummary: Identifiable {
+    let ticker: String
+    let companyName: String
+    let totalAmount: Decimal
+    let paymentCount: Int
+    var id: String { ticker }
+}
+
 // MARK: - MonthGridView
 
 private struct MonthGridView: View {
@@ -209,6 +219,10 @@ private struct MonthGridView: View {
     let eventsByDay: [Date: [CalendarDividendEvent]]
     let holidays: [Date: MassiveMarketHoliday]
     let onDayTap: ([CalendarDividendEvent]) -> Void
+
+    @Environment(\.massiveService) private var massive
+
+    @State private var showMonthSummary = false
 
     private static let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
 
@@ -233,12 +247,48 @@ private struct MonthGridView: View {
         Calendar.current.veryShortWeekdaySymbols
     }
 
+    /// Whether any day in this month has dividend events.
+    private var monthHasEvents: Bool {
+        let cal = Calendar.current
+        return eventsByDay.keys.contains { key in
+            cal.isDate(key, equalTo: month, toGranularity: .month)
+        }
+    }
+
+    /// Per-stock summaries for all events in this month.
+    private var monthStockSummaries: [MonthStockSummary] {
+        let cal = Calendar.current
+        var byTicker: [String: (name: String, amount: Decimal, count: Int)] = [:]
+        for (day, events) in eventsByDay {
+            guard cal.isDate(day, equalTo: month, toGranularity: .month) else { continue }
+            for event in events {
+                let existing = byTicker[event.ticker, default: (event.companyName, .zero, 0)]
+                byTicker[event.ticker] = (existing.name, existing.amount + event.totalAmount, existing.count + 1)
+            }
+        }
+        return byTicker.map { MonthStockSummary(ticker: $0.key, companyName: $0.value.name, totalAmount: $0.value.amount, paymentCount: $0.value.count) }
+            .sorted { $0.totalAmount > $1.totalAmount }
+    }
+
     var body: some View {
         let cal = Calendar.current
         VStack(alignment: .leading, spacing: 6) {
-            Text(month.formatted(.dateTime.month(.wide).year()))
-                .font(.headline)
-                .padding(.horizontal, 20)
+            HStack {
+                Text(month.formatted(.dateTime.month(.wide).year()))
+                    .font(.headline)
+                Spacer()
+                if monthHasEvents {
+                    Button {
+                        showMonthSummary = true
+                    } label: {
+                        Image(systemName: "list.bullet.circle")
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                    }
+                    .accessibilityLabel("Month summary")
+                }
+            }
+            .padding(.horizontal, 20)
 
             // Day-of-week header row — locale-ordered
             LazyVGrid(columns: Self.columns, spacing: 0) {
@@ -269,11 +319,88 @@ private struct MonthGridView: View {
                             if !dayEvents.isEmpty { onDayTap(dayEvents) }
                         }
                     } else {
-                        Color.clear.frame(height: 46)
+                        Color.clear.frame(height: 52)
                     }
                 }
             }
             .padding(.horizontal, 8)
+        }
+        .sheet(isPresented: $showMonthSummary) {
+            MonthSummarySheet(
+                monthLabel: month.formatted(.dateTime.month(.wide).year()),
+                summaries: monthStockSummaries,
+                service: massive.service
+            )
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
+    }
+}
+
+// MARK: - MonthSummarySheet
+
+private struct MonthSummarySheet: View {
+    let monthLabel: String
+    let summaries: [MonthStockSummary]
+    let service: any MassiveFetching
+
+    @Environment(\.dismiss) private var dismiss
+
+    private var grandTotal: Decimal {
+        summaries.reduce(.zero) { $0 + $1.totalAmount }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach(summaries) { summary in
+                        HStack(spacing: 12) {
+                            CompanyLogoView(
+                                branding: nil,
+                                ticker: summary.ticker,
+                                service: service,
+                                size: 36
+                            )
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(summary.ticker)
+                                    .font(.headline)
+                                Text(summary.companyName)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                            }
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text(summary.totalAmount, format: .currency(code: "USD"))
+                                    .font(.subheadline.bold())
+                                Text("\(summary.paymentCount) payment\(summary.paymentCount == 1 ? "" : "s")")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 2)
+                    }
+                }
+
+                Section {
+                    HStack {
+                        Text("Month Total")
+                            .font(.subheadline.bold())
+                        Spacer()
+                        Text(grandTotal, format: .currency(code: "USD"))
+                            .font(.subheadline.bold())
+                    }
+                }
+            }
+            .listStyle(.insetGrouped)
+            .navigationTitle(monthLabel)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
         }
     }
 }
@@ -304,9 +431,23 @@ private struct CalendarDayCell: View {
         return .green // mixed declared/paid → declared wins
     }
 
+    // STORY-041: Total dollar amount for the day
+    private var dayTotal: Decimal {
+        events.reduce(.zero) { $0 + $1.totalAmount }
+    }
+
+    private var compactAmountText: String? {
+        guard !events.isEmpty else { return nil }
+        let d = (dayTotal as NSDecimalNumber).doubleValue
+        if d >= 1 {
+            return "$\(Int(d))"
+        }
+        return "$\(String(format: "%.2f", d))"
+    }
+
     var body: some View {
         Button(action: onTap) {
-            VStack(spacing: 3) {
+            VStack(spacing: 2) {
                 ZStack {
                     if isToday {
                         Circle()
@@ -333,9 +474,17 @@ private struct CalendarDayCell: View {
                 } else {
                     Spacer().frame(height: 5)
                 }
+                if let amount = compactAmountText {
+                    Text(amount)
+                        .font(.system(size: 8))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                } else {
+                    Spacer().frame(height: 10)
+                }
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 46)
+            .frame(height: 52)
         }
         .buttonStyle(.plain)
         .disabled(events.isEmpty && holiday == nil)
@@ -347,6 +496,7 @@ private struct CalendarDayCell: View {
         var parts: [String] = ["\(day)"]
         if !events.isEmpty {
             parts.append("\(events.count) dividend\(events.count == 1 ? "" : "s")")
+            parts.append(dayTotal.formatted(.currency(code: "USD")))
         }
         if let h = holiday {
             parts.append("Market \(h.status): \(h.name)")

@@ -66,6 +66,8 @@
 		F3D8EC4E90AC7D62E61A6B10 /* PortfoliosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C05724C3000FDD010B74C4D /* PortfoliosView.swift */; };
 		F4BF44D5393BCAC3B259F3AD /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41C018CC84BEF94F929B042E /* KeychainService.swift */; };
 		FD12A43066297F415F8C701B /* LogPaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8675B04AE3DD90FFEDA27D5C /* LogPaymentView.swift */; };
+		A1B2C3D4E5F60718192A3B4C /* CompanyLogoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5E6F7A8B9C0D1E2F3A4B5C6 /* CompanyLogoView.swift */; };
+		C3D4E5F6A7B8C9D0E1F2A3B4 /* StockBrowserFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F8A9B0C1D2E3F4A5B6C7D8 /* StockBrowserFilterTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -141,6 +143,8 @@
 		D4DD5B2B7954B51F161C848C /* StockRefreshServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockRefreshServiceTests.swift; sourceTree = "<group>"; };
 		E74025E36A57BD79EC7BC227 /* AddPortfolioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPortfolioView.swift; sourceTree = "<group>"; };
 		F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainServiceTests.swift; sourceTree = "<group>"; };
+		D5E6F7A8B9C0D1E2F3A4B5C6 /* CompanyLogoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanyLogoView.swift; sourceTree = "<group>"; };
+		E7F8A9B0C1D2E3F4A5B6C7D8 /* StockBrowserFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockBrowserFilterTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -217,6 +221,14 @@
 			path = Stocks;
 			sourceTree = "<group>";
 		};
+		F1A2B3C4D5E6F7081920A1B2 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				D5E6F7A8B9C0D1E2F3A4B5C6 /* CompanyLogoView.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		5CF51C413CE7ADA4ACB9FC05 /* Features */ = {
 			isa = PBXGroup;
 			children = (
@@ -230,6 +242,7 @@
 				3DE49B8AEA0A9B5C1C851A08 /* Onboarding */,
 				9110FDF5EAF3FB9D785EB6F2 /* Portfolios */,
 				8A691F0C098D250795BBE57A /* Settings */,
+				F1A2B3C4D5E6F7081920A1B2 /* Shared */,
 				5C6AF1D56DD305A8A6443E15 /* Stocks */,
 				151E16D83A917A0E9131B5C8 /* Watchlist */,
 			);
@@ -333,6 +346,7 @@
 				4B301CF32A5E5ECBF36F3E32 /* OnboardingTests.swift */,
 				70AD67C8B61F19099B90170A /* SchemaTests.swift */,
 				2332EC481425613D04D5FF2A /* SettingsStoreTests.swift */,
+				E7F8A9B0C1D2E3F4A5B6C7D8 /* StockBrowserFilterTests.swift */,
 				D4DD5B2B7954B51F161C848C /* StockRefreshServiceTests.swift */,
 			);
 			path = MyAppTests;
@@ -500,6 +514,7 @@
 				B2AE7B6FB846F9B7AE55DAE2 /* SchemaTests.swift in Sources */,
 				F2698E6ACFD1D5447D656A7D /* SettingsStoreTests.swift in Sources */,
 				EC1F022BB2214D988676FC34 /* StockRefreshServiceTests.swift in Sources */,
+				C3D4E5F6A7B8C9D0E1F2A3B4 /* StockBrowserFilterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -552,6 +567,7 @@
 				DDA4856D608D76F9D88AA9BA /* View+Extensions.swift in Sources */,
 				17AE816DDA9521CBBFDFD69B /* WatchlistItem.swift in Sources */,
 				0F2DA6D72E887A177DAF9D58 /* WatchlistView.swift in Sources */,
+				A1B2C3D4E5F60718192A3B4C /* CompanyLogoView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
