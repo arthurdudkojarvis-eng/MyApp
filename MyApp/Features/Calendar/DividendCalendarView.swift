@@ -131,8 +131,18 @@ struct DividendCalendarView: View {
 
     // MARK: - Event cache
 
+    /// Calendar with UTC timezone for extracting date components from API-sourced dates.
+    /// PayDates are stored as midnight UTC; extracting components in UTC then reconstructing
+    /// in the local calendar ensures the correct calendar day is used as the dictionary key.
+    private static var utcCalendar: Calendar = {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        return cal
+    }()
+
     private func rebuildEvents() {
         let cal = Calendar.current
+        let utc = Self.utcCalendar
         var byDay: [Date: [CalendarDividendEvent]] = [:]
         for schedule in schedules {
             guard let stock = schedule.stock, !stock.holdings.isEmpty else { continue }
@@ -146,7 +156,10 @@ struct DividendCalendarView: View {
                 totalAmount: schedule.amountPerShare * totalShares,
                 status: schedule.status
             )
-            let key = cal.startOfDay(for: schedule.payDate)
+            // Extract date components in UTC (how payDate was stored) then create
+            // a local midnight date — matches the dayGrid dates used for lookup.
+            let comps = utc.dateComponents([.year, .month, .day], from: schedule.payDate)
+            let key = cal.startOfDay(for: cal.date(from: comps) ?? schedule.payDate)
             byDay[key, default: []].append(event)
         }
         eventsByDay = byDay
@@ -163,12 +176,17 @@ struct DividendCalendarView: View {
 
     private func loadHolidays() async {
         let formatter = Self.holidayDateFormatter
+        let cal = Calendar.current
+        let utc = Self.utcCalendar
         do {
             let results = try await massive.service.fetchMarketHolidays()
             var byDay: [Date: MassiveMarketHoliday] = [:]
             for holiday in results {
                 if let date = formatter.date(from: holiday.date) {
-                    let key = Calendar.current.startOfDay(for: date)
+                    // Holiday dates are parsed in UTC — extract components in UTC
+                    // then create a local midnight date to match the dayGrid keys.
+                    let comps = utc.dateComponents([.year, .month, .day], from: date)
+                    let key = cal.startOfDay(for: cal.date(from: comps) ?? date)
                     byDay[key] = holiday
                 }
             }

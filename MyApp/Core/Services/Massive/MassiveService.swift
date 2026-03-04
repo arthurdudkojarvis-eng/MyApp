@@ -72,9 +72,14 @@ struct MassiveService: MassiveFetching {
         // Two parallel calls: ticker prefix match + text search.
         // The text-only `search` parameter often misses exact ticker matches,
         // so we add a prefix query using ticker.gte / ticker.lt comparison operators.
+        //
+        // Prefix matching only works for stocks — crypto tickers use the "X:BTCUSD"
+        // format which doesn't match alphanumeric prefix ranges.
         let upper = trimmed.uppercased()
+        let useTickerPrefix = market == "stocks"
 
         async let byTicker: [MassiveTickerSearchResult] = {
+            guard useTickerPrefix else { return [] }
             guard var c = URLComponents(string: "\(Self.baseURL)/v3/reference/tickers") else { return [] }
             c.queryItems = [
                 URLQueryItem(name: "ticker.gte", value: upper),
