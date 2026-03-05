@@ -4,17 +4,21 @@ import Charts
 
 struct SectorAllocationView: View {
     @Query(sort: \Portfolio.createdAt) private var portfolios: [Portfolio]
+    @Environment(\.massiveService) private var massive
 
     @State private var rawSelectedAngle: Double?
     @State private var animateBars = false
 
     private var allHoldings: [Holding] { portfolios.flatMap(\.holdings) }
 
+    private func normalizedSector(for holding: Holding) -> String {
+        holding.stock.flatMap { $0.sector.isEmpty ? nil : $0.sector } ?? "Unclassified"
+    }
+
     private var sectorData: [SectorSlice] {
         var map: [String: Decimal] = [:]
         for holding in allHoldings {
-            let sector = holding.stock.flatMap { $0.sector.isEmpty ? nil : $0.sector } ?? "Unclassified"
-            map[sector, default: 0] += holding.projectedAnnualIncome
+            map[normalizedSector(for: holding), default: 0] += holding.projectedAnnualIncome
         }
         let total = map.values.reduce(0, +)
         return map
@@ -25,6 +29,17 @@ struct SectorAllocationView: View {
 
     private var totalIncome: Decimal {
         sectorData.reduce(0) { $0 + $1.income }
+    }
+
+    private var animatedAngleBinding: Binding<Double?> {
+        Binding(
+            get: { rawSelectedAngle },
+            set: { newValue in
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                    rawSelectedAngle = newValue
+                }
+            }
+        )
     }
 
     private var selectedSector: SectorSlice? {
@@ -91,7 +106,7 @@ struct SectorAllocationView: View {
                 }
                 .chartForegroundStyleScale(domain: sectorData.map(\.sector), range: gradientColors)
                 .chartLegend(.hidden)
-                .chartAngleSelection(value: $rawSelectedAngle)
+                .chartAngleSelection(value: animatedAngleBinding)
                 .frame(height: 240)
 
                 centerLabel
@@ -223,6 +238,42 @@ struct SectorAllocationView: View {
                                 value: animateBars
                             )
                     }
+
+                    // Expanded company list when sector is selected
+                    if isSelected {
+                        VStack(spacing: 0) {
+                            ForEach(holdingsForSector(slice.sector)) { holding in
+                                if let stock = holding.stock {
+                                    HStack(spacing: 10) {
+                                        CompanyLogoView(
+                                            branding: nil,
+                                            ticker: stock.ticker,
+                                            service: massive.service,
+                                            size: 30
+                                        )
+                                        VStack(alignment: .leading, spacing: 1) {
+                                            Text(stock.ticker)
+                                                .font(.caption.bold())
+                                            if !stock.companyName.isEmpty {
+                                                Text(stock.companyName)
+                                                    .font(.caption2)
+                                                    .foregroundStyle(.secondary)
+                                                    .lineLimit(1)
+                                            }
+                                        }
+                                        Spacer()
+                                        Text(holding.projectedAnnualIncome, format: .currency(code: holding.currency))
+                                            .font(.caption.bold())
+                                            .monospacedDigit()
+                                            .foregroundStyle(color)
+                                    }
+                                    .padding(.vertical, 6)
+                                }
+                            }
+                        }
+                        .padding(.top, 4)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
@@ -246,6 +297,7 @@ struct SectorAllocationView: View {
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .shadow(color: .black.opacity(0.08), radius: 16, y: 6)
         .shadow(color: .black.opacity(0.03), radius: 2, y: 1)
+        .animation(.spring(response: 0.3, dampingFraction: 0.75), value: selectedSector?.id)
         .onAppear { animateBars = true }
         .onDisappear { animateBars = false }
     }
@@ -256,6 +308,14 @@ struct SectorAllocationView: View {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
             rawSelectedAngle = isSelected ? nil : angleForSector(id)
         }
+    }
+
+    private func holdingsForSector(_ sector: String) -> [Holding] {
+        allHoldings.filter { holding in
+            guard holding.projectedAnnualIncome > 0 else { return false }
+            return normalizedSector(for: holding) == sector
+        }
+        .sorted { ($0.stock?.ticker ?? "") < ($1.stock?.ticker ?? "") }
     }
 
     private func angleForSector(_ id: String) -> Double? {
