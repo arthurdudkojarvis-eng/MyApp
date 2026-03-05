@@ -5,6 +5,9 @@ import Charts
 struct SectorAllocationView: View {
     @Query(sort: \Portfolio.createdAt) private var portfolios: [Portfolio]
 
+    @State private var rawSelectedAngle: Double?
+    @State private var animateBars = false
+
     private var allHoldings: [Holding] { portfolios.flatMap(\.holdings) }
 
     private var sectorData: [SectorSlice] {
@@ -15,6 +18,7 @@ struct SectorAllocationView: View {
         }
         let total = map.values.reduce(0, +)
         return map
+            .filter { $0.value > 0 }
             .map { SectorSlice(sector: $0.key, income: $0.value, total: total) }
             .sorted { $0.income > $1.income }
     }
@@ -23,83 +27,148 @@ struct SectorAllocationView: View {
         sectorData.reduce(0) { $0 + $1.income }
     }
 
+    private var selectedSector: SectorSlice? {
+        guard let rawSelectedAngle else { return nil }
+        var cumulative: Double = 0
+        for slice in sectorData {
+            cumulative += slice.doubleIncome
+            if rawSelectedAngle <= cumulative {
+                return slice
+            }
+        }
+        return nil
+    }
+
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: 20) {
                 if allHoldings.isEmpty {
-                    ContentUnavailableView(
-                        "No Holdings",
-                        systemImage: "chart.pie",
-                        description: Text("Add holdings to see your sector allocation.")
-                    )
+                    ContentUnavailableView {
+                        Label("No Holdings", systemImage: "chart.pie.fill")
+                            .symbolRenderingMode(.hierarchical)
+                    } description: {
+                        Text("Add holdings to a portfolio to see how your income is distributed across sectors.")
+                    }
                     .padding(.top, 60)
                 } else {
                     chartCard
                     breakdownList
                 }
             }
-            .padding()
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Sector Allocation")
         .navigationBarTitleDisplayMode(.large)
+        .sensoryFeedback(.selection, trigger: selectedSector?.id)
     }
 
     // MARK: - Donut Chart with Center Label
 
     private var chartCard: some View {
         VStack(spacing: 16) {
-            Text("Income by Sector")
-                .font(.headline)
+            Text("INCOME BY SECTOR")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .kerning(0.8)
+                .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             ZStack {
                 Chart(sectorData) { slice in
                     SectorMark(
                         angle: .value("Income", slice.doubleIncome),
-                        innerRadius: .ratio(0.62),
-                        angularInset: 2
+                        innerRadius: .ratio(0.618),
+                        outerRadius: selectedSector?.id == slice.id
+                            ? .ratio(1.0)
+                            : .ratio(selectedSector == nil ? 0.95 : 0.88),
+                        angularInset: 1.5
                     )
                     .foregroundStyle(by: .value("Sector", slice.sector))
                     .cornerRadius(5)
+                    .opacity(selectedSector == nil || selectedSector?.id == slice.id ? 1.0 : 0.35)
                 }
-                .chartForegroundStyleScale(domain: sectorData.map(\.sector), range: sectorGradientColors)
+                .chartForegroundStyleScale(domain: sectorData.map(\.sector), range: gradientColors)
                 .chartLegend(.hidden)
-                .frame(height: 220)
+                .chartAngleSelection(value: $rawSelectedAngle)
+                .frame(height: 240)
 
-                // Center label
-                VStack(spacing: 2) {
-                    Text(totalIncome, format: .currency(code: "USD"))
-                        .font(.title3.bold())
-                        .minimumScaleFactor(0.7)
-                        .lineLimit(1)
-                    Text("per year")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.horizontal, 8)
+                centerLabel
             }
 
-            // Inline legend chips
             legendChips
         }
         .padding()
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.regularMaterial)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(color: .black.opacity(0.08), radius: 16, y: 6)
+        .shadow(color: .black.opacity(0.03), radius: 2, y: 1)
     }
 
+    // MARK: - Center Label (reactive to selection)
+
+    private var centerLabel: some View {
+        VStack(spacing: 3) {
+            if let selected = selectedSector,
+               let index = sectorData.firstIndex(where: { $0.id == selected.id }) {
+                Text(selected.sector)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(colorForIndex(index))
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.8)
+                Text(selected.income, format: .currency(code: "USD"))
+                    .font(.title3.bold().monospacedDigit())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                Text("\(selected.percentString)%")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            } else {
+                Text(totalIncome, format: .currency(code: "USD"))
+                    .font(.title3.bold().monospacedDigit())
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
+                Text("ANNUAL INCOME")
+                    .font(.system(size: 9, weight: .medium))
+                    .kerning(0.5)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: 120)
+        .animation(.easeInOut(duration: 0.2), value: selectedSector?.id)
+    }
+
+    // MARK: - Legend Chips (tappable pills)
+
     private var legendChips: some View {
-        FlowLayout(spacing: 8) {
+        FlowLayout(spacing: 6) {
             ForEach(Array(sectorData.enumerated()), id: \.element.id) { index, slice in
-                HStack(spacing: 4) {
+                let isSelected = selectedSector?.id == slice.id
+                let color = colorForIndex(index)
+                HStack(spacing: 5) {
                     Circle()
-                        .fill(colorForIndex(index))
-                        .frame(width: 8, height: 8)
+                        .fill(color)
+                        .frame(width: 7, height: 7)
                     Text(slice.sector)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .font(.caption2.weight(isSelected ? .semibold : .regular))
+                        .foregroundStyle(isSelected ? color : .secondary)
                         .lineLimit(1)
                 }
+                .padding(.horizontal, 9)
+                .padding(.vertical, 5)
+                .background(
+                    Capsule()
+                        .fill(isSelected ? color.opacity(0.15) : Color(.tertiarySystemFill))
+                )
+                .contentShape(Capsule())
+                .onTapGesture { toggleSelection(for: slice.id, isSelected: isSelected) }
+                .animation(.easeInOut(duration: 0.18), value: selectedSector?.id)
             }
         }
     }
@@ -109,75 +178,148 @@ struct SectorAllocationView: View {
     private var breakdownList: some View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(Array(sectorData.enumerated()), id: \.element.id) { index, slice in
+                let color = colorForIndex(index)
+                let isSelected = selectedSector?.id == slice.id
+
                 VStack(alignment: .leading, spacing: 8) {
-                    // Header: sector name + percentage
                     HStack {
                         Text(slice.sector)
                             .font(.subheadline.bold())
                         Spacer()
-                        Text("\(slice.percentString)%")
-                            .font(.subheadline.bold())
-                            .foregroundStyle(colorForIndex(index))
-                            .monospacedDigit()
-                    }
-
-                    // Progress bar
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 5)
-                                .fill(colorForIndex(index).opacity(0.15))
-                                .frame(height: 8)
-
-                            RoundedRectangle(cornerRadius: 5)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [colorForIndex(index).opacity(0.7), colorForIndex(index)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .frame(width: geo.size.width * slice.fraction, height: 8)
+                        VStack(alignment: .trailing, spacing: 1) {
+                            Text(slice.income, format: .currency(code: "USD"))
+                                .font(.subheadline.bold())
+                                .monospacedDigit()
+                            Text("\(slice.percentString)%")
+                                .font(.caption2)
+                                .foregroundStyle(color)
+                                .monospacedDigit()
                         }
                     }
-                    .frame(height: 8)
 
-                    // Income amount
-                    Text(slice.income, format: .currency(code: "USD"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    // Animated progress bar (scaleEffect replaces GeometryReader)
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(color.opacity(0.12))
+                            .frame(height: 8)
+
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: [color.opacity(0.7), color],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(height: 8)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .scaleEffect(
+                                x: animateBars ? slice.fraction : 0,
+                                anchor: .leading
+                            )
+                            .animation(
+                                .spring(response: 0.55, dampingFraction: 0.78)
+                                    .delay(Double(index) * 0.07),
+                                value: animateBars
+                            )
+                    }
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(isSelected ? color.opacity(0.08) : Color.clear)
+                        .animation(.easeInOut(duration: 0.2), value: selectedSector?.id)
+                )
+                .contentShape(Rectangle())
+                .onTapGesture { toggleSelection(for: slice.id, isSelected: isSelected) }
 
                 if index < sectorData.count - 1 {
-                    Divider().padding(.leading)
+                    Divider().padding(.horizontal)
                 }
             }
         }
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.regularMaterial)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(color: .black.opacity(0.08), radius: 16, y: 6)
+        .shadow(color: .black.opacity(0.03), radius: 2, y: 1)
+        .onAppear { animateBars = true }
+        .onDisappear { animateBars = false }
     }
 
-    // MARK: - Colors
+    // MARK: - Helpers
 
-    private var sectorGradientColors: [Color] {
-        sectorData.indices.map { colorForIndex($0) }
+    private func toggleSelection(for id: String, isSelected: Bool) {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+            rawSelectedAngle = isSelected ? nil : angleForSector(id)
+        }
+    }
+
+    private func angleForSector(_ id: String) -> Double? {
+        var cumulative: Double = 0
+        for slice in sectorData {
+            if slice.id == id {
+                return cumulative + slice.doubleIncome / 2
+            }
+            cumulative += slice.doubleIncome
+        }
+        return nil
+    }
+
+    // MARK: - Colors (auto-adaptive light/dark via UIColor dynamic provider)
+
+    private static let colorPalette: [Color] = [
+        Color(UIColor { tc in tc.userInterfaceStyle == .dark
+            ? UIColor(red: 0.45, green: 0.78, blue: 1.00, alpha: 1)
+            : UIColor(red: 0.20, green: 0.60, blue: 0.90, alpha: 1)
+        }),  // sky
+        Color(UIColor { tc in tc.userInterfaceStyle == .dark
+            ? UIColor(red: 0.32, green: 0.88, blue: 0.60, alpha: 1)
+            : UIColor(red: 0.18, green: 0.72, blue: 0.44, alpha: 1)
+        }),  // mint
+        Color(UIColor { tc in tc.userInterfaceStyle == .dark
+            ? UIColor(red: 1.00, green: 0.70, blue: 0.36, alpha: 1)
+            : UIColor(red: 0.95, green: 0.55, blue: 0.20, alpha: 1)
+        }),  // amber
+        Color(UIColor { tc in tc.userInterfaceStyle == .dark
+            ? UIColor(red: 0.78, green: 0.56, blue: 1.00, alpha: 1)
+            : UIColor(red: 0.62, green: 0.38, blue: 0.88, alpha: 1)
+        }),  // violet
+        Color(UIColor { tc in tc.userInterfaceStyle == .dark
+            ? UIColor(red: 1.00, green: 0.50, blue: 0.56, alpha: 1)
+            : UIColor(red: 0.92, green: 0.30, blue: 0.38, alpha: 1)
+        }),  // coral
+        Color(UIColor { tc in tc.userInterfaceStyle == .dark
+            ? UIColor(red: 0.28, green: 0.72, blue: 0.90, alpha: 1)
+            : UIColor(red: 0.18, green: 0.56, blue: 0.72, alpha: 1)
+        }),  // teal
+        Color(UIColor { tc in tc.userInterfaceStyle == .dark
+            ? UIColor(red: 1.00, green: 0.82, blue: 0.30, alpha: 1)
+            : UIColor(red: 0.88, green: 0.68, blue: 0.12, alpha: 1)
+        }),  // gold
+        Color(UIColor { tc in tc.userInterfaceStyle == .dark
+            ? UIColor(red: 0.60, green: 0.80, blue: 0.38, alpha: 1)
+            : UIColor(red: 0.44, green: 0.62, blue: 0.24, alpha: 1)
+        }),  // olive
+        Color(UIColor { tc in tc.userInterfaceStyle == .dark
+            ? UIColor(red: 0.96, green: 0.54, blue: 0.76, alpha: 1)
+            : UIColor(red: 0.82, green: 0.36, blue: 0.60, alpha: 1)
+        }),  // rose
+        Color(UIColor { tc in tc.userInterfaceStyle == .dark
+            ? UIColor(red: 0.58, green: 0.64, blue: 0.96, alpha: 1)
+            : UIColor(red: 0.40, green: 0.46, blue: 0.78, alpha: 1)
+        }),  // indigo
+    ]
+
+    private var gradientColors: [Color] {
+        sectorData.indices.map { Self.colorPalette[$0 % Self.colorPalette.count] }
     }
 
     private func colorForIndex(_ index: Int) -> Color {
-        let palette: [Color] = [
-            Color(red: 0.30, green: 0.70, blue: 0.95),  // sky blue
-            Color(red: 0.35, green: 0.80, blue: 0.55),  // mint green
-            Color(red: 0.95, green: 0.60, blue: 0.30),  // warm orange
-            Color(red: 0.70, green: 0.45, blue: 0.90),  // soft purple
-            Color(red: 0.95, green: 0.40, blue: 0.45),  // coral red
-            Color(red: 0.25, green: 0.60, blue: 0.75),  // teal
-            Color(red: 0.90, green: 0.75, blue: 0.30),  // gold
-            Color(red: 0.55, green: 0.70, blue: 0.35),  // olive
-            Color(red: 0.85, green: 0.45, blue: 0.65),  // rose
-            Color(red: 0.50, green: 0.55, blue: 0.80),  // indigo
-        ]
-        return palette[index % palette.count]
+        Self.colorPalette[index % Self.colorPalette.count]
     }
 }
 
@@ -222,8 +364,8 @@ private struct FlowLayout: Layout {
             }
             positions.append(CGPoint(x: x, y: y))
             rowHeight = max(rowHeight, size.height)
+            maxWidth = max(maxWidth, x + size.width)
             x += size.width + spacing
-            maxWidth = max(maxWidth, x)
         }
 
         return LayoutResult(
