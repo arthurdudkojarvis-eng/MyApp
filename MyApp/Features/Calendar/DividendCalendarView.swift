@@ -220,8 +220,6 @@ private struct MonthGridView: View {
     let holidays: [Date: MassiveMarketHoliday]
     let onDayTap: ([CalendarDividendEvent]) -> Void
 
-    @Environment(\.massiveService) private var massive
-
     @State private var showMonthSummary = false
 
     private static let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
@@ -328,8 +326,7 @@ private struct MonthGridView: View {
         .sheet(isPresented: $showMonthSummary) {
             MonthSummarySheet(
                 monthLabel: month.formatted(.dateTime.month(.wide).year()),
-                summaries: monthStockSummaries,
-                service: massive.service
+                summaries: monthStockSummaries
             )
             .presentationDetents([.medium, .large])
             .presentationDragIndicator(.visible)
@@ -342,9 +339,9 @@ private struct MonthGridView: View {
 private struct MonthSummarySheet: View {
     let monthLabel: String
     let summaries: [MonthStockSummary]
-    let service: any MassiveFetching
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.massiveService) private var massive
 
     private var grandTotal: Decimal {
         summaries.reduce(.zero) { $0 + $1.totalAmount }
@@ -359,7 +356,7 @@ private struct MonthSummarySheet: View {
                             CompanyLogoView(
                                 branding: nil,
                                 ticker: summary.ticker,
-                                service: service,
+                                service: massive.service,
                                 size: 36
                             )
                             VStack(alignment: .leading, spacing: 2) {
@@ -511,6 +508,7 @@ private struct DividendDaySheet: View {
     let events: [CalendarDividendEvent]
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.massiveService) private var massive
 
     private var dateTitle: String {
         events.first?.payDate.formatted(.dateTime.month(.wide).day().year()) ?? ""
@@ -526,12 +524,20 @@ private struct DividendDaySheet: View {
                 Section {
                     ForEach(events) { event in
                         HStack(spacing: 12) {
-                            Circle()
-                                .fill(event.status.calendarDotColor)
-                                .frame(width: 8, height: 8)
+                            CompanyLogoView(
+                                branding: nil,
+                                ticker: event.ticker,
+                                service: massive.service,
+                                size: 36
+                            )
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(event.ticker)
-                                    .font(.headline)
+                                HStack(spacing: 4) {
+                                    Text(event.ticker)
+                                        .font(.headline)
+                                    Circle()
+                                        .fill(event.status.calendarDotColor)
+                                        .frame(width: 6, height: 6)
+                                }
                                 Text(event.companyName)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
