@@ -303,6 +303,7 @@ struct PortfolioHoldingsView: View {
 private struct PortfolioHoldingRowView: View {
     let holding: Holding
     var onShowGrowth: () -> Void
+    @Environment(\.massiveService) private var massive
 
     private var ticker: String { holding.stock?.ticker ?? "—" }
     private var companyName: String { holding.stock?.companyName ?? "" }
@@ -316,6 +317,12 @@ private struct PortfolioHoldingRowView: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
+            CompanyLogoView(
+                branding: nil,
+                ticker: ticker,
+                service: massive.service,
+                size: 36
+            )
             VStack(alignment: .leading, spacing: 2) {
                 Text(ticker).font(.headline)
                 if !companyName.isEmpty {
