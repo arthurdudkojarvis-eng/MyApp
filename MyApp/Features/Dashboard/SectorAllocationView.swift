@@ -83,11 +83,9 @@ struct SectorAllocationView: View {
 
     private var chartCard: some View {
         VStack(spacing: 16) {
-            Text("INCOME BY SECTOR")
-                .font(.caption)
-                .fontWeight(.semibold)
-                .kerning(0.8)
-                .foregroundStyle(.secondary)
+            Text("Income by Sector")
+                .font(.headline)
+                .foregroundStyle(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             ZStack {
@@ -149,9 +147,8 @@ struct SectorAllocationView: View {
                     .font(.title3.bold().monospacedDigit())
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
-                Text("ANNUAL INCOME")
-                    .font(.system(size: 9, weight: .medium))
-                    .kerning(0.5)
+                Text("Annual Income")
+                    .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
