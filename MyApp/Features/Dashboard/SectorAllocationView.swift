@@ -98,11 +98,11 @@ struct SectorAllocationView: View {
                             : .ratio(selectedSector == nil ? 0.95 : 0.88),
                         angularInset: 1.5
                     )
-                    .foregroundStyle(by: .value("Sector", slice.sector))
+                    .foregroundStyle(by: .value("Sector", slice.displayName))
                     .cornerRadius(5)
                     .opacity(selectedSector == nil || selectedSector?.id == slice.id ? 1.0 : 0.35)
                 }
-                .chartForegroundStyleScale(domain: sectorData.map(\.sector), range: gradientColors)
+                .chartForegroundStyleScale(domain: sectorData.map(\.displayName), range: gradientColors)
                 .chartLegend(.hidden)
                 .chartAngleSelection(value: animatedAngleBinding)
                 .frame(height: 240)
@@ -128,7 +128,7 @@ struct SectorAllocationView: View {
         VStack(spacing: 3) {
             if let selected = selectedSector,
                let index = sectorData.firstIndex(where: { $0.id == selected.id }) {
-                Text(selected.sector)
+                Text(selected.displayName)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(colorForIndex(index))
                     .lineLimit(2)
@@ -167,7 +167,7 @@ struct SectorAllocationView: View {
                     Circle()
                         .fill(color)
                         .frame(width: 7, height: 7)
-                    Text(slice.sector)
+                    Text(slice.displayName)
                         .font(.caption2.weight(isSelected ? .semibold : .regular))
                         .foregroundStyle(isSelected ? color : .secondary)
                         .lineLimit(1)
@@ -195,7 +195,7 @@ struct SectorAllocationView: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text(slice.sector)
+                        Text(slice.displayName)
                             .font(.subheadline.bold())
                         Spacer()
                         VStack(alignment: .trailing, spacing: 1) {
@@ -440,6 +440,11 @@ private struct SectorSlice: Identifiable {
     let total: Decimal
 
     var id: String { sector }
+    var displayName: String {
+        sector.split(separator: " ")
+            .map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() }
+            .joined(separator: " ")
+    }
     var doubleIncome: Double { (income as NSDecimalNumber).doubleValue }
     var percent: Decimal { total > 0 ? (income / total) * 100 : 0 }
     var fraction: CGFloat { total > 0 ? CGFloat(((income / total) as NSDecimalNumber).doubleValue) : 0 }
