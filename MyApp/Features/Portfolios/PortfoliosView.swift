@@ -197,7 +197,6 @@ struct PortfolioHoldingsView: View {
     @State private var holdingToEdit: Holding?
     @State private var holdingToDelete: Holding?
     @State private var holdingForFutureValue: Holding?
-    @State private var showIncomeHistory = false
 
     private var sortedHoldings: [Holding] {
         portfolio.holdings.sorted { ($0.stock?.ticker ?? "") < ($1.stock?.ticker ?? "") }
@@ -215,7 +214,9 @@ struct PortfolioHoldingsView: View {
                 List {
                     Section {
                         ForEach(sortedHoldings) { holding in
-                            PortfolioHoldingRowView(holding: holding)
+                            PortfolioHoldingRowView(holding: holding) {
+                                holdingForFutureValue = holding
+                            }
                                 .contextMenu {
                                     Button {
                                         holdingToEdit = holding
@@ -275,20 +276,12 @@ struct PortfolioHoldingsView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: 16) {
-                    Button {
-                        showIncomeHistory = true
-                    } label: {
-                        Image(systemName: "chart.bar")
-                    }
-                    .accessibilityLabel("Income history")
-                    Button {
-                        showAddHolding = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    .accessibilityLabel("Add holding")
+                Button {
+                    showAddHolding = true
+                } label: {
+                    Image(systemName: "plus")
                 }
+                .accessibilityLabel("Add holding")
             }
         }
         .sheet(isPresented: $showAddHolding) {
@@ -299,9 +292,6 @@ struct PortfolioHoldingsView: View {
         }
         .sheet(item: $holdingForFutureValue) { holding in
             HoldingFutureValueView(holding: holding)
-        }
-        .sheet(isPresented: $showIncomeHistory) {
-            DividendIncomeHistoryView(portfolio: portfolio)
         }
         .confirmationDialog(
             "Delete Holding",
@@ -328,6 +318,7 @@ struct PortfolioHoldingsView: View {
 
 private struct PortfolioHoldingRowView: View {
     let holding: Holding
+    var onShowGrowth: () -> Void
 
     private var ticker: String { holding.stock?.ticker ?? "—" }
     private var companyName: String { holding.stock?.companyName ?? "" }
@@ -367,6 +358,15 @@ private struct PortfolioHoldingRowView: View {
                     Text("—").font(.caption).foregroundStyle(.secondary)
                 }
             }
+            Button {
+                onShowGrowth()
+            } label: {
+                Image(systemName: "chart.line.uptrend.xyaxis")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.accentColor)
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel("Growth projection for \(ticker)")
         }
         .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
