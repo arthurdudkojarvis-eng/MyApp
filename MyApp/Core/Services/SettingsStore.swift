@@ -23,8 +23,13 @@ import SwiftUI
 
 enum FontTheme: String, CaseIterable, Identifiable {
     case defaultTheme = "default"
+    case green = "green"
     case teal = "teal"
+    case ocean = "ocean"
+    case purple = "purple"
+    case indigo = "indigo"
     case gold = "gold"
+    case coral = "coral"
     case rose = "rose"
 
     var id: String { rawValue }
@@ -32,8 +37,13 @@ enum FontTheme: String, CaseIterable, Identifiable {
     var label: String {
         switch self {
         case .defaultTheme: return "Default"
+        case .green: return "Green"
         case .teal: return "Teal"
+        case .ocean: return "Ocean"
+        case .purple: return "Purple"
+        case .indigo: return "Indigo"
         case .gold: return "Gold"
+        case .coral: return "Coral"
         case .rose: return "Rose"
         }
     }
@@ -41,8 +51,13 @@ enum FontTheme: String, CaseIterable, Identifiable {
     var color: Color? {
         switch self {
         case .defaultTheme: return nil
+        case .green: return Color(red: 0.20, green: 0.70, blue: 0.30)
         case .teal: return Color(red: 0.0, green: 0.59, blue: 0.65)
+        case .ocean: return Color(red: 0.15, green: 0.45, blue: 0.80)
+        case .purple: return Color(red: 0.55, green: 0.30, blue: 0.75)
+        case .indigo: return Color(red: 0.35, green: 0.30, blue: 0.70)
         case .gold: return Color(red: 0.80, green: 0.65, blue: 0.20)
+        case .coral: return Color(red: 0.90, green: 0.40, blue: 0.30)
         case .rose: return Color(red: 0.85, green: 0.30, blue: 0.45)
         }
     }

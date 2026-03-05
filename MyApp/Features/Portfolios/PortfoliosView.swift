@@ -251,22 +251,6 @@ struct PortfolioHoldingsView: View {
                                     }
                                 }
                         }
-                    } footer: {
-                        if portfolio.totalMarketValue > 0 {
-                            HStack {
-                                Text("Total value: \(portfolio.totalMarketValue.formatted(.currency(code: portfolio.currency)))")
-                                Spacer()
-                                if let pct = portfolio.totalUnrealizedGainPercent {
-                                    let prefix = pct >= 0 ? "+" : ""
-                                    let formatted = (pct as NSDecimalNumber)
-                                        .doubleValue
-                                        .formatted(.number.precision(.fractionLength(2)))
-                                    Text("\(prefix)\(formatted)%")
-                                        .foregroundStyle(portfolio.totalUnrealizedGain >= 0 ? .green : .red)
-                                }
-                            }
-                            .font(.footnote)
-                        }
                     }
                 }
                 .listStyle(.insetGrouped)
