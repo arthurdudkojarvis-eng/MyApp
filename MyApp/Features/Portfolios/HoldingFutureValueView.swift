@@ -8,6 +8,7 @@ struct HoldingFutureValueView: View {
 
     @State private var years: Int = 10
     @State private var appreciationRate: Double = 7.0
+    @State private var infoText: String?
 
     private var ticker: String { holding.stock?.ticker ?? "—" }
 
@@ -72,6 +73,14 @@ struct HoldingFutureValueView: View {
                     Button("Done") { dismiss() }
                 }
             }
+        }
+        .alert("What does this mean?", isPresented: Binding(
+            get: { infoText != nil },
+            set: { if !$0 { infoText = nil } }
+        )) {
+            Button("Got it", role: .cancel) { infoText = nil }
+        } message: {
+            Text(infoText ?? "")
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
@@ -145,22 +154,25 @@ struct HoldingFutureValueView: View {
             Chart(projectionData) { point in
                 AreaMark(
                     x: .value("Year", point.year),
-                    y: .value("Value", point.withDRIP)
+                    y: .value("Value", point.withDRIP),
+                    series: .value("Series", "With DRIP")
                 )
                 .foregroundStyle(Color.accentColor.opacity(0.15))
 
                 LineMark(
                     x: .value("Year", point.year),
-                    y: .value("Value", point.withDRIP)
+                    y: .value("Value", point.withDRIP),
+                    series: .value("Series", "With DRIP")
                 )
                 .foregroundStyle(Color.accentColor)
                 .lineStyle(StrokeStyle(lineWidth: 2))
 
                 LineMark(
                     x: .value("Year", point.year),
-                    y: .value("Value", point.withoutDRIP)
+                    y: .value("Value", point.withoutDRIP),
+                    series: .value("Series", "Without DRIP")
                 )
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.gray)
                 .lineStyle(StrokeStyle(lineWidth: 2, dash: [5, 3]))
             }
             .chartXAxis {
@@ -198,7 +210,7 @@ struct HoldingFutureValueView: View {
                 }
                 HStack(spacing: 4) {
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.secondary)
+                        .fill(Color.gray)
                         .frame(width: 16, height: 3)
                     Text("Without DRIP")
                         .font(.caption2)
@@ -216,27 +228,52 @@ struct HoldingFutureValueView: View {
 
     private var summaryCards: some View {
         HStack(spacing: 0) {
-            summaryCell(label: "Without DRIP", value: compactDollar(finalWithoutDRIP), color: .secondary)
+            summaryCell(
+                label: "Without DRIP",
+                value: compactDollar(finalWithoutDRIP),
+                color: .secondary,
+                info: "Projected value if you take dividends as cash and only benefit from stock price appreciation. No dividends are reinvested."
+            )
             Divider().frame(height: 50)
-            summaryCell(label: "With DRIP", value: compactDollar(finalWithDRIP), color: .accentColor)
+            summaryCell(
+                label: "With DRIP",
+                value: compactDollar(finalWithDRIP),
+                color: .accentColor,
+                info: "Projected value if you reinvest all dividends back into the same stock (Dividend Reinvestment Plan). Dividends buy more shares, which generate more dividends — creating a compounding snowball effect."
+            )
             Divider().frame(height: 50)
-            summaryCell(label: "DRIP Advantage", value: "+\(compactDollar(dripAdvantage))", color: .green)
+            summaryCell(
+                label: "DRIP Advantage",
+                value: "+\(compactDollar(dripAdvantage))",
+                color: .green,
+                info: "The extra money you would earn by reinvesting dividends instead of taking them as cash. This grows significantly over longer time periods due to compound interest."
+            )
         }
         .padding(.vertical, 12)
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
-    private func summaryCell(label: String, value: String, color: Color) -> some View {
+    private func summaryCell(label: String, value: String, color: Color, info: String) -> some View {
         VStack(spacing: 4) {
             Text(value)
                 .font(.subheadline.bold())
                 .foregroundStyle(color)
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
-            Text(label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+            HStack(spacing: 2) {
+                Text(label)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Button {
+                    infoText = info
+                } label: {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.borderless)
+            }
         }
         .frame(maxWidth: .infinity)
     }
