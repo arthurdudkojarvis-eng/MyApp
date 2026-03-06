@@ -72,6 +72,8 @@
 		BB2233445566778899001122 /* InvestingQuotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2233445566778899001122 /* InvestingQuotes.swift */; };
 		EE1122334455667788990011 /* StockTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1122334455667788990011 /* StockTips.swift */; };
 		CC2233445566778899001122 /* StockTipsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2233445566778899001122 /* StockTipsView.swift */; };
+		FF1122334455667788990011 /* ETFTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2233445566778899001122 /* ETFTips.swift */; };
+		FF3344556677889900112233 /* ETFTipsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF4455667788990011223344 /* ETFTipsView.swift */; };
 		BB3344556677889900112233 /* DividendIncomeHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3344556677889900112233 /* DividendIncomeHistoryView.swift */; };
 		BB4455667788990011223344 /* HoldingFutureValueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4455667788990011223344 /* HoldingFutureValueView.swift */; };
 		BB5566778899001122334455 /* PortfolioStrategiesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5566778899001122334455 /* PortfolioStrategiesView.swift */; };
@@ -156,6 +158,8 @@
 		AA2233445566778899001122 /* InvestingQuotes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvestingQuotes.swift; sourceTree = "<group>"; };
 		DD1122334455667788990011 /* StockTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockTips.swift; sourceTree = "<group>"; };
 		DD2233445566778899001122 /* StockTipsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockTipsView.swift; sourceTree = "<group>"; };
+		FF2233445566778899001122 /* ETFTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETFTips.swift; sourceTree = "<group>"; };
+		FF4455667788990011223344 /* ETFTipsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETFTipsView.swift; sourceTree = "<group>"; };
 		AA3344556677889900112233 /* DividendIncomeHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendIncomeHistoryView.swift; sourceTree = "<group>"; };
 		AA4455667788990011223344 /* HoldingFutureValueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingFutureValueView.swift; sourceTree = "<group>"; };
 		AA5566778899001122334455 /* PortfolioStrategiesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfolioStrategiesView.swift; sourceTree = "<group>"; };
@@ -223,6 +227,7 @@
 			isa = PBXGroup;
 			children = (
 				A7E4F1B83C2D5A9E6F0B8D1C /* ETFBrowserView.swift */,
+				FF4455667788990011223344 /* ETFTipsView.swift */,
 			);
 			path = ETFs;
 			sourceTree = "<group>";
@@ -307,6 +312,7 @@
 				AA1122334455667788990011 /* PortfolioStrategies.swift */,
 				AA2233445566778899001122 /* InvestingQuotes.swift */,
 				DD1122334455667788990011 /* StockTips.swift */,
+				FF2233445566778899001122 /* ETFTips.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -601,6 +607,8 @@
 				BB2233445566778899001122 /* InvestingQuotes.swift in Sources */,
 				EE1122334455667788990011 /* StockTips.swift in Sources */,
 				CC2233445566778899001122 /* StockTipsView.swift in Sources */,
+				FF1122334455667788990011 /* ETFTips.swift in Sources */,
+				FF3344556677889900112233 /* ETFTipsView.swift in Sources */,
 				BB3344556677889900112233 /* DividendIncomeHistoryView.swift in Sources */,
 				BB4455667788990011223344 /* HoldingFutureValueView.swift in Sources */,
 				BB5566778899001122334455 /* PortfolioStrategiesView.swift in Sources */,

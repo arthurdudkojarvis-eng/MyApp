@@ -8,6 +8,7 @@ struct ETFBrowserView: View {
     @State private var isSearching = false
     @State private var searchError: String?
     @State private var searchTask: Task<Void, Never>?
+    @State private var showTips = false
 
     var body: some View {
         NavigationStack {
@@ -42,6 +43,19 @@ struct ETFBrowserView: View {
             }
             .navigationTitle("ETFs")
             .searchable(text: $query, prompt: "ETF ticker or name")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showTips = true
+                    } label: {
+                        Image(systemName: "lightbulb")
+                    }
+                    .accessibilityLabel("ETF tips")
+                }
+            }
+            .sheet(isPresented: $showTips) {
+                ETFTipsView()
+            }
             .onChange(of: query) { _, newValue in
                 searchTask?.cancel()
                 let trimmed = newValue.trimmingCharacters(in: .whitespaces)
