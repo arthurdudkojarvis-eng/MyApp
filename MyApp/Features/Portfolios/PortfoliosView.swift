@@ -328,6 +328,9 @@ private struct PortfolioHoldingRowView: View {
                 if !companyName.isEmpty {
                     Text(companyName).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
+                Text("\(holding.shares.formatted()) shares")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
