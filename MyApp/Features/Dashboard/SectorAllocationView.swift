@@ -82,30 +82,26 @@ struct SectorAllocationView: View {
     // MARK: - Donut Chart with Center Label
 
     private var chartCard: some View {
-        VStack(spacing: 16) {
-            ZStack {
-                Chart(sectorData) { slice in
-                    SectorMark(
-                        angle: .value("Income", slice.doubleIncome),
-                        innerRadius: .ratio(0.618),
-                        outerRadius: selectedSector?.id == slice.id
-                            ? .ratio(1.0)
-                            : .ratio(selectedSector == nil ? 0.95 : 0.88),
-                        angularInset: 1.5
-                    )
-                    .foregroundStyle(by: .value("Sector", slice.displayName))
-                    .cornerRadius(5)
-                    .opacity(selectedSector == nil || selectedSector?.id == slice.id ? 1.0 : 0.35)
-                }
-                .chartForegroundStyleScale(domain: sectorData.map(\.displayName), range: gradientColors)
-                .chartLegend(.hidden)
-                .chartAngleSelection(value: animatedAngleBinding)
-                .frame(height: 240)
-
-                centerLabel
+        ZStack {
+            Chart(sectorData) { slice in
+                SectorMark(
+                    angle: .value("Income", slice.doubleIncome),
+                    innerRadius: .ratio(0.618),
+                    outerRadius: selectedSector?.id == slice.id
+                        ? .ratio(1.0)
+                        : .ratio(selectedSector == nil ? 0.95 : 0.88),
+                    angularInset: 1.5
+                )
+                .foregroundStyle(by: .value("Sector", slice.displayName))
+                .cornerRadius(5)
+                .opacity(selectedSector == nil || selectedSector?.id == slice.id ? 1.0 : 0.35)
             }
+            .chartForegroundStyleScale(domain: sectorData.map(\.displayName), range: gradientColors)
+            .chartLegend(.hidden)
+            .chartAngleSelection(value: animatedAngleBinding)
+            .frame(height: 240)
 
-            legendChips
+            centerLabel
         }
         .padding()
         .background(
