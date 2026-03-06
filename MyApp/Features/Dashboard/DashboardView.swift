@@ -1,11 +1,13 @@
 import SwiftUI
 import SwiftData
 
+private enum DashboardSheet: Identifiable {
+    case settings, features
+    var id: Self { self }
+}
+
 struct DashboardView: View {
-    @State private var showSettings = false
-    // Start on page 1 (dashboard). Page 0 (placeholder) sits to the left,
-    // so swiping right reveals it and swiping left returns to the dashboard.
-    @State private var selectedPage = 1
+    @State private var activeSheet: DashboardSheet?
     @State private var marketStatus: MassiveMarketStatus?
 
     @Environment(StockRefreshService.self) private var stockRefresh
@@ -19,39 +21,40 @@ struct DashboardView: View {
 
     var body: some View {
         NavigationStack {
-            // ZStack is needed because .background() is ignored by the UIPageViewController
-            // backing a .page TabView — the scroll view bleeds through. Placing the color
-            // behind the TabView at the ZStack level and extending it into safe-area fills
-            // all gaps including the page-dot region.
-            ZStack {
-                Color(.systemGroupedBackground).ignoresSafeArea()
-                TabView(selection: $selectedPage) {
-                    // Page 0 — placeholder (future features), sits to the LEFT
-                    DashboardSecondPage()
-                        .tag(0)
-
-                    // Page 1 — income dashboard (default), swipe right to reach page 0
-                    dashboardPage
-                        .tag(1)
-                }
-                .tabViewStyle(.page(indexDisplayMode: .always))
-            }
-            .navigationTitle("Dashboard")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showSettings = true
-                    } label: {
-                        Image(systemName: "gearshape")
-                            .fontWeight(.regular)
+            dashboardPage
+                .background(Color(.systemGroupedBackground))
+                .navigationTitle("Dashboard")
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            activeSheet = .features
+                        } label: {
+                            Image(systemName: "line.3.horizontal")
+                                .fontWeight(.medium)
+                        }
+                        .tint(.primary)
+                        .accessibilityLabel("Features menu")
                     }
-                    .tint(.primary)
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            activeSheet = .settings
+                        } label: {
+                            Image(systemName: "gearshape")
+                                .fontWeight(.regular)
+                        }
+                        .tint(.primary)
+                        .accessibilityLabel("Settings")
+                    }
                 }
-            }
-            .sheet(isPresented: $showSettings) {
-                SettingsView()
-                    .preferredColorScheme(settings.colorScheme.resolvedColorScheme)
-            }
+                .sheet(item: $activeSheet) { sheet in
+                    switch sheet {
+                    case .settings:
+                        SettingsView()
+                            .preferredColorScheme(settings.colorScheme.resolvedColorScheme)
+                    case .features:
+                        DashboardFeaturesSheet()
+                    }
+                }
         }
     }
 
@@ -187,79 +190,81 @@ private struct MarketStatusPill: View {
     }
 }
 
-// MARK: - Dashboard Second Page
+// MARK: - Dashboard Features Sheet
 
-private struct DashboardSecondPage: View {
+private struct DashboardFeaturesSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                featureLink(
-                    icon: "chart.xyaxis.line",
-                    title: "Income Forecast",
-                    subtitle: "12-month projected dividend income",
-                    destination: IncomeForecastView()
-                )
-                featureLink(
-                    icon: "chart.pie.fill",
-                    title: "Sector Allocation",
-                    subtitle: "Portfolio diversification by sector",
-                    destination: SectorAllocationView()
-                )
-                featureLink(
-                    icon: "arrow.trianglehead.2.clockwise",
-                    title: "DRIP Simulator",
-                    subtitle: "Model reinvestment and long-term growth",
-                    destination: DRIPSimulatorView()
-                )
-                featureLink(
-                    icon: "shield.lefthalf.filled",
-                    title: "Dividend Safety",
-                    subtitle: "Yield-based risk indicators per holding",
-                    destination: DividendSafetyView()
-                )
-                featureLink(
-                    icon: "doc.text.fill",
-                    title: "Tax Summary",
-                    subtitle: "Annual income totals with CSV export",
-                    destination: TaxSummaryView()
-                )
-                featureLink(
-                    icon: "eye.fill",
-                    title: "Watchlist",
-                    subtitle: "Track stocks before adding to a portfolio",
-                    destination: WatchlistView()
-                )
-                featureLink(
-                    icon: "bell.fill",
-                    title: "Alerts",
-                    subtitle: "Ex-dividend date reminders for your holdings",
-                    destination: AlertsView()
-                )
-                featureLink(
-                    icon: "calendar",
-                    title: "Dividend Calendar",
-                    subtitle: "Upcoming dividend payments and market holidays",
-                    destination: DividendCalendarView()
-                )
-                featureLink(
-                    icon: "newspaper.fill",
-                    title: "News & Events",
-                    subtitle: "Market news for your holdings",
-                    destination: NewsView()
-                )
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    featureLink(
+                        icon: "chart.xyaxis.line",
+                        title: "Income Forecast",
+                        subtitle: "12-month projected dividend income"
+                    ) { IncomeForecastView() }
+                    featureLink(
+                        icon: "chart.pie.fill",
+                        title: "Sector Allocation",
+                        subtitle: "Portfolio diversification by sector"
+                    ) { SectorAllocationView() }
+                    featureLink(
+                        icon: "arrow.trianglehead.2.clockwise",
+                        title: "DRIP Simulator",
+                        subtitle: "Model reinvestment and long-term growth"
+                    ) { DRIPSimulatorView() }
+                    featureLink(
+                        icon: "shield.lefthalf.filled",
+                        title: "Dividend Safety",
+                        subtitle: "Yield-based risk indicators per holding"
+                    ) { DividendSafetyView() }
+                    featureLink(
+                        icon: "doc.text.fill",
+                        title: "Tax Summary",
+                        subtitle: "Annual income totals with CSV export"
+                    ) { TaxSummaryView() }
+                    featureLink(
+                        icon: "eye.fill",
+                        title: "Watchlist",
+                        subtitle: "Track stocks before adding to a portfolio"
+                    ) { WatchlistView() }
+                    featureLink(
+                        icon: "bell.fill",
+                        title: "Alerts",
+                        subtitle: "Ex-dividend date reminders for your holdings"
+                    ) { AlertsView() }
+                    featureLink(
+                        icon: "calendar",
+                        title: "Dividend Calendar",
+                        subtitle: "Upcoming dividend payments and market holidays"
+                    ) { DividendCalendarView() }
+                    featureLink(
+                        icon: "newspaper.fill",
+                        title: "News & Events",
+                        subtitle: "Market news for your holdings"
+                    ) { NewsView() }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 32)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 24)
-            .padding(.bottom, 32)
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle("Features")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
         }
-        .background(Color(.systemGroupedBackground))
     }
 
     private func featureLink<Destination: View>(
         icon: String,
         title: String,
         subtitle: String,
-        destination: Destination
+        @ViewBuilder destination: () -> Destination
     ) -> some View {
         NavigationLink(destination: destination) {
             HStack(spacing: 14) {
