@@ -83,11 +83,6 @@ struct SectorAllocationView: View {
 
     private var chartCard: some View {
         VStack(spacing: 16) {
-            Text("Income by Sector")
-                .font(.headline)
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
             ZStack {
                 Chart(sectorData) { slice in
                     SectorMark(
