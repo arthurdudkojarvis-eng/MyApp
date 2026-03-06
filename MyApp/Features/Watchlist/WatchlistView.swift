@@ -13,7 +13,7 @@ struct WatchlistView: View {
     @State private var addError: String?
     @State private var isAdding = false
     @State private var enrichedData: [String: WatchlistEnrichedData] = [:]
-    @State private var isEnriching = false
+    @State private var noteEditItem: WatchlistItem?
 
     var body: some View {
         ScrollView {
@@ -35,7 +35,8 @@ struct WatchlistView: View {
                                     item: item,
                                     enriched: enrichedData[item.ticker],
                                     service: massive.service,
-                                    onDelete: { deleteItem(item) }
+                                    onDelete: { deleteItem(item) },
+                                    onEditNote: { noteEditItem = item }
                                 )
                             }
                             .buttonStyle(.plain)
@@ -71,7 +72,10 @@ struct WatchlistView: View {
                 onAdd: addItem
             )
         }
-        .task(id: items.map(\.ticker).sorted().joined(separator: ",")) {
+        .sheet(item: $noteEditItem) { item in
+            EditNoteSheet(item: item)
+        }
+        .task(id: Set(items.map(\.ticker))) {
             await enrichAll()
         }
     }
@@ -79,8 +83,10 @@ struct WatchlistView: View {
     // MARK: - Summary
 
     private func summaryBar(_ items: [WatchlistItem]) -> some View {
-        let withYield = enrichedData.values.filter { ($0.dividendYield ?? 0) > 0 }.count
-        let enrichedCount = enrichedData.count
+        let (withYield, upcomingCount) = enrichedData.values.reduce(into: (0, 0)) { acc, d in
+            if (d.dividendYield ?? 0) > 0 { acc.0 += 1 }
+            if d.nextExDate != nil { acc.1 += 1 }
+        }
 
         return HStack(spacing: 0) {
             SummaryPill(
@@ -97,10 +103,10 @@ struct WatchlistView: View {
             )
             Spacer()
             SummaryPill(
-                icon: "checkmark.circle.fill",
-                label: "Loaded",
-                value: "\(enrichedCount)/\(items.count)",
-                color: enrichedCount == items.count ? .green : .orange
+                icon: "calendar.badge.clock",
+                label: "Upcoming Ex",
+                value: "\(upcomingCount)",
+                color: upcomingCount > 0 ? .orange : .secondary
             )
         }
         .padding(.horizontal, 16)
@@ -114,9 +120,7 @@ struct WatchlistView: View {
     // MARK: - Enrichment
 
     private func enrichAll() async {
-        guard !items.isEmpty, !isEnriching else { return }
-        isEnriching = true
-        defer { isEnriching = false }
+        guard !items.isEmpty else { return }
 
         await withTaskGroup(of: (String, WatchlistEnrichedData?).self) { group in
             for item in items {
@@ -147,12 +151,40 @@ struct WatchlistView: View {
             let dividends = await dividendsFetch
             guard !Task.isCancelled else { return (ticker, nil) }
 
+            // Filter to regular dividends only
+            let regularDivs = dividends?.filter { $0.dividendType == "CD" } ?? []
+
+            let latestDiv = regularDivs.first
             let annualYield: Double? = {
-                guard let divs = dividends, !divs.isEmpty,
+                guard let div = latestDiv,
                       let price = prevClose, price > 0 else { return nil }
-                let annualDiv = divs.reduce(Decimal.zero) { $0 + $1.cashAmount }
-                return (annualDiv as NSDecimalNumber).doubleValue
-                    / (price as NSDecimalNumber).doubleValue * 100
+                let freq = div.frequency ?? 4
+                let annualDiv = div.cashAmount * Decimal(freq)
+                return NSDecimalNumber(decimal: annualDiv / price).doubleValue * 100
+            }()
+
+            // Parse next ex-date (today or future only)
+            let todayDate = Calendar.current.startOfDay(for: .now)
+            let nextExDate: String? = regularDivs
+                .compactMap { div -> (String, Date)? in
+                    let str = div.exDividendDate
+                    guard let date = WatchlistDateHelper.parseDate(str) else { return nil }
+                    return (str, date)
+                }
+                .filter { $0.1 >= todayDate }
+                .sorted { $0.1 < $1.1 }
+                .first?.0
+
+            // Payment frequency label
+            let frequencyLabel: String? = {
+                guard let freq = latestDiv?.frequency else { return nil }
+                switch freq {
+                case 12: return "Monthly"
+                case 4: return "Quarterly"
+                case 2: return "Semi-Annual"
+                case 1: return "Annual"
+                default: return nil
+                }
             }()
 
             return (ticker, WatchlistEnrichedData(
@@ -160,7 +192,11 @@ struct WatchlistView: View {
                 sector: details.sicDescription,
                 price: prevClose,
                 dividendYield: annualYield,
-                marketCap: details.marketCap
+                marketCap: details.marketCap,
+                lastDividendAmount: latestDiv?.cashAmount,
+                nextExDate: nextExDate,
+                frequencyLabel: frequencyLabel,
+                companyDescription: details.description
             ))
         } catch {
             return (ticker, nil)
@@ -189,18 +225,46 @@ struct WatchlistView: View {
         let item = WatchlistItem(ticker: ticker)
         modelContext.insert(item)
         showAddSheet = false
-
-        Task {
-            let result = await enrichItem(ticker: ticker)
-            if let data = result.1 {
-                enrichedData[ticker] = data
-            }
-        }
+        // .task(id:) re-fires automatically when items changes
     }
 
     private func deleteItem(_ item: WatchlistItem) {
         enrichedData.removeValue(forKey: item.ticker)
         modelContext.delete(item)
+    }
+}
+
+// MARK: - Date Helper
+
+private enum WatchlistDateHelper {
+    private static func makeDateFormatter() -> DateFormatter {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }
+
+    @MainActor
+    static func todayString() -> String {
+        makeDateFormatter().string(from: Date.now)
+    }
+
+    static func parseDate(_ string: String) -> Date? {
+        makeDateFormatter().date(from: string)
+    }
+
+    static func daysUntil(_ dateString: String) -> Int? {
+        guard let date = parseDate(dateString) else { return nil }
+        return Calendar.current.dateComponents(
+            [.day],
+            from: Calendar.current.startOfDay(for: .now),
+            to: date
+        ).day
+    }
+
+    static func shortDate(_ dateString: String) -> String {
+        guard let date = parseDate(dateString) else { return dateString }
+        return date.formatted(.dateTime.month(.abbreviated).day())
     }
 }
 
@@ -212,6 +276,10 @@ private struct WatchlistEnrichedData {
     let price: Decimal?
     let dividendYield: Double?
     let marketCap: Decimal?
+    let lastDividendAmount: Decimal?
+    let nextExDate: String?
+    let frequencyLabel: String?
+    let companyDescription: String?
 }
 
 // MARK: - Summary Pill
@@ -245,27 +313,33 @@ private struct WatchlistCard: View {
     let enriched: WatchlistEnrichedData?
     let service: any MassiveFetching
     let onDelete: () -> Void
+    let onEditNote: () -> Void
 
     private var displayName: String {
         if let name = enriched?.companyName, !name.isEmpty { return name }
         return item.companyName
     }
 
+    private static let posixLocale = Locale(identifier: "en_US_POSIX")
+
     private var priceText: String? {
         guard let price = enriched?.price else { return nil }
         return price.formatted(.currency(code: "USD"))
     }
-
-    private static let posixLocale = Locale(identifier: "en_US_POSIX")
 
     private var yieldText: String? {
         guard let yield = enriched?.dividendYield, yield > 0 else { return nil }
         return String(format: "%.2f%%", locale: Self.posixLocale, yield)
     }
 
+    private var divPerShareText: String? {
+        guard let amount = enriched?.lastDividendAmount, amount > 0 else { return nil }
+        return amount.formatted(.currency(code: "USD"))
+    }
+
     private var marketCapText: String? {
         guard let cap = enriched?.marketCap, cap > 0 else { return nil }
-        let value = (cap as NSDecimalNumber).doubleValue
+        let value = NSDecimalNumber(decimal: cap).doubleValue
         switch value {
         case 1_000_000_000_000...:
             return String(format: "$%.1fT", locale: Self.posixLocale, value / 1_000_000_000_000)
@@ -278,68 +352,139 @@ private struct WatchlistCard: View {
         }
     }
 
+    private var daysWatching: Int {
+        max(0, Calendar.current.dateComponents([.day], from: item.addedDate, to: .now).day ?? 0)
+    }
+
     var body: some View {
-        HStack(alignment: .center, spacing: 14) {
-            CompanyLogoView(
-                branding: nil,
-                ticker: item.ticker,
-                service: service,
-                size: 44
-            )
+        VStack(alignment: .leading, spacing: 10) {
+            // Row 1: Logo, name, price
+            HStack(alignment: .center, spacing: 12) {
+                CompanyLogoView(
+                    branding: nil,
+                    ticker: item.ticker,
+                    service: service,
+                    size: 44
+                )
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(item.ticker)
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-                if !displayName.isEmpty {
-                    Text(displayName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
-
-                HStack(spacing: 6) {
-                    if let sector = enriched?.sector {
-                        Text(sector)
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text(item.ticker)
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+                        if let freq = enriched?.frequencyLabel {
+                            Text(freq)
+                                .font(.system(size: 9, weight: .semibold))
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 2)
+                                .background(Color.accentColor.opacity(0.12))
+                                .foregroundStyle(Color.accentColor)
+                                .clipShape(Capsule())
+                        }
+                    }
+                    if !displayName.isEmpty {
+                        Text(displayName)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                             .lineLimit(1)
                     }
-                    if enriched?.sector != nil, marketCapText != nil {
-                        Circle()
-                            .fill(Color(.tertiaryLabel))
-                            .frame(width: 3, height: 3)
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 2) {
+                    if let price = priceText {
+                        Text(price)
+                            .font(.subheadline.bold())
+                            .foregroundStyle(.primary)
+                    } else {
+                        Text("--")
+                            .font(.subheadline.bold())
+                            .foregroundStyle(.secondary)
                     }
-                    if let cap = marketCapText {
-                        Text(cap)
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
+
+                    if let yield = yieldText {
+                        Text(yield)
+                            .font(.caption2.bold())
+                            .foregroundStyle(.green)
                     }
                 }
             }
 
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: 3) {
-                if let price = priceText {
-                    Text(price)
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.primary)
-                } else {
-                    Text("--")
-                        .font(.subheadline.bold())
-                        .foregroundStyle(.secondary)
-                }
-
-                if let yield = yieldText {
-                    HStack(spacing: 3) {
-                        Image(systemName: "dollarsign.arrow.circlepath")
-                            .font(.system(size: 9))
-                        Text(yield)
-                            .font(.caption2.bold())
+            // Row 2: Dividend info chips
+            if let enriched {
+                HStack(spacing: 6) {
+                    // Sector + Market Cap
+                    if let sector = enriched.sector {
+                        InfoChip(icon: "building.2", text: sector)
                     }
-                    .foregroundStyle(.green)
+                    if let cap = marketCapText {
+                        InfoChip(icon: "chart.bar", text: cap)
+                    }
+
+                    // Dividend per share
+                    if let div = divPerShareText {
+                        InfoChip(icon: "banknote", text: "\(div)/share")
+                    }
+
+                    Spacer()
                 }
+            }
+
+            // Row 3: Next ex-date + days watching
+            HStack(spacing: 0) {
+                if let exDate = enriched?.nextExDate {
+                    let days = WatchlistDateHelper.daysUntil(exDate)
+                    let dateLabel = WatchlistDateHelper.shortDate(exDate)
+                    HStack(spacing: 4) {
+                        Image(systemName: "calendar.badge.exclamationmark")
+                            .font(.system(size: 10))
+                            .foregroundStyle(urgencyColor(days: days))
+                        Text("Ex-date \(dateLabel)")
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(urgencyColor(days: days))
+                        if let days, days >= 0 {
+                            Text("(\(days)d)")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                } else if enriched != nil { // data loaded but no upcoming ex-date
+                    HStack(spacing: 4) {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.tertiary)
+                        Text("No upcoming ex-date")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+
+                Spacer()
+
+                HStack(spacing: 4) {
+                    Image(systemName: "clock")
+                        .font(.system(size: 9))
+                        .foregroundStyle(.tertiary)
+                    Text(daysWatchingText)
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+
+            // Row 4: Notes (if present)
+            if !item.notes.isEmpty {
+                HStack(spacing: 6) {
+                    Image(systemName: "note.text")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                    Text(item.notes)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
+                .padding(.top, 2)
             }
         }
         .padding(14)
@@ -348,6 +493,12 @@ private struct WatchlistCard: View {
                 .fill(Color(.secondarySystemGroupedBackground))
         )
         .contextMenu {
+            Button {
+                onEditNote()
+            } label: {
+                Label(item.notes.isEmpty ? "Add Note" : "Edit Note", systemImage: "note.text")
+            }
+            Divider()
             Button(role: .destructive) {
                 onDelete()
             } label: {
@@ -361,14 +512,128 @@ private struct WatchlistCard: View {
                 Label("Remove", systemImage: "trash")
             }
         }
+        .swipeActions(edge: .leading) {
+            Button {
+                onEditNote()
+            } label: {
+                Label("Note", systemImage: "note.text")
+            }
+            .tint(.blue)
+        }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel({
-            var parts = [item.ticker]
-            if !displayName.isEmpty { parts.append(displayName) }
-            if let price = priceText { parts.append("Price \(price)") }
-            if let yield = yieldText { parts.append("Yield \(yield)") }
-            return parts.joined(separator: ", ")
-        }())
+        .accessibilityLabel(accessibilityDescription)
+    }
+
+    private var accessibilityDescription: String {
+        var parts = [item.ticker]
+        if !displayName.isEmpty { parts.append(displayName) }
+        if let price = priceText { parts.append("Price \(price)") }
+        if let yield = yieldText { parts.append("Yield \(yield)") }
+        if let exDate = enriched?.nextExDate {
+            parts.append("Ex-date \(WatchlistDateHelper.shortDate(exDate))")
+        }
+        return parts.joined(separator: ", ")
+    }
+
+    private var daysWatchingText: String {
+        let days = daysWatching
+        if days == 0 { return "Added today" }
+        if days == 1 { return "1 day" }
+        return "\(days) days"
+    }
+
+    private func urgencyColor(days: Int?) -> Color {
+        guard let days, days >= 0 else { return .secondary }
+        if days <= 3 { return .red }
+        if days <= 7 { return .orange }
+        return .green
+    }
+}
+
+// MARK: - Info Chip
+
+private struct InfoChip: View {
+    let icon: String
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: icon)
+                .font(.system(size: 8))
+            Text(text)
+                .font(.system(size: 10))
+                .lineLimit(1)
+        }
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 3)
+        .background(Color(.tertiarySystemGroupedBackground))
+        .clipShape(Capsule())
+    }
+}
+
+// MARK: - Edit Note Sheet
+
+private struct EditNoteSheet: View {
+    @Bindable var item: WatchlistItem
+    @Environment(\.dismiss) private var dismiss
+    @State private var noteText: String
+
+    private static let maxNoteLength = 2000
+
+    init(item: WatchlistItem) {
+        self.item = item
+        _noteText = State(initialValue: item.notes)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    HStack(spacing: 10) {
+                        Text(item.ticker)
+                            .font(.headline)
+                        if !item.companyName.isEmpty {
+                            Text(item.companyName)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                Section {
+                    TextEditor(text: $noteText)
+                        .frame(minHeight: 100)
+                } header: {
+                    Text("Note")
+                } footer: {
+                    Text("\(noteText.count)/\(Self.maxNoteLength)")
+                        .font(.caption2)
+                        .foregroundStyle(noteText.count > Self.maxNoteLength ? .red : .secondary)
+                }
+
+                if !noteText.isEmpty {
+                    Section {
+                        Button("Clear Note", role: .destructive) {
+                            noteText = ""
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Note")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        item.notes = String(noteText.prefix(Self.maxNoteLength))
+                        dismiss()
+                    }
+                }
+            }
+        }
     }
 }
 
