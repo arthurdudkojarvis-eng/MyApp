@@ -9,11 +9,51 @@ struct DividendSafetyView: View {
 
     @State private var sortOrder: SortOrder = .risk
     @State private var animateBars = false
+    @State private var showScoreInfo = false
 
     // MARK: - Snapshot (computed once per render)
 
     private var snapshot: SafetySnapshot {
         let holdings = portfolios.flatMap(\.holdings).filter { $0.stock != nil }
+
+        // Deduplicate by ticker — merge holdings of the same stock across portfolios
+        struct MergedHolding {
+            let holdingID: UUID
+            let ticker: String
+            let companyName: String
+            let currentYield: Double
+            var totalValue: Decimal
+            var totalCostBasis: Decimal
+            var projectedAnnualIncome: Decimal
+            var paymentCount: Int
+        }
+
+        var mergedByTicker: [String: MergedHolding] = [:]
+        for holding in holdings {
+            let ticker = holding.stock?.ticker ?? "—"
+            let value = holding.currentValue
+            let costBasis = holding.shares * holding.averageCostBasis
+
+            if var existing = mergedByTicker[ticker] {
+                existing.totalValue += value
+                existing.totalCostBasis += costBasis
+                existing.projectedAnnualIncome += holding.projectedAnnualIncome
+                existing.paymentCount += holding.dividendPayments.count
+                mergedByTicker[ticker] = existing
+            } else {
+                mergedByTicker[ticker] = MergedHolding(
+                    holdingID: holding.id,
+                    ticker: ticker,
+                    companyName: holding.stock?.companyName ?? "",
+                    currentYield: (holding.currentYield as NSDecimalNumber).doubleValue,
+                    totalValue: value,
+                    totalCostBasis: costBasis,
+                    projectedAnnualIncome: holding.projectedAnnualIncome,
+                    paymentCount: holding.dividendPayments.count
+                )
+            }
+        }
+
         var assessments: [HoldingAssessment] = []
         var riskCounts: [RiskLevel: Int] = [.conservative: 0, .moderate: 0, .high: 0, .unknown: 0]
         var riskValues: [RiskLevel: Decimal] = [.conservative: 0, .moderate: 0, .high: 0, .unknown: 0]
@@ -23,28 +63,29 @@ struct DividendSafetyView: View {
         var highestYield: HoldingAssessment?
         var lowestYield: HoldingAssessment?
 
-        for holding in holdings {
-            let currentYield = (holding.currentYield as NSDecimalNumber).doubleValue
-            let yieldOnCost = (holding.yieldOnCost as NSDecimalNumber).doubleValue
-            let value = holding.currentValue
+        for merged in mergedByTicker.values {
+            let currentYield = merged.currentYield
+            let yieldOnCost = merged.totalCostBasis > 0
+                ? (merged.projectedAnnualIncome as NSDecimalNumber).doubleValue / (merged.totalCostBasis as NSDecimalNumber).doubleValue * 100
+                : 0.0
             let risk = RiskLevel.from(yield: currentYield)
 
             let assessment = HoldingAssessment(
-                holdingID: holding.id,
-                ticker: holding.stock?.ticker ?? "—",
-                companyName: holding.stock?.companyName ?? "",
+                holdingID: merged.holdingID,
+                ticker: merged.ticker,
+                companyName: merged.companyName,
                 currentYield: currentYield,
                 yieldOnCost: yieldOnCost,
-                currentValue: value,
-                projectedAnnualIncome: holding.projectedAnnualIncome,
-                paymentCount: holding.dividendPayments.count,
+                currentValue: merged.totalValue,
+                projectedAnnualIncome: merged.projectedAnnualIncome,
+                paymentCount: merged.paymentCount,
                 risk: risk
             )
             assessments.append(assessment)
 
             riskCounts[risk, default: 0] += 1
-            riskValues[risk, default: 0] += value
-            totalValue += value
+            riskValues[risk, default: 0] += merged.totalValue
+            totalValue += merged.totalValue
 
             if currentYield > 0 {
                 yieldSum += currentYield
@@ -137,6 +178,9 @@ struct DividendSafetyView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Dividend Safety")
         .navigationBarTitleDisplayMode(.large)
+        .sheet(isPresented: $showScoreInfo) {
+            SafetyScoreInfoSheet()
+        }
     }
 
     // MARK: - Safety Score Card
@@ -145,9 +189,20 @@ struct DividendSafetyView: View {
         VStack(spacing: 16) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Portfolio Safety Score")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 4) {
+                        Text("Portfolio Safety Score")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Button {
+                            showScoreInfo = true
+                        } label: {
+                            Image(systemName: "info.circle")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("What is the safety score?")
+                    }
                     HStack(alignment: .firstTextBaseline, spacing: 4) {
                         Text("\(snap.safetyScore)")
                             .font(.system(size: 48, weight: .bold, design: .rounded))
@@ -499,6 +554,104 @@ private struct QuickStat: View {
                 .foregroundStyle(color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
+        }
+    }
+}
+
+// MARK: - Safety Score Info Sheet
+
+private struct SafetyScoreInfoSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // What is it
+                    infoSection(
+                        icon: "shield.checkmark.fill",
+                        color: .green,
+                        title: "What Is the Safety Score?",
+                        body: "The Portfolio Safety Score is a 0–100 rating that estimates how sustainable your portfolio's dividend income is, based on the current dividend yield of each holding. A higher score suggests a more conservative, lower-risk dividend portfolio."
+                    )
+
+                    // How it works
+                    infoSection(
+                        icon: "function",
+                        color: .blue,
+                        title: "How Is It Calculated?",
+                        body: "Each holding is classified by its current dividend yield into a risk tier. The score is the weighted average of all tiers, where the weight is the market value of each position."
+                    )
+
+                    // Risk tiers
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Risk Tiers")
+                            .font(.subheadline.bold())
+                        tierRow(color: .green, label: "Conservative", detail: "Yield under 4% — scores 100", description: "Typical of blue-chip, large-cap dividend growers with strong earnings coverage.")
+                        tierRow(color: .yellow, label: "Moderate", detail: "Yield 4–8% — scores 60", description: "Common among REITs, utilities, and mature income stocks. Generally sustainable but worth monitoring.")
+                        tierRow(color: .red, label: "High Risk", detail: "Yield above 8% — scores 20", description: "Unusually high yields often signal the market expects a dividend cut, declining earnings, or financial distress.")
+                        tierRow(color: .gray, label: "Unknown", detail: "No yield data — scores 50", description: "The stock has no dividend data available. It receives a neutral score.")
+                    }
+
+                    // Why it matters
+                    infoSection(
+                        icon: "exclamationmark.triangle.fill",
+                        color: .orange,
+                        title: "Why Does This Matter?",
+                        body: "A very high dividend yield can be a warning sign. When a stock's price drops sharply, its yield rises — but this often precedes a dividend cut. The safety score helps you spot portfolios that may be over-concentrated in high-yield, higher-risk positions."
+                    )
+
+                    // Limitations
+                    infoSection(
+                        icon: "info.circle.fill",
+                        color: .secondary,
+                        title: "Limitations",
+                        body: "This score is based solely on dividend yield. It does not factor in payout ratio, earnings growth, balance sheet strength, or sector-specific norms. Always research individual holdings before making investment decisions."
+                    )
+                }
+                .padding()
+            }
+            .navigationTitle("Safety Score")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+
+    private func infoSection(icon: String, color: Color, title: String, body: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .foregroundStyle(color)
+                    .font(.subheadline)
+                Text(title)
+                    .font(.subheadline.bold())
+            }
+            Text(body)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func tierRow(color: Color, label: String, detail: String, description: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(color)
+                    .frame(width: 10, height: 10)
+                Text(label)
+                    .font(.caption.bold())
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Text(description)
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+                .padding(.leading, 16)
         }
     }
 }
