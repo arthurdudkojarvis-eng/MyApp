@@ -51,6 +51,7 @@ struct StockBrowserView: View {
     @State private var isSearching = false
     @State private var searchError: String?
     @State private var searchTask: Task<Void, Never>?
+    @State private var showTips = false
 
     // STORY-043: Filter state
     @State private var showFilters = false
@@ -128,6 +129,14 @@ struct StockBrowserView: View {
             .navigationTitle("Stocks")
             .searchable(text: $query, prompt: "Ticker or company name")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showTips = true
+                    } label: {
+                        Image(systemName: "lightbulb")
+                    }
+                    .accessibilityLabel("Stock tips")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         withAnimation { showFilters.toggle() }
@@ -136,6 +145,9 @@ struct StockBrowserView: View {
                     }
                     .accessibilityLabel("Filters")
                 }
+            }
+            .sheet(isPresented: $showTips) {
+                StockTipsView()
             }
             .onChange(of: query) { _, newValue in
                 searchTask?.cancel()

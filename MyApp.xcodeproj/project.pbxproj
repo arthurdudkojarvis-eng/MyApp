@@ -70,6 +70,8 @@
 		C3D4E5F6A7B8C9D0E1F2A3B4 /* StockBrowserFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F8A9B0C1D2E3F4A5B6C7D8 /* StockBrowserFilterTests.swift */; };
 		BB1122334455667788990011 /* PortfolioStrategies.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1122334455667788990011 /* PortfolioStrategies.swift */; };
 		BB2233445566778899001122 /* InvestingQuotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA2233445566778899001122 /* InvestingQuotes.swift */; };
+		EE1122334455667788990011 /* StockTips.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1122334455667788990011 /* StockTips.swift */; };
+		CC2233445566778899001122 /* StockTipsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD2233445566778899001122 /* StockTipsView.swift */; };
 		BB3344556677889900112233 /* DividendIncomeHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3344556677889900112233 /* DividendIncomeHistoryView.swift */; };
 		BB4455667788990011223344 /* HoldingFutureValueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4455667788990011223344 /* HoldingFutureValueView.swift */; };
 		BB5566778899001122334455 /* PortfolioStrategiesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5566778899001122334455 /* PortfolioStrategiesView.swift */; };
@@ -152,6 +154,8 @@
 		E7F8A9B0C1D2E3F4A5B6C7D8 /* StockBrowserFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockBrowserFilterTests.swift; sourceTree = "<group>"; };
 		AA1122334455667788990011 /* PortfolioStrategies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfolioStrategies.swift; sourceTree = "<group>"; };
 		AA2233445566778899001122 /* InvestingQuotes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvestingQuotes.swift; sourceTree = "<group>"; };
+		DD1122334455667788990011 /* StockTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockTips.swift; sourceTree = "<group>"; };
+		DD2233445566778899001122 /* StockTipsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockTipsView.swift; sourceTree = "<group>"; };
 		AA3344556677889900112233 /* DividendIncomeHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendIncomeHistoryView.swift; sourceTree = "<group>"; };
 		AA4455667788990011223344 /* HoldingFutureValueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingFutureValueView.swift; sourceTree = "<group>"; };
 		AA5566778899001122334455 /* PortfolioStrategiesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfolioStrategiesView.swift; sourceTree = "<group>"; };
@@ -227,6 +231,7 @@
 			isa = PBXGroup;
 			children = (
 				CBF85C275AC60329CD30EE9A /* StockBrowserView.swift */,
+				DD2233445566778899001122 /* StockTipsView.swift */,
 			);
 			path = Stocks;
 			sourceTree = "<group>";
@@ -301,6 +306,7 @@
 			children = (
 				AA1122334455667788990011 /* PortfolioStrategies.swift */,
 				AA2233445566778899001122 /* InvestingQuotes.swift */,
+				DD1122334455667788990011 /* StockTips.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -593,6 +599,8 @@
 				A1B2C3D4E5F60718192A3B4C /* CompanyLogoView.swift in Sources */,
 				BB1122334455667788990011 /* PortfolioStrategies.swift in Sources */,
 				BB2233445566778899001122 /* InvestingQuotes.swift in Sources */,
+				EE1122334455667788990011 /* StockTips.swift in Sources */,
+				CC2233445566778899001122 /* StockTipsView.swift in Sources */,
 				BB3344556677889900112233 /* DividendIncomeHistoryView.swift in Sources */,
 				BB4455667788990011223344 /* HoldingFutureValueView.swift in Sources */,
 				BB5566778899001122334455 /* PortfolioStrategiesView.swift in Sources */,
