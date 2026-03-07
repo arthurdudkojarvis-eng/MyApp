@@ -77,6 +77,7 @@
 		BB3344556677889900112233 /* DividendIncomeHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3344556677889900112233 /* DividendIncomeHistoryView.swift */; };
 		BB4455667788990011223344 /* HoldingFutureValueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4455667788990011223344 /* HoldingFutureValueView.swift */; };
 		BB5566778899001122334455 /* PortfolioStrategiesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5566778899001122334455 /* PortfolioStrategiesView.swift */; };
+		SC001122334455667788990A /* StockScreenerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SC001122334455667788990B /* StockScreenerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -158,6 +159,7 @@
 		AA2233445566778899001122 /* InvestingQuotes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvestingQuotes.swift; sourceTree = "<group>"; };
 		DD1122334455667788990011 /* StockTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockTips.swift; sourceTree = "<group>"; };
 		DD2233445566778899001122 /* StockTipsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockTipsView.swift; sourceTree = "<group>"; };
+		SC001122334455667788990B /* StockScreenerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockScreenerView.swift; sourceTree = "<group>"; };
 		FF2233445566778899001122 /* ETFTips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETFTips.swift; sourceTree = "<group>"; };
 		FF4455667788990011223344 /* ETFTipsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETFTipsView.swift; sourceTree = "<group>"; };
 		AA3344556677889900112233 /* DividendIncomeHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendIncomeHistoryView.swift; sourceTree = "<group>"; };
@@ -236,6 +238,7 @@
 			isa = PBXGroup;
 			children = (
 				CBF85C275AC60329CD30EE9A /* StockBrowserView.swift */,
+				SC001122334455667788990B /* StockScreenerView.swift */,
 				DD2233445566778899001122 /* StockTipsView.swift */,
 			);
 			path = Stocks;
@@ -597,6 +600,7 @@
 				CC4776AC4CA2ADF98A177337 /* SettingsView.swift in Sources */,
 				AA1D2D9C2F69A518390AD9E9 /* Stock.swift in Sources */,
 				2B2F7F5FE6554DC6CBC1D8B0 /* StockBrowserView.swift in Sources */,
+				SC001122334455667788990A /* StockScreenerView.swift in Sources */,
 				BD4A40AB295269B2F1E9D6BA /* StockRefreshService.swift in Sources */,
 				14BF60D0BA98FE81C5979572 /* TaxSummaryView.swift in Sources */,
 				DDA4856D608D76F9D88AA9BA /* View+Extensions.swift in Sources */,

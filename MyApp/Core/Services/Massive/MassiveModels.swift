@@ -131,6 +131,12 @@ struct MassiveFinancialResult: Decodable {
 
 struct MassiveFinancialStatements: Decodable {
     let incomeStatement: MassiveIncomeStatement?
+    let balanceSheet: MassiveBalanceSheet?
+}
+
+struct MassiveBalanceSheet: Decodable {
+    let equity: MassiveFinancialItem?
+    let liabilities: MassiveFinancialItem?
 }
 
 struct MassiveIncomeStatement: Decodable {
@@ -146,7 +152,7 @@ struct MassiveFinancialItem: Decodable {
     let unit: String?           // "USD", "USD / shares"
 }
 
-/// Flattened view of a single fiscal period's key income statement figures.
+/// Flattened view of a single fiscal period's key financial figures.
 struct MassiveFinancial {
     let fiscalPeriod: String?
     let fiscalYear: String?
@@ -155,6 +161,8 @@ struct MassiveFinancial {
     let basicEarningsPerShare: Decimal?
     let dilutedEarningsPerShare: Decimal?
     let operatingIncomeLoss: Decimal?
+    let equity: Decimal?
+    let liabilities: Decimal?
 
     init(result: MassiveFinancialResult) {
         self.fiscalPeriod             = result.fiscalPeriod
@@ -165,6 +173,9 @@ struct MassiveFinancial {
         self.basicEarningsPerShare    = stmt?.basicEarningsPerShare?.value
         self.dilutedEarningsPerShare  = stmt?.dilutedEarningsPerShare?.value
         self.operatingIncomeLoss      = stmt?.operatingIncomeLoss?.value
+        let bs                        = result.financials?.balanceSheet
+        self.equity                   = bs?.equity?.value
+        self.liabilities              = bs?.liabilities?.value
     }
 }
 
