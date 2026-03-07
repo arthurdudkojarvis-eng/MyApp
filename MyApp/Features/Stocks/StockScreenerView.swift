@@ -11,6 +11,7 @@ struct ScreenResult: Identifiable {
     let epsGrowth: Double?
     let marketCapB: Double?
     let passesAll: Bool
+    let passCount: Int
 
     var id: String { ticker }
 }
@@ -110,6 +111,7 @@ enum ScreenerSource: String, CaseIterable {
 struct StockScreenerView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.massiveService) private var massive
+    @Environment(SettingsStore.self) private var settings
     @Query private var portfolios: [Portfolio]
     @Query private var watchlistItems: [WatchlistItem]
 
@@ -127,6 +129,8 @@ struct StockScreenerView: View {
     @State private var screenResults: [ScreenResult] = []
     @State private var screenError: String?
     @State private var screenedCount = 0
+
+    private var tint: Color { settings.fontTheme.color ?? Color.accentColor }
 
     private let sectorChips: [String] = [
         "Technology", "Healthcare", "Finance", "Energy",
@@ -163,6 +167,39 @@ struct StockScreenerView: View {
             }
         }
         return tickers
+    }
+
+    private func sectorIcon(_ sector: String) -> String {
+        switch sector {
+        case "Technology": return "desktopcomputer"
+        case "Healthcare": return "heart.text.square"
+        case "Finance": return "building.columns"
+        case "Energy": return "bolt.fill"
+        case "Consumer Cyclical": return "cart.fill"
+        case "Industrials": return "gearshape.2.fill"
+        case "Real Estate": return "house.fill"
+        case "Utilities": return "lightbulb.fill"
+        case "Communication": return "antenna.radiowaves.left.and.right"
+        case "Materials": return "cube.fill"
+        default: return "circle.fill"
+        }
+    }
+
+    private func investorColor(_ preset: ScreenerPreset) -> Color {
+        switch preset {
+        case .manual: return .gray
+        case .peterLynch: return .green
+        case .warrenBuffett: return .blue
+        case .charlieMunger: return .purple
+        case .benjaminGraham: return .brown
+        case .philipFisher: return .orange
+        case .joelGreenblatt: return .red
+        case .johnNeff: return .teal
+        case .davidDreman: return .indigo
+        case .johnTempleton: return .mint
+        case .rayDalio: return .cyan
+        case .jimSimons: return .pink
+        }
     }
 
     var body: some View {
@@ -202,6 +239,9 @@ struct StockScreenerView: View {
             .listStyle(.insetGrouped)
             .navigationTitle("Stock Screener")
             .navigationBarTitleDisplayMode(.inline)
+            .animation(.spring(duration: 0.35), value: selectedPreset)
+            .animation(.spring(duration: 0.35), value: selectedSector)
+            .animation(.spring(duration: 0.35), value: source)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
@@ -225,26 +265,43 @@ struct StockScreenerView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(sectorChips, id: \.self) { sector in
+                            let isSelected = selectedSector == sector
                             Button {
-                                withAnimation {
-                                    selectedSector = selectedSector == sector ? nil : sector
+                                withAnimation(.spring(duration: 0.3)) {
+                                    selectedSector = isSelected ? nil : sector
                                 }
                             } label: {
-                                Text(sector)
-                                    .font(.caption)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(selectedSector == sector ? Color.accentColor : Color(.tertiarySystemFill))
-                                    .foregroundStyle(selectedSector == sector ? .white : .primary)
+                                Label(sector, systemImage: sectorIcon(sector))
+                                    .font(.caption.weight(.medium))
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        Group {
+                                            if isSelected {
+                                                LinearGradient(
+                                                    colors: [tint, tint.opacity(0.7)],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            } else {
+                                                tint.opacity(0.08)
+                                            }
+                                        }
+                                    )
+                                    .foregroundStyle(isSelected ? .white : tint)
                                     .clipShape(Capsule())
+                                    .shadow(color: isSelected ? tint.opacity(0.4) : .clear, radius: 6, y: 2)
                             }
                             .buttonStyle(.plain)
                         }
                     }
+                    .padding(.vertical, 2)
                 }
             }
         } header: {
-            Text("Stock Source")
+            Label("Stock Source", systemImage: "tray.full.fill")
+                .font(.caption.bold())
+                .foregroundStyle(tint)
         }
     }
 
@@ -252,24 +309,84 @@ struct StockScreenerView: View {
 
     private var criteriaSection: some View {
         Section {
-            HStack {
-                Picker("Strategy", selection: $selectedPreset) {
-                    ForEach(ScreenerPreset.allCases) { preset in
-                        Text(preset.rawValue).tag(preset)
+            // Strategy preset cards
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Strategy")
+                        .font(.subheadline.weight(.medium))
+                    Spacer()
+                    Button {
+                        showingPresetInfo = true
+                    } label: {
+                        Image(systemName: "info.circle.fill")
+                            .foregroundStyle(tint.opacity(0.6))
                     }
-                }
-                .pickerStyle(.menu)
-                .onChange(of: selectedPreset) { _, newValue in
-                    applyPreset(newValue)
+                    .buttonStyle(.plain)
                 }
 
-                Button {
-                    showingPresetInfo = true
-                } label: {
-                    Image(systemName: "info.circle")
-                        .foregroundStyle(.secondary)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(ScreenerPreset.allCases) { preset in
+                            let isSelected = selectedPreset == preset
+                            Button {
+                                withAnimation(.spring(duration: 0.3)) {
+                                    selectedPreset = preset
+                                    applyPreset(preset)
+                                }
+                            } label: {
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack(spacing: 6) {
+                                        Text(preset.rawValue)
+                                            .font(.caption.bold())
+                                            .lineLimit(1)
+                                        if isSelected {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .font(.caption2)
+                                                .foregroundStyle(.white)
+                                        }
+                                    }
+                                    if preset != .manual, !preset.description.isEmpty {
+                                        Text(preset.description)
+                                            .font(.system(size: 9))
+                                            .lineLimit(2)
+                                            .opacity(0.85)
+                                    }
+                                    if let c = preset.criteria {
+                                        HStack(spacing: 4) {
+                                            Text("P/E \(String(format: "%.0f", c.maxPE))")
+                                            Text("D/E \(String(format: "%.0f", c.maxDE))%")
+                                        }
+                                        .font(.system(size: 8).monospacedDigit())
+                                        .opacity(0.7)
+                                    }
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 10)
+                                .frame(width: 140)
+                                .foregroundStyle(isSelected ? .white : .primary)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .fill(
+                                            isSelected
+                                                ? AnyShapeStyle(LinearGradient(
+                                                    colors: [tint, tint.opacity(0.7)],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                  ))
+                                                : AnyShapeStyle(.ultraThinMaterial)
+                                        )
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .strokeBorder(isSelected ? tint : Color.clear, lineWidth: 1.5)
+                                )
+                                .shadow(color: isSelected ? tint.opacity(0.3) : .clear, radius: 8, y: 3)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.vertical, 2)
                 }
-                .buttonStyle(.plain)
             }
             .sheet(isPresented: $showingPresetInfo) {
                 presetInfoSheet
@@ -277,37 +394,47 @@ struct StockScreenerView: View {
 
             criteriaRow(
                 label: "Max P/E Ratio",
+                icon: "number",
                 value: maxPE,
                 format: "%.0f",
                 range: 5...50,
-                step: 1
+                step: 1,
+                rangeLow: "Value", rangeHigh: "Growth"
             ) { maxPE = $0; selectedPreset = .manual }
 
             criteriaRow(
                 label: "Max Debt/Equity",
+                icon: "chart.bar.doc.horizontal",
                 value: maxDebtEquity,
                 format: "%.0f%%",
                 range: 0...100,
-                step: 5
+                step: 5,
+                rangeLow: "Conservative", rangeHigh: "Aggressive"
             ) { maxDebtEquity = $0; selectedPreset = .manual }
 
             criteriaRow(
                 label: "Min EPS Growth",
+                icon: "arrow.up.right",
                 value: minEPSGrowth,
                 format: "%.0f%%",
                 range: 0...50,
-                step: 5
+                step: 5,
+                rangeLow: "Steady", rangeHigh: "High Growth"
             ) { minEPSGrowth = $0; selectedPreset = .manual }
 
             criteriaRow(
                 label: "Min Market Cap",
+                icon: "building.2.fill",
                 value: minMarketCapB,
                 format: "$%.0fB",
                 range: 1...100,
-                step: 1
+                step: 1,
+                rangeLow: "Small Cap", rangeHigh: "Mega Cap"
             ) { minMarketCapB = $0; selectedPreset = .manual }
         } header: {
-            Text("Screening Criteria")
+            Label("Screening Criteria", systemImage: "slider.horizontal.3")
+                .font(.caption.bold())
+                .foregroundStyle(tint)
         } footer: {
             Text(criteriaFooter)
         }
@@ -349,29 +476,53 @@ struct StockScreenerView: View {
     }
 
     private func presetInfoRow(_ preset: ScreenerPreset) -> some View {
-        Button {
+        let isSelected = selectedPreset == preset
+        let color = investorColor(preset)
+        return Button {
             selectedPreset = preset
+            applyPreset(preset)
             showingPresetInfo = false
         } label: {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text(preset.rawValue)
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    if selectedPreset == preset {
-                        Image(systemName: "checkmark")
-                            .foregroundStyle(Color.accentColor)
+            HStack(spacing: 0) {
+                // Colored accent bar for selected
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(isSelected ? tint : Color.clear)
+                    .frame(width: 4)
+                    .padding(.vertical, 4)
+
+                HStack(spacing: 12) {
+                    // Colored icon circle
+                    ZStack {
+                        Circle()
+                            .fill(color.opacity(0.15))
+                            .frame(width: 36, height: 36)
+                        Text(String(preset.rawValue.prefix(1)))
                             .font(.subheadline.bold())
+                            .foregroundStyle(color)
+                    }
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text(preset.rawValue)
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            if isSelected {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(tint)
+                                    .font(.subheadline)
+                            }
+                        }
+
+                        Text(preset.strategyDetail)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        presetCriteriaPills(preset)
                     }
                 }
-
-                Text(preset.strategyDetail)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                presetCriteriaPills(preset)
+                .padding(.leading, 10)
             }
             .padding(.vertical, 4)
         }
@@ -395,36 +546,64 @@ struct StockScreenerView: View {
         VStack(spacing: 1) {
             Text(label)
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(tint.opacity(0.7))
             Text(value)
                 .font(.caption2.monospacedDigit().bold())
+                .foregroundStyle(tint)
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 3)
-        .background(Color(.tertiarySystemFill))
-        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(tint.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
     }
 
     private func criteriaRow(
         label: String,
+        icon: String,
         value: Double,
         format: String,
         range: ClosedRange<Double>,
         step: Double,
+        rangeLow: String,
+        rangeHigh: String,
         onChange: @escaping (Double) -> Void
     ) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 3) {
             HStack {
-                Text(label)
-                    .font(.subheadline)
+                HStack(spacing: 4) {
+                    Image(systemName: icon)
+                        .font(.caption)
+                        .foregroundStyle(tint)
+                    Text(label)
+                        .font(.subheadline.weight(.medium))
+                }
                 Spacer()
                 Text(String(format: format, value))
-                    .font(.subheadline.monospacedDigit().bold())
-                    .foregroundStyle(Color.accentColor)
+                    .font(.caption.monospacedDigit().bold())
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 3)
+                    .background(
+                        Capsule().fill(
+                            LinearGradient(
+                                colors: [tint, tint.opacity(0.75)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                    )
             }
             Slider(value: Binding(get: { value }, set: onChange), in: range, step: step)
+                .tint(tint)
+            HStack {
+                Text(rangeLow)
+                Spacer()
+                Text(rangeHigh)
+            }
+            .font(.system(size: 9))
+            .foregroundStyle(.secondary)
         }
-        .padding(.vertical, 2)
+        .padding(.vertical, 0)
     }
 
     // MARK: - Screen Button
@@ -438,10 +617,28 @@ struct StockScreenerView: View {
                     Spacer()
                     Label(screenButtonLabel, systemImage: "sparkle.magnifyingglass")
                         .font(.headline)
+                        .foregroundStyle(.white)
                     Spacer()
                 }
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(
+                            isScreenButtonDisabled
+                                ? AnyShapeStyle(Color.gray.opacity(0.4))
+                                : AnyShapeStyle(LinearGradient(
+                                    colors: [tint, tint.opacity(0.8)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                  ))
+                        )
+                        .shadow(color: isScreenButtonDisabled ? .clear : tint.opacity(0.35), radius: 8, y: 4)
+                )
             }
+            .buttonStyle(.plain)
             .disabled(isScreenButtonDisabled)
+            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+            .listRowBackground(Color.clear)
         }
     }
 
@@ -469,7 +666,29 @@ struct StockScreenerView: View {
 
     private var resultsSection: some View {
         let passing = screenResults.filter(\.passesAll)
+        let total = screenResults.count
+        let passCount = passing.count
         return Section {
+            // Summary header card
+            HStack(spacing: 14) {
+                SummaryRingView(
+                    passed: passCount,
+                    total: total,
+                    tint: tint
+                )
+                .frame(width: 48, height: 48)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(passCount) of \(total) Passed")
+                        .font(.headline)
+                    Text("Stocks meeting all screening criteria")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+            .padding(.vertical, 4)
+
             ForEach(screenResults) { result in
                 NavigationLink {
                     StockDetailView(result: MassiveTickerSearchResult(
@@ -484,7 +703,9 @@ struct StockScreenerView: View {
                 }
             }
         } header: {
-            Text("\(passing.count) of \(screenResults.count) stocks pass")
+            Label("Results", systemImage: "list.bullet.clipboard.fill")
+                .font(.caption.bold())
+                .foregroundStyle(tint)
         }
     }
 
@@ -505,9 +726,20 @@ struct StockScreenerView: View {
                         .lineLimit(1)
                 }
                 Spacer()
-                if result.passesAll {
-                    Image(systemName: "checkmark.seal.fill")
-                        .foregroundStyle(.green)
+                HStack(spacing: 4) {
+                    Text("\(result.passCount)/4")
+                        .font(.caption2.bold().monospacedDigit())
+                        .foregroundStyle(result.passesAll ? .green : (result.passCount >= 2 ? .orange : .red))
+                    if result.passesAll {
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.title3)
+                            .foregroundStyle(.green)
+                            .shadow(color: .green.opacity(0.5), radius: 4)
+                    } else {
+                        Image(systemName: "xmark.diamond.fill")
+                            .font(.title3)
+                            .foregroundStyle(result.passCount >= 2 ? .orange.opacity(0.7) : .red.opacity(0.6))
+                    }
                 }
             }
 
@@ -522,31 +754,45 @@ struct StockScreenerView: View {
                            passes: result.marketCapB.map { $0 > minMarketCapB } ?? false)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 6)
     }
 
     private func metricPill(_ label: String, value: Double?, format: String, passes: Bool) -> some View {
-        VStack(spacing: 2) {
+        let hasValue = value != nil
+        return VStack(spacing: 2) {
             Text(label)
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(hasValue ? (passes ? .white.opacity(0.85) : .red.opacity(0.7)) : .secondary)
             HStack(spacing: 2) {
                 if let value {
                     Text(String(format: format, value))
-                        .font(.caption2.monospacedDigit())
+                        .font(.caption2.monospacedDigit().bold())
                 } else {
                     Text("N/A")
                         .font(.caption2)
                 }
                 Image(systemName: passes ? "checkmark.circle.fill" : "xmark.circle.fill")
                     .font(.caption2)
-                    .foregroundStyle(passes ? .green : .red)
+                    .foregroundStyle(hasValue ? (passes ? .white : .red) : .gray)
             }
+            .foregroundStyle(hasValue ? (passes ? .white : .red) : .secondary)
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 4)
-        .background(Color(.tertiarySystemFill))
-        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(
+                    hasValue
+                        ? (passes
+                            ? AnyShapeStyle(LinearGradient(
+                                colors: [Color.green, Color.green.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                              ))
+                            : AnyShapeStyle(Color.red.opacity(0.12)))
+                        : AnyShapeStyle(Color(.tertiarySystemFill))
+                )
+        )
     }
 
     // MARK: - Screening Logic
@@ -658,7 +904,8 @@ struct StockScreenerView: View {
                         let passesDE = debtEquity.map { $0 < capturedMaxDE } ?? false
                         let passesEPS = epsGrowth.map { $0 > capturedMinEPS } ?? false
                         let passesCap = marketCapB.map { $0 > capturedMinCap } ?? false
-                        let passesAll = passesPE && passesDE && passesEPS && passesCap
+                        let passCount = [passesPE, passesDE, passesEPS, passesCap].filter { $0 }.count
+                        let passesAll = passCount == 4
 
                         return ScreenResult(
                             ticker: ticker,
@@ -667,7 +914,8 @@ struct StockScreenerView: View {
                             debtEquity: debtEquity,
                             epsGrowth: epsGrowth,
                             marketCapB: marketCapB,
-                            passesAll: passesAll
+                            passesAll: passesAll,
+                            passCount: passCount
                         )
                     }
                 }
@@ -679,16 +927,46 @@ struct StockScreenerView: View {
                 return collected
             }
 
-            // Sort: passing first (by P/E ascending), then failing
+            // Sort: by pass count descending, then P/E ascending within same group
             screenResults = results.sorted { a, b in
-                if a.passesAll != b.passesAll { return a.passesAll }
-                if a.passesAll {
-                    return (a.pe ?? .infinity) < (b.pe ?? .infinity)
-                }
-                return a.ticker < b.ticker
+                if a.passCount != b.passCount { return a.passCount > b.passCount }
+                return (a.pe ?? .infinity) < (b.pe ?? .infinity)
             }
         } catch {
             screenError = error.localizedDescription
+        }
+    }
+}
+
+// MARK: - Summary Ring View
+
+private struct SummaryRingView: View {
+    let passed: Int
+    let total: Int
+    let tint: Color
+
+    private var fraction: Double {
+        total > 0 ? Double(passed) / Double(total) : 0
+    }
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(tint.opacity(0.15), lineWidth: 5)
+            Circle()
+                .trim(from: 0, to: fraction)
+                .stroke(
+                    LinearGradient(
+                        colors: [tint, tint.opacity(0.6)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    style: StrokeStyle(lineWidth: 5, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+            Text("\(passed)")
+                .font(.caption.bold().monospacedDigit())
+                .foregroundStyle(tint)
         }
     }
 }
