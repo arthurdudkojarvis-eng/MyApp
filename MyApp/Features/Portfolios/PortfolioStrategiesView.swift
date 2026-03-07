@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct PortfolioStrategiesView: View {
     @Environment(\.dismiss) private var dismiss
@@ -58,15 +59,23 @@ private struct StrategyRowView: View {
 private struct StrategyDetailView: View {
     let strategy: DividendStrategy
     @Environment(\.massiveService) private var massive
+    @Environment(\.modelContext) private var modelContext
+    @Environment(StockRefreshService.self) private var stockRefresh
+    @Environment(SettingsStore.self) private var settings
 
     @State private var prices: [String: Decimal] = [:]
     @State private var isLoading = false
+    @State private var isCreating = false
+    @State private var showCreated = false
+
+    private var tint: Color { settings.fontTheme.color ?? Color.accentColor }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
                 headerCard
                 constituentsList
+                createButton
             }
             .padding()
         }
@@ -74,6 +83,11 @@ private struct StrategyDetailView: View {
         .navigationTitle(strategy.name)
         .navigationBarTitleDisplayMode(.inline)
         .task { await loadPrices() }
+        .alert("Portfolio Created", isPresented: $showCreated) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Portfolio '\(strategy.name)' created with \(strategy.constituents.count) holdings")
+        }
     }
 
     private var headerCard: some View {
@@ -164,18 +178,107 @@ private struct StrategyDetailView: View {
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 
+    private var createButton: some View {
+        Button {
+            guard !isCreating else { return }
+            isCreating = true
+            Task { await createPortfolio() }
+        } label: {
+            HStack(spacing: 8) {
+                if isCreating {
+                    ProgressView()
+                        .tint(.white)
+                } else {
+                    Image(systemName: "folder.badge.plus")
+                }
+                Text("Create Portfolio")
+            }
+            .font(.headline)
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(
+                LinearGradient(colors: [tint, tint.opacity(0.8)], startPoint: .leading, endPoint: .trailing)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
+        .disabled(isCreating)
+    }
+
+    @MainActor
+    private func createPortfolio() async {
+        defer { isCreating = false }
+
+        guard !strategy.constituents.isEmpty else { return }
+
+        let notional: Decimal = 1
+        let portfolio = Portfolio(name: strategy.name)
+        modelContext.insert(portfolio)
+
+        var tickers: [String] = []
+
+        for constituent in strategy.constituents {
+            let ticker = constituent.ticker
+            tickers.append(ticker)
+
+            let stock: Stock
+            if let existing = existingStock(ticker: ticker) {
+                stock = existing
+            } else {
+                stock = Stock(ticker: ticker, companyName: constituent.name)
+                modelContext.insert(stock)
+            }
+
+            let price = prices[ticker]
+            let shares: Decimal
+            if let price, price > 0 {
+                shares = (notional * Decimal(constituent.allocationPercent) / 100) / price
+            } else {
+                shares = 1
+            }
+
+            let holding = Holding(shares: shares, averageCostBasis: price ?? 0)
+            holding.portfolio = portfolio
+            holding.stock = stock
+            modelContext.insert(holding)
+        }
+
+        do {
+            try modelContext.save()
+            showCreated = true
+        } catch {
+            return
+        }
+
+        for ticker in tickers {
+            await stockRefresh.refresh(ticker: ticker)
+        }
+    }
+
+    @MainActor
+    private func existingStock(ticker: String) -> Stock? {
+        let descriptor = FetchDescriptor<Stock>(predicate: #Predicate<Stock> { $0.ticker == ticker })
+        return try? modelContext.fetch(descriptor).first
+    }
+
+    @MainActor
     private func loadPrices() async {
         isLoading = true
-        defer { isLoading = false }
+        defer { if !Task.isCancelled { isLoading = false } }
 
+        let api = massive.service
         await withTaskGroup(of: (String, Decimal?).self) { group in
             for constituent in strategy.constituents {
                 group.addTask {
-                    let price = try? await massive.service.fetchPreviousClose(ticker: constituent.ticker)
+                    let price = try? await api.fetchPreviousClose(ticker: constituent.ticker)
                     return (constituent.ticker, price)
                 }
             }
             for await (ticker, price) in group {
+                guard !Task.isCancelled else {
+                    group.cancelAll()
+                    return
+                }
                 if let price {
                     prices[ticker] = price
                 }

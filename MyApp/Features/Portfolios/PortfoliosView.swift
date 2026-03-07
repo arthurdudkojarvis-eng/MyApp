@@ -5,9 +5,12 @@ import SwiftData
 
 struct PortfoliosView: View {
     @Query(sort: \Portfolio.createdAt) private var portfolios: [Portfolio]
+    @Environment(\.modelContext) private var modelContext
     @Environment(SettingsStore.self) private var settings
     @State private var showAddPortfolio = false
     @State private var showStrategies = false
+    @State private var portfolioToDelete: Portfolio?
+    @State private var selectedPortfolio: Portfolio?
 
     private var activePortfolioID: String {
         settings.lastActivePortfolioID
@@ -26,18 +29,22 @@ struct PortfoliosView: View {
                     ScrollView {
                         LazyVStack(spacing: 12) {
                             ForEach(portfolios) { portfolio in
-                                NavigationLink {
-                                    PortfolioHoldingsView(portfolio: portfolio)
-                                } label: {
-                                    PortfolioCardView(
-                                        portfolio: portfolio,
-                                        isActive: portfolio.id.uuidString == activePortfolioID
-                                    )
-                                }
-                                .buttonStyle(.plain)
-                                .simultaneousGesture(TapGesture().onEnded {
+                                PortfolioCardView(
+                                    portfolio: portfolio,
+                                    isActive: portfolio.id.uuidString == activePortfolioID
+                                )
+                                .contentShape(Rectangle())
+                                .onTapGesture {
                                     settings.lastActivePortfolioID = portfolio.id.uuidString
-                                })
+                                    selectedPortfolio = portfolio
+                                }
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        portfolioToDelete = portfolio
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
                             }
                         }
                         .padding(.horizontal)
@@ -65,11 +72,35 @@ struct PortfoliosView: View {
                     .accessibilityLabel("Add portfolio")
                 }
             }
+            .navigationDestination(item: $selectedPortfolio) { portfolio in
+                PortfolioHoldingsView(portfolio: portfolio)
+            }
             .sheet(isPresented: $showAddPortfolio) {
                 AddPortfolioView()
             }
             .sheet(isPresented: $showStrategies) {
                 PortfolioStrategiesView()
+            }
+            .alert(
+                "Delete Portfolio",
+                isPresented: Binding(
+                    get: { portfolioToDelete != nil },
+                    set: { if !$0 { portfolioToDelete = nil } }
+                ),
+                presenting: portfolioToDelete
+            ) { portfolio in
+                Button("Delete", role: .destructive) {
+                    modelContext.delete(portfolio)
+                    if settings.lastActivePortfolioID == portfolio.id.uuidString {
+                        settings.lastActivePortfolioID = ""
+                    }
+                    portfolioToDelete = nil
+                }
+                Button("Cancel", role: .cancel) {
+                    portfolioToDelete = nil
+                }
+            } message: { portfolio in
+                Text("Delete '\(portfolio.name)' and all its holdings?")
             }
             .onAppear {
                 // Auto-select if only one portfolio and none selected
@@ -100,9 +131,6 @@ private struct PortfolioCardView: View {
                         .foregroundStyle(Color.accentColor)
                 }
                 Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
             }
 
             Divider()
@@ -277,7 +305,7 @@ struct PortfolioHoldingsView: View {
         .sheet(item: $holdingForFutureValue) { holding in
             HoldingFutureValueView(holding: holding)
         }
-        .confirmationDialog(
+        .alert(
             "Delete Holding",
             isPresented: Binding(
                 get: { holdingToDelete != nil },

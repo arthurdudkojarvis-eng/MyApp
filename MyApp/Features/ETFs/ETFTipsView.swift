@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct ETFTipsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -58,15 +59,23 @@ private struct ETFTipRowView: View {
 private struct ETFTipDetailView: View {
     let tip: ETFTip
     @Environment(\.massiveService) private var massive
+    @Environment(\.modelContext) private var modelContext
+    @Environment(StockRefreshService.self) private var stockRefresh
+    @Environment(SettingsStore.self) private var settings
 
     @State private var prices: [String: Decimal] = [:]
     @State private var isLoading = false
+    @State private var isCreating = false
+    @State private var showCreated = false
+
+    private var tint: Color { settings.fontTheme.color ?? Color.accentColor }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
                 headerCard
                 examplesList
+                createButton
             }
             .padding()
         }
@@ -74,6 +83,11 @@ private struct ETFTipDetailView: View {
         .navigationTitle(tip.name)
         .navigationBarTitleDisplayMode(.inline)
         .task(id: tip.id) { await loadPrices() }
+        .alert("Portfolio Created", isPresented: $showCreated) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Portfolio '\(tip.name)' created with \(tip.examples.count) holdings")
+        }
     }
 
     private var headerCard: some View {
@@ -168,6 +182,90 @@ private struct ETFTipDetailView: View {
         }
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
+    private var createButton: some View {
+        Button {
+            guard !isCreating else { return }
+            isCreating = true
+            Task { await createPortfolio() }
+        } label: {
+            HStack(spacing: 8) {
+                if isCreating {
+                    ProgressView()
+                        .tint(.white)
+                } else {
+                    Image(systemName: "folder.badge.plus")
+                }
+                Text("Create ETF Strategy")
+            }
+            .font(.headline)
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(
+                LinearGradient(colors: [tint, tint.opacity(0.8)], startPoint: .leading, endPoint: .trailing)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        }
+        .disabled(isCreating)
+    }
+
+    @MainActor
+    private func createPortfolio() async {
+        defer { isCreating = false }
+
+        guard !tip.examples.isEmpty else { return }
+
+        let notional: Decimal = 1
+        let count = tip.examples.count
+        let portfolio = Portfolio(name: tip.name)
+        modelContext.insert(portfolio)
+
+        var tickers: [String] = []
+
+        for example in tip.examples {
+            let ticker = example.ticker
+            tickers.append(ticker)
+
+            let stock: Stock
+            if let existing = existingStock(ticker: ticker) {
+                stock = existing
+            } else {
+                stock = Stock(ticker: ticker, companyName: example.name)
+                modelContext.insert(stock)
+            }
+
+            let price = prices[ticker]
+            let shares: Decimal
+            if let price, price > 0, count > 0 {
+                shares = (notional / Decimal(count)) / price
+            } else {
+                shares = 1
+            }
+
+            let holding = Holding(shares: shares, averageCostBasis: price ?? 0)
+            holding.portfolio = portfolio
+            holding.stock = stock
+            modelContext.insert(holding)
+        }
+
+        do {
+            try modelContext.save()
+            showCreated = true
+        } catch {
+            return
+        }
+
+        for ticker in tickers {
+            await stockRefresh.refresh(ticker: ticker)
+        }
+    }
+
+    @MainActor
+    private func existingStock(ticker: String) -> Stock? {
+        let descriptor = FetchDescriptor<Stock>(predicate: #Predicate<Stock> { $0.ticker == ticker })
+        return try? modelContext.fetch(descriptor).first
     }
 
     @MainActor
