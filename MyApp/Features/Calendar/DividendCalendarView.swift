@@ -161,17 +161,6 @@ struct DividendCalendarView: View {
                 }
             }
 
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(summary.totalIncome, format: .currency(code: "USD"))
-                    .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .monospacedDigit()
-                    .minimumScaleFactor(0.6)
-                    .lineLimit(1)
-                Spacer()
-            }
-
-            Divider()
-
             HStack(spacing: 0) {
                 SummaryQuickStat(
                     icon: "building.2",
