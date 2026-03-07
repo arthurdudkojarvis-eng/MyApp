@@ -10,7 +10,6 @@ struct PortfoliosView: View {
     @State private var showAddPortfolio = false
     @State private var showStrategies = false
     @State private var portfolioToDelete: Portfolio?
-    @State private var selectedPortfolio: Portfolio?
 
     private var activePortfolioID: String {
         settings.lastActivePortfolioID
@@ -29,15 +28,18 @@ struct PortfoliosView: View {
                     ScrollView {
                         LazyVStack(spacing: 12) {
                             ForEach(portfolios) { portfolio in
-                                PortfolioCardView(
-                                    portfolio: portfolio,
-                                    isActive: portfolio.id.uuidString == activePortfolioID
-                                )
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    settings.lastActivePortfolioID = portfolio.id.uuidString
-                                    selectedPortfolio = portfolio
+                                NavigationLink {
+                                    PortfolioHoldingsView(portfolio: portfolio)
+                                } label: {
+                                    PortfolioCardView(
+                                        portfolio: portfolio,
+                                        isActive: portfolio.id.uuidString == activePortfolioID
+                                    )
                                 }
+                                .buttonStyle(.plain)
+                                .simultaneousGesture(TapGesture().onEnded {
+                                    settings.lastActivePortfolioID = portfolio.id.uuidString
+                                })
                                 .contextMenu {
                                     Button(role: .destructive) {
                                         portfolioToDelete = portfolio
@@ -71,9 +73,6 @@ struct PortfoliosView: View {
                     }
                     .accessibilityLabel("Add portfolio")
                 }
-            }
-            .navigationDestination(item: $selectedPortfolio) { portfolio in
-                PortfolioHoldingsView(portfolio: portfolio)
             }
             .sheet(isPresented: $showAddPortfolio) {
                 AddPortfolioView()
