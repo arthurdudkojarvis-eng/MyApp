@@ -21,7 +21,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Dogs of the Dow",
         description: "Buy the 10 highest-yielding stocks in the Dow Jones Industrial Average at the start of each year. This classic income strategy targets large-cap blue chips with above-average yields.",
         riskProfile: "Moderate",
-        expectedYieldRange: "3%–5%",
+        expectedYieldRange: "3-5%",
         constituents: [
             StrategyConstituent(ticker: "VZ", name: "Verizon Communications", allocationPercent: 10),
             StrategyConstituent(ticker: "DOW", name: "Dow Inc.", allocationPercent: 10),
@@ -39,7 +39,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "All Weather Portfolio",
         description: "Ray Dalio's all-weather allocation adapted for income investors using low-cost ETFs. Designed to perform in any economic environment with balanced asset classes.",
         riskProfile: "Conservative",
-        expectedYieldRange: "2%–3%",
+        expectedYieldRange: "2-3%",
         constituents: [
             StrategyConstituent(ticker: "VTI", name: "Vanguard Total Stock Market ETF", allocationPercent: 30),
             StrategyConstituent(ticker: "TLT", name: "iShares 20+ Year Treasury Bond ETF", allocationPercent: 40),
@@ -52,7 +52,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "High Yield Aristocrats",
         description: "Top-yielding S&P 500 Dividend Aristocrats — companies that have increased dividends for 25+ consecutive years. Combines income with dividend growth reliability.",
         riskProfile: "Moderate-Low",
-        expectedYieldRange: "3%–6%",
+        expectedYieldRange: "3-6%",
         constituents: [
             StrategyConstituent(ticker: "T", name: "AT&T Inc.", allocationPercent: 10),
             StrategyConstituent(ticker: "ABBV", name: "AbbVie Inc.", allocationPercent: 10),
@@ -70,7 +70,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Dividend Kings",
         description: "Companies that have raised dividends for 50+ consecutive years. The ultimate dividend reliability — these businesses have survived recessions, wars, and market crashes while never cutting their payout.",
         riskProfile: "Conservative",
-        expectedYieldRange: "2%–4%",
+        expectedYieldRange: "2-4%",
         constituents: [
             StrategyConstituent(ticker: "PG", name: "Procter & Gamble", allocationPercent: 10),
             StrategyConstituent(ticker: "KO", name: "Coca-Cola Company", allocationPercent: 10),
@@ -88,7 +88,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "REIT Income",
         description: "Real Estate Investment Trusts are required by law to distribute 90% of taxable income as dividends. This portfolio targets diversified REITs across property types for steady rental income.",
         riskProfile: "Moderate",
-        expectedYieldRange: "4%–7%",
+        expectedYieldRange: "4-7%",
         constituents: [
             StrategyConstituent(ticker: "O", name: "Realty Income Corporation", allocationPercent: 12),
             StrategyConstituent(ticker: "VICI", name: "VICI Properties", allocationPercent: 12),
@@ -106,7 +106,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Utility Staples",
         description: "Utilities provide essential services with regulated revenue streams. This defensive portfolio focuses on electric, gas, and water utilities known for stable dividends even during recessions.",
         riskProfile: "Conservative",
-        expectedYieldRange: "3%–5%",
+        expectedYieldRange: "3-5%",
         constituents: [
             StrategyConstituent(ticker: "NEE", name: "NextEra Energy", allocationPercent: 15),
             StrategyConstituent(ticker: "DUK", name: "Duke Energy", allocationPercent: 12),
@@ -123,7 +123,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Energy Income",
         description: "Oil, gas, and midstream energy companies with strong cash flows and generous shareholder returns. Higher risk due to commodity price sensitivity, but offers compelling yields.",
         riskProfile: "Moderate-High",
-        expectedYieldRange: "4%–8%",
+        expectedYieldRange: "4-8%",
         constituents: [
             StrategyConstituent(ticker: "XOM", name: "Exxon Mobil Corporation", allocationPercent: 15),
             StrategyConstituent(ticker: "CVX", name: "Chevron Corporation", allocationPercent: 15),
@@ -140,7 +140,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Healthcare Dividends",
         description: "Pharmaceutical and healthcare companies with strong moats, aging-population tailwinds, and consistent dividend growth. Blends large-cap pharma with medical devices.",
         riskProfile: "Moderate",
-        expectedYieldRange: "2%–4%",
+        expectedYieldRange: "2-4%",
         constituents: [
             StrategyConstituent(ticker: "JNJ", name: "Johnson & Johnson", allocationPercent: 15),
             StrategyConstituent(ticker: "ABBV", name: "AbbVie Inc.", allocationPercent: 15),
@@ -157,7 +157,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Consumer Staples Shield",
         description: "Everyday essentials companies — food, beverages, household products — that consumers buy regardless of the economy. A classic recession-proof dividend strategy.",
         riskProfile: "Conservative",
-        expectedYieldRange: "2%–4%",
+        expectedYieldRange: "2-4%",
         constituents: [
             StrategyConstituent(ticker: "PG", name: "Procter & Gamble", allocationPercent: 14),
             StrategyConstituent(ticker: "KO", name: "Coca-Cola Company", allocationPercent: 12),
@@ -175,7 +175,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Financials Income",
         description: "Banks, insurers, and asset managers that generate strong cash flows and return capital via dividends. Benefits from rising interest rates and economic growth.",
         riskProfile: "Moderate-High",
-        expectedYieldRange: "3%–5%",
+        expectedYieldRange: "3-5%",
         constituents: [
             StrategyConstituent(ticker: "JPM", name: "JPMorgan Chase", allocationPercent: 15),
             StrategyConstituent(ticker: "BAC", name: "Bank of America", allocationPercent: 12),
@@ -193,7 +193,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Tech Dividend Growth",
         description: "Technology companies that have matured into reliable dividend payers. Lower current yields but strong dividend growth rates and capital appreciation potential.",
         riskProfile: "Moderate",
-        expectedYieldRange: "1%–3%",
+        expectedYieldRange: "1-3%",
         constituents: [
             StrategyConstituent(ticker: "AAPL", name: "Apple Inc.", allocationPercent: 15),
             StrategyConstituent(ticker: "MSFT", name: "Microsoft Corporation", allocationPercent: 15),
@@ -210,7 +210,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Monthly Payers",
         description: "Stocks and REITs that pay dividends monthly instead of quarterly. Ideal for investors who want regular cash flow to cover monthly expenses or reinvest more frequently.",
         riskProfile: "Moderate",
-        expectedYieldRange: "4%–8%",
+        expectedYieldRange: "4-8%",
         constituents: [
             StrategyConstituent(ticker: "O", name: "Realty Income Corporation", allocationPercent: 15),
             StrategyConstituent(ticker: "STAG", name: "STAG Industrial", allocationPercent: 12),
@@ -228,7 +228,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "International Dividends",
         description: "US-listed ADRs and ETFs providing exposure to high-yielding international companies. Geographic diversification with the convenience of trading on US exchanges.",
         riskProfile: "Moderate-High",
-        expectedYieldRange: "3%–6%",
+        expectedYieldRange: "3-6%",
         constituents: [
             StrategyConstituent(ticker: "VYMI", name: "Vanguard Intl High Dividend Yield ETF", allocationPercent: 20),
             StrategyConstituent(ticker: "UL", name: "Unilever PLC", allocationPercent: 12),
@@ -245,7 +245,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Small-Cap Dividend",
         description: "Smaller companies with established dividend histories. Higher growth potential than large-caps with more volatility. Targets small-caps with sustainable payout ratios.",
         riskProfile: "High",
-        expectedYieldRange: "2%–5%",
+        expectedYieldRange: "2-5%",
         constituents: [
             StrategyConstituent(ticker: "NNN", name: "NNN REIT", allocationPercent: 12),
             StrategyConstituent(ticker: "OHI", name: "Omega Healthcare Investors", allocationPercent: 12),
@@ -263,7 +263,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Dividend ETF Core",
         description: "A simple, low-maintenance approach using dividend-focused ETFs. Maximum diversification with minimal stock-picking. Ideal for hands-off investors.",
         riskProfile: "Moderate-Low",
-        expectedYieldRange: "2%–4%",
+        expectedYieldRange: "2-4%",
         constituents: [
             StrategyConstituent(ticker: "VYM", name: "Vanguard High Dividend Yield ETF", allocationPercent: 20),
             StrategyConstituent(ticker: "SCHD", name: "Schwab US Dividend Equity ETF", allocationPercent: 20),
@@ -277,7 +277,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Retirement Income 60/40",
         description: "Classic 60% stocks / 40% bonds allocation tilted toward income-producing assets. Designed for retirees who need current income with lower volatility than an all-equity portfolio.",
         riskProfile: "Conservative",
-        expectedYieldRange: "3%–5%",
+        expectedYieldRange: "3-5%",
         constituents: [
             StrategyConstituent(ticker: "SCHD", name: "Schwab US Dividend Equity ETF", allocationPercent: 30),
             StrategyConstituent(ticker: "VYM", name: "Vanguard High Dividend Yield ETF", allocationPercent: 30),
@@ -290,7 +290,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Telecom & Media Income",
         description: "Telecommunications and media companies with strong recurring revenue from subscriptions and advertising. Mature industry with generous cash returns to shareholders.",
         riskProfile: "Moderate",
-        expectedYieldRange: "4%–7%",
+        expectedYieldRange: "4-7%",
         constituents: [
             StrategyConstituent(ticker: "VZ", name: "Verizon Communications", allocationPercent: 20),
             StrategyConstituent(ticker: "T", name: "AT&T Inc.", allocationPercent: 20),
@@ -304,7 +304,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Industrial Dividends",
         description: "Industrial conglomerates, aerospace, and defense companies with long dividend histories. Benefits from infrastructure spending, defense budgets, and global trade.",
         riskProfile: "Moderate",
-        expectedYieldRange: "2%–3%",
+        expectedYieldRange: "2-3%",
         constituents: [
             StrategyConstituent(ticker: "CAT", name: "Caterpillar Inc.", allocationPercent: 12),
             StrategyConstituent(ticker: "RTX", name: "RTX Corporation", allocationPercent: 12),
@@ -321,7 +321,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "BDC High Income",
         description: "Business Development Companies lend to mid-market businesses and are required to distribute 90% of income. Very high yields with higher risk — suited for income-focused investors who accept volatility.",
         riskProfile: "High",
-        expectedYieldRange: "8%–12%",
+        expectedYieldRange: "8-12%",
         constituents: [
             StrategyConstituent(ticker: "MAIN", name: "Main Street Capital", allocationPercent: 15),
             StrategyConstituent(ticker: "ARCC", name: "Ares Capital Corporation", allocationPercent: 15),
@@ -338,7 +338,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Warren Buffett Dividends",
         description: "Top dividend-paying holdings from Berkshire Hathaway's public equity portfolio. Buffett's investment philosophy favors businesses with durable competitive advantages and strong cash generation.",
         riskProfile: "Moderate",
-        expectedYieldRange: "2%–4%",
+        expectedYieldRange: "2-4%",
         constituents: [
             StrategyConstituent(ticker: "KO", name: "Coca-Cola Company", allocationPercent: 15),
             StrategyConstituent(ticker: "CVX", name: "Chevron Corporation", allocationPercent: 15),
@@ -355,7 +355,7 @@ let builtInStrategies: [DividendStrategy] = [
         name: "Materials & Mining",
         description: "Mining, metals, and materials companies that generate strong free cash flow during commodity upcycles. Cyclical but with generous dividends tied to commodity prices.",
         riskProfile: "High",
-        expectedYieldRange: "3%–7%",
+        expectedYieldRange: "3-7%",
         constituents: [
             StrategyConstituent(ticker: "RIO", name: "Rio Tinto Group", allocationPercent: 15),
             StrategyConstituent(ticker: "BHP", name: "BHP Group", allocationPercent: 15),

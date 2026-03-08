@@ -45,12 +45,9 @@ private struct StrategyRowView: View {
                 }
                 .font(.caption2)
                 .foregroundStyle(riskColor(for: strategy.riskProfile))
-                HStack(spacing: 2) {
-                    Image(systemName: "percent")
-                    Text(strategy.expectedYieldRange)
-                }
-                .font(.caption2)
-                .foregroundStyle(.orange)
+                Text(strategy.expectedYieldRange)
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
                 HStack(spacing: 2) {
                     Image(systemName: "list.number")
                     Text("\(strategy.constituents.count) stocks")
