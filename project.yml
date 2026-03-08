@@ -1,6 +1,6 @@
-name: MyApp
+name: Divvy
 options:
-  bundleIdPrefix: com.myapp
+  bundleIdPrefix: com.divvy
   deploymentTarget:
     iOS: "17.0"
 
@@ -19,55 +19,55 @@ settings:
       SWIFT_OPTIMIZATION_LEVEL: "-O"
 
 schemes:
-  MyApp:
+  Divvy:
     build:
       targets:
-        MyApp: all
-        MyAppTests: [test]
+        Divvy: all
+        DivvyTests: [test]
     test:
       targets:
-        - MyAppTests
+        - DivvyTests
       commandLineArguments:
         "-com.apple.CoreData.ConcurrencyDebug": "1"
 
 targets:
-  MyApp:
+  Divvy:
     type: application
     platform: iOS
     deploymentTarget: "17.0"
     sources:
-      - path: MyApp
+      - path: Divvy
     settings:
       base:
-        PRODUCT_NAME: MyApp
-        PRODUCT_BUNDLE_IDENTIFIER: com.myapp.MyApp
+        PRODUCT_NAME: Divvy
+        PRODUCT_BUNDLE_IDENTIFIER: com.divvy.Divvy
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       configs:
         Debug:
           ENABLE_TESTABILITY: YES
     info:
-      path: MyApp/Resources/Info.plist
+      path: Divvy/Resources/Info.plist
       properties:
         UILaunchScreen:
           UIColorName: LaunchBackground
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
-        CFBundleDisplayName: MyApp
+        CFBundleDisplayName: Divvy
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
 
-  MyAppTests:
+  DivvyTests:
     type: bundle.unit-test
     platform: iOS
     deploymentTarget: "17.0"
     sources:
-      - path: MyAppTests
+      - path: DivvyTests
     dependencies:
-      - target: MyApp
+      - target: Divvy
     settings:
       base:
-        PRODUCT_NAME: MyAppTests
-        PRODUCT_BUNDLE_IDENTIFIER: com.myapp.MyAppTests
+        PRODUCT_NAME: DivvyTests
+        PRODUCT_BUNDLE_IDENTIFIER: com.divvy.DivvyTests
         GENERATE_INFOPLIST_FILE: YES
         BUNDLE_LOADER: "$(TEST_HOST)"
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/MyApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MyApp"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Divvy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Divvy"
