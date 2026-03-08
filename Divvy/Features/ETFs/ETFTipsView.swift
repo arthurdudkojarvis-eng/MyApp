@@ -8,7 +8,7 @@ struct ETFTipsView: View {
         NavigationStack {
             List(builtInETFTips) { tip in
                 NavigationLink {
-                    ETFTipDetailView(tip: tip)
+                    ETFTipDetailView(tip: tip, onCreated: { dismiss() })
                 } label: {
                     ETFTipRowView(tip: tip)
                 }
@@ -31,26 +31,35 @@ private struct ETFTipRowView: View {
     let tip: ETFTip
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 2) {
             Text(tip.name)
                 .font(.headline)
             Text(tip.description)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
-            HStack(spacing: 12) {
-                Label(tip.category, systemImage: "tag")
-                    .font(.caption2)
-                    .foregroundStyle(.blue)
-                Label(tip.riskLevel, systemImage: "shield")
-                    .font(.caption2)
-                    .foregroundStyle(etfRiskColor(for: tip.riskLevel))
-                Label("\(tip.examples.count) examples", systemImage: "list.number")
-                    .font(.caption2)
-                    .foregroundStyle(.purple)
+            HStack(spacing: 8) {
+                HStack(spacing: 2) {
+                    Image(systemName: "tag")
+                    Text(tip.category)
+                }
+                .font(.caption2)
+                .foregroundStyle(.blue)
+                HStack(spacing: 2) {
+                    Image(systemName: "shield")
+                    Text(tip.riskLevel)
+                }
+                .font(.caption2)
+                .foregroundStyle(etfRiskColor(for: tip.riskLevel))
+                HStack(spacing: 2) {
+                    Image(systemName: "list.number")
+                    Text("\(tip.examples.count) examples")
+                }
+                .font(.caption2)
+                .foregroundStyle(.purple)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 2)
     }
 }
 
@@ -58,6 +67,7 @@ private struct ETFTipRowView: View {
 
 private struct ETFTipDetailView: View {
     let tip: ETFTip
+    var onCreated: () -> Void
     @Environment(\.massiveService) private var massive
     @Environment(\.modelContext) private var modelContext
     @Environment(StockRefreshService.self) private var stockRefresh
@@ -66,7 +76,6 @@ private struct ETFTipDetailView: View {
     @State private var prices: [String: Decimal] = [:]
     @State private var isLoading = false
     @State private var isCreating = false
-    @State private var showCreated = false
 
     private var tint: Color { settings.fontTheme.color ?? Color.accentColor }
 
@@ -83,11 +92,6 @@ private struct ETFTipDetailView: View {
         .navigationTitle(tip.name)
         .navigationBarTitleDisplayMode(.inline)
         .task(id: tip.id) { await loadPrices() }
-        .alert("Portfolio Created", isPresented: $showCreated) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text("Portfolio '\(tip.name)' created with \(tip.examples.count) holdings")
-        }
     }
 
     private var headerCard: some View {
@@ -252,13 +256,17 @@ private struct ETFTipDetailView: View {
 
         do {
             try modelContext.save()
-            showCreated = true
+            settings.lastActivePortfolioID = portfolio.id.uuidString
+            settings.selectedTab = 1
+            let refreshService = stockRefresh
+            Task {
+                for ticker in tickers {
+                    await refreshService.refresh(ticker: ticker)
+                }
+            }
+            onCreated()
         } catch {
             return
-        }
-
-        for ticker in tickers {
-            await stockRefresh.refresh(ticker: ticker)
         }
     }
 

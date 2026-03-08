@@ -8,7 +8,7 @@ struct PortfolioStrategiesView: View {
         NavigationStack {
             List(builtInStrategies) { strategy in
                 NavigationLink {
-                    StrategyDetailView(strategy: strategy)
+                    StrategyDetailView(strategy: strategy, onCreated: { dismiss() })
                 } label: {
                     StrategyRowView(strategy: strategy)
                 }
@@ -31,26 +31,35 @@ private struct StrategyRowView: View {
     let strategy: DividendStrategy
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 2) {
             Text(strategy.name)
                 .font(.headline)
             Text(strategy.description)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
-            HStack(spacing: 12) {
-                Label(strategy.riskProfile, systemImage: "shield")
-                    .font(.caption2)
-                    .foregroundStyle(riskColor(for: strategy.riskProfile))
-                Label(strategy.expectedYieldRange, systemImage: "percent")
-                    .font(.caption2)
-                    .foregroundStyle(.orange)
-                Label("\(strategy.constituents.count) stocks", systemImage: "list.number")
-                    .font(.caption2)
-                    .foregroundStyle(.blue)
+            HStack(spacing: 8) {
+                HStack(spacing: 2) {
+                    Image(systemName: "shield")
+                    Text(strategy.riskProfile)
+                }
+                .font(.caption2)
+                .foregroundStyle(riskColor(for: strategy.riskProfile))
+                HStack(spacing: 2) {
+                    Image(systemName: "percent")
+                    Text(strategy.expectedYieldRange)
+                }
+                .font(.caption2)
+                .foregroundStyle(.orange)
+                HStack(spacing: 2) {
+                    Image(systemName: "list.number")
+                    Text("\(strategy.constituents.count) stocks")
+                }
+                .font(.caption2)
+                .foregroundStyle(.blue)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 2)
     }
 }
 
@@ -58,6 +67,7 @@ private struct StrategyRowView: View {
 
 private struct StrategyDetailView: View {
     let strategy: DividendStrategy
+    var onCreated: () -> Void
     @Environment(\.massiveService) private var massive
     @Environment(\.modelContext) private var modelContext
     @Environment(StockRefreshService.self) private var stockRefresh
@@ -66,7 +76,6 @@ private struct StrategyDetailView: View {
     @State private var prices: [String: Decimal] = [:]
     @State private var isLoading = false
     @State private var isCreating = false
-    @State private var showCreated = false
 
     private var tint: Color { settings.fontTheme.color ?? Color.accentColor }
 
@@ -83,11 +92,6 @@ private struct StrategyDetailView: View {
         .navigationTitle(strategy.name)
         .navigationBarTitleDisplayMode(.inline)
         .task { await loadPrices() }
-        .alert("Portfolio Created", isPresented: $showCreated) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text("Portfolio '\(strategy.name)' created with \(strategy.constituents.count) holdings")
-        }
     }
 
     private var headerCard: some View {
@@ -245,13 +249,17 @@ private struct StrategyDetailView: View {
 
         do {
             try modelContext.save()
-            showCreated = true
+            settings.lastActivePortfolioID = portfolio.id.uuidString
+            settings.selectedTab = 1
+            let refreshService = stockRefresh
+            Task {
+                for ticker in tickers {
+                    await refreshService.refresh(ticker: ticker)
+                }
+            }
+            onCreated()
         } catch {
             return
-        }
-
-        for ticker in tickers {
-            await stockRefresh.refresh(ticker: ticker)
         }
     }
 
