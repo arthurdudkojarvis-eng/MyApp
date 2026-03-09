@@ -116,18 +116,21 @@ struct PortfoliosView: View {
 private struct PortfolioCardView: View {
     let portfolio: Portfolio
     var isActive: Bool = false
+    @Environment(SettingsStore.self) private var settings
+
+    private var tint: Color { settings.fontTheme.color ?? Color.accentColor }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header row
             HStack {
                 Text(portfolio.name)
-                    .font(.headline)
+                    .textStyle(.cardTitle)
                     .foregroundStyle(.primary)
                 if isActive {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.caption)
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(tint)
                 }
                 Spacer()
             }
@@ -156,6 +159,11 @@ private struct PortfolioCardView: View {
         .padding()
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(tint, lineWidth: 2)
+                .opacity(isActive ? 1 : 0)
+        )
         .accessibilityElement(children: .combine)
     }
 }
@@ -241,8 +249,26 @@ struct PortfolioHoldingsView: View {
                 List {
                     Section {
                         ForEach(sortedHoldings) { holding in
-                            PortfolioHoldingRowView(holding: holding) {
-                                holdingForFutureValue = holding
+                            NavigationLink {
+                                if let stock = holding.stock {
+                                    StockDetailView(result: MassiveTickerSearchResult(
+                                        ticker: stock.ticker,
+                                        name: stock.companyName,
+                                        market: nil,
+                                        type: nil,
+                                        primaryExchange: nil
+                                    ))
+                                } else {
+                                    ContentUnavailableView(
+                                        "Stock Unavailable",
+                                        systemImage: "questionmark.circle",
+                                        description: Text("This holding's stock data is not yet available.")
+                                    )
+                                }
+                            } label: {
+                                PortfolioHoldingRowView(holding: holding) {
+                                    holdingForFutureValue = holding
+                                }
                             }
                                 .contextMenu {
                                     Button {
@@ -351,9 +377,9 @@ private struct PortfolioHoldingRowView: View {
                 size: 36
             )
             VStack(alignment: .leading, spacing: 2) {
-                Text(ticker).font(.headline)
+                Text(ticker).textStyle(.tickerSymbol)
                 if !companyName.isEmpty {
-                    Text(companyName).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    Text(companyName).textStyle(.rowDetail).lineLimit(1)
                 }
                 Text("\(holding.shares.formatted()) shares")
                     .font(.caption2)
