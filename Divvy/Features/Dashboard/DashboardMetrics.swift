@@ -16,6 +16,19 @@ struct DashboardMetrics {
     /// `nil` when `totalMarketValue` is zero (no price data yet).
     let overallYield: Decimal?
 
+    /// All holdings across all portfolios (flat list).
+    let allHoldings: [Holding]
+
+    /// Sum of (averageCostBasis × shares) across all holdings.
+    let totalCostBasis: Decimal
+
+    /// `totalMarketValue − totalCostBasis`.
+    let totalUnrealizedGain: Decimal
+
+    /// `((totalMarketValue − totalCostBasis) / totalCostBasis) × 100`.
+    /// `nil` when `totalCostBasis` is zero.
+    let totalUnrealizedGainPercent: Decimal?
+
     init(portfolios: [Portfolio]) {
         let allHoldings = portfolios.flatMap { $0.holdings }
 
@@ -23,10 +36,15 @@ struct DashboardMetrics {
         // for holdings with no stock, no price, or no dividend schedules.
         let income = allHoldings.reduce(Decimal.zero) { $0 + $1.projectedAnnualIncome }
         let value  = allHoldings.reduce(Decimal.zero) { $0 + $1.currentValue }
+        let cost   = allHoldings.reduce(Decimal.zero) { $0 + ($1.averageCostBasis * $1.shares) }
 
         projectedAnnualIncome = income
         monthlyEquivalent     = income / Decimal(12)
         totalMarketValue      = value
         overallYield          = value > 0 ? income / value : nil
+        self.allHoldings      = allHoldings
+        totalCostBasis        = cost
+        totalUnrealizedGain   = value - cost
+        totalUnrealizedGainPercent = cost > 0 ? ((value - cost) / cost) * 100 : nil
     }
 }

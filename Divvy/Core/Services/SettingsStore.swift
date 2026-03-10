@@ -78,6 +78,7 @@ final class SettingsStore {
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
         static let fontTheme              = "fontTheme"
         static let lastActivePortfolioID  = "lastActivePortfolioID"
+        static let weeklyQuotesEnabled   = "weeklyQuotesEnabled"
     }
 
     // MARK: - Dependencies
@@ -127,6 +128,13 @@ final class SettingsStore {
         didSet { defaults.set(lastActivePortfolioID, forKey: Keys.lastActivePortfolioID) }
     }
 
+    var weeklyQuotesEnabled: Bool {
+        didSet { defaults.set(weeklyQuotesEnabled, forKey: Keys.weeklyQuotesEnabled) }
+    }
+
+    // Transient (not persisted) — drives MainTabView selection
+    var selectedTab: Int = 0
+
     // MARK: - Init
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -149,5 +157,7 @@ final class SettingsStore {
         self.fontTheme = FontTheme(rawValue: themeRaw) ?? .defaultTheme
 
         self.lastActivePortfolioID = defaults.string(forKey: Keys.lastActivePortfolioID) ?? ""
+
+        self.weeklyQuotesEnabled = defaults.bool(forKey: Keys.weeklyQuotesEnabled)
     }
 }

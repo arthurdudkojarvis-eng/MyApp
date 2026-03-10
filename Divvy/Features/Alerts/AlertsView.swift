@@ -232,7 +232,7 @@ struct AlertsView: View {
                              ? "Reschedule \(alertCount) Reminders"
                              : "Schedule \(alertCount) Reminders")
                             .font(.subheadline.bold())
-                        Text("Get notified 1 day before each ex-date at 9:00 AM")
+                        Text("Get notified on each pay date at 9:00 AM")
                             .font(.caption)
                             .opacity(0.8)
                     }
@@ -322,23 +322,22 @@ struct AlertsView: View {
         let center = UNUserNotificationCenter.current()
         Task {
             center.removeAllPendingNotificationRequests()
+
             var count = 0
             for alert in schedules.prefix(64) {
                 guard !Task.isCancelled else { break }
-                let triggerDate = Calendar.current.date(byAdding: .day, value: -1, to: alert.exDate) ?? alert.exDate
-                var components = Calendar.current.dateComponents([.year, .month, .day], from: triggerDate)
+                var components = Calendar.current.dateComponents([.year, .month, .day], from: alert.payDate)
                 components.hour = 9
                 components.minute = 0
 
                 let content = UNMutableNotificationContent()
-                content.title = "Ex-Dividend Tomorrow: \(alert.ticker)"
-                let exDateStr = alert.exDate.formatted(.dateTime.month(.abbreviated).day())
-                content.body = "Ex-dividend date is \(exDateStr). Own \(alert.ticker) before market open today to qualify for \(alert.estimatedPayment.formatted(.currency(code: "USD")))."
+                content.title = "Dividend Paid: \(alert.ticker)"
+                content.body = "You received \(alert.estimatedPayment.formatted(.currency(code: "USD"))) from \(alert.ticker)"
                 content.sound = .default
 
                 let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
                 let request = UNNotificationRequest(
-                    identifier: "exdate-\(alert.id)",
+                    identifier: "paydate-\(alert.id)",
                     content: content,
                     trigger: trigger
                 )
@@ -349,6 +348,7 @@ struct AlertsView: View {
                     // Individual notification failed — continue scheduling the rest
                 }
             }
+
             guard !Task.isCancelled else { return }
             await MainActor.run {
                 isScheduling = false

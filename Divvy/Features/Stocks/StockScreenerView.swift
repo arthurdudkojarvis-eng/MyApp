@@ -504,7 +504,7 @@ struct StockScreenerView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Text(preset.rawValue)
-                                .font(.headline)
+                                .textStyle(.cardTitle)
                                 .foregroundStyle(.primary)
                             Spacer()
                             if isSelected {
@@ -680,7 +680,7 @@ struct StockScreenerView: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(passCount) of \(total) Passed")
-                        .font(.headline)
+                        .textStyle(.sectionTitle)
                     Text("Stocks meeting all screening criteria")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -719,7 +719,7 @@ struct StockScreenerView: View {
                     size: 40
                 )
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(result.ticker).font(.headline)
+                    Text(result.ticker).textStyle(.tickerSymbol)
                     Text(result.companyName)
                         .font(.caption)
                         .foregroundStyle(.secondary)

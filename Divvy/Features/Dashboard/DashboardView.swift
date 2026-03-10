@@ -8,7 +8,7 @@ private enum DashboardSheet: Identifiable {
 
 struct DashboardView: View {
     @State private var activeSheet: DashboardSheet?
-    @State private var marketStatus: MassiveMarketStatus?
+    @State private var expandedCard: DashboardCardID?
 
     @Environment(StockRefreshService.self) private var stockRefresh
     @Environment(SettingsStore.self) private var settings
@@ -23,7 +23,6 @@ struct DashboardView: View {
         NavigationStack {
             dashboardPage
                 .background(Color(.systemGroupedBackground))
-                .navigationTitle("Dashboard")
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button {
@@ -82,28 +81,45 @@ struct DashboardView: View {
                         stockRefresh.dismissRefreshError()
                     }
                 }
-                if let status = marketStatus {
-                    MarketStatusPill(status: status)
-                        .padding(.horizontal)
-                }
                 IncomeHeroView(
                     metrics: metrics,
                     isRefreshing: stockRefresh.isRefreshing
                 )
-                CoverageMeterView(
-                    monthlyEquivalent: metrics.monthlyEquivalent,
-                    monthlyExpenseTarget: settings.monthlyExpenseTarget
-                )
+                DashboardCardGrid(expandedCard: $expandedCard)
+
+                if let expandedCard {
+                    expandedCardContent(expandedCard)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
             }
             .padding(.top, 8)
             .padding(.bottom, 24)
         }
         .background(Color(.systemGroupedBackground))
-        .task { await loadMarketStatus() }
     }
 
-    private func loadMarketStatus() async {
-        marketStatus = try? await massive.service.fetchMarketStatus()
+    @ViewBuilder
+    private func expandedCardContent(_ card: DashboardCardID) -> some View {
+        switch card {
+        case .upcoming:
+            UpcomingDividendsCard(holdings: metrics.allHoldings)
+        case .yieldOverview:
+            YieldOverviewCard(holdings: metrics.allHoldings)
+        case .performance:
+            PortfolioPerformanceCard(metrics: metrics)
+        case .topEarners:
+            TopEarnersCard(holdings: metrics.allHoldings)
+        case .annualProgress:
+            AnnualProgressCard(holdings: metrics.allHoldings)
+        case .frequency:
+            IncomeFrequencyCard(holdings: metrics.allHoldings)
+        case .concentration:
+            ConcentrationRiskCard(holdings: metrics.allHoldings, totalMarketValue: metrics.totalMarketValue)
+        case .dividendGrowth:
+            DividendGrowthCard(holdings: metrics.allHoldings)
+        case .healthScore:
+            HealthScoreCard(holdings: metrics.allHoldings, metrics: metrics)
+        }
     }
 }
 
@@ -140,53 +156,6 @@ private struct RefreshErrorBannerView: View {
                 .fill(Color.red.opacity(0.1))
         )
         .padding(.horizontal)
-    }
-}
-
-// MARK: - Market Status Pill (STORY-032)
-
-private struct MarketStatusPill: View {
-    let status: MassiveMarketStatus
-
-    private var label: String {
-        switch status.market.lowercased() {
-        case "open":            return "Market Open"
-        case "extended-hours":  return "After Hours"
-        case "closed":          return "Market Closed"
-        default:                return status.market.capitalized
-        }
-    }
-
-    private var color: Color {
-        switch status.market.lowercased() {
-        case "open":            return .green
-        case "extended-hours":  return .orange
-        default:                return .secondary
-        }
-    }
-
-    private var icon: String {
-        switch status.market.lowercased() {
-        case "open":            return "circle.fill"
-        case "extended-hours":  return "moon.fill"
-        default:                return "moon.zzz.fill"
-        }
-    }
-
-    var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.caption2)
-                .foregroundStyle(color)
-            Text(label)
-                .font(.caption.bold())
-                .foregroundStyle(color)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(color.opacity(0.12))
-        .clipShape(Capsule())
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

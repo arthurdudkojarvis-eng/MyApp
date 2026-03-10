@@ -55,7 +55,6 @@ struct PortfoliosView: View {
                     .background(Color(.systemGroupedBackground))
                 }
             }
-            .navigationTitle("Portfolios")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {

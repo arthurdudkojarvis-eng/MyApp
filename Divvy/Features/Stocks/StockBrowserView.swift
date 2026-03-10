@@ -127,7 +127,6 @@ struct StockBrowserView: View {
                     }
                 }
             }
-            .navigationTitle("Stocks")
             .searchable(text: $query, prompt: "Ticker or company name")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -378,7 +377,7 @@ private struct StockSearchRowView: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(result.ticker)
-                        .font(.headline)
+                        .textStyle(.tickerSymbol)
                     // STORY-026: Security-type badge (CS / ETF / PFD / etc.)
                     if let type = result.type, !type.isEmpty {
                         Text(type)
@@ -416,19 +415,14 @@ enum ChartRange: String, CaseIterable, Identifiable {
     case oneMonth = "1M"
     case threeMonths = "3M"
     case sixMonths = "6M"
+    case ytd = "YTD"
     case oneYear = "1Y"
+    case threeYears = "3Y"
+    case fiveYears = "5Y"
 
     var id: String { rawValue }
 
-    var calendarComponent: (Calendar.Component, Int) {
-        switch self {
-        case .oneWeek:     return (.day, -7)
-        case .oneMonth:    return (.month, -1)
-        case .threeMonths: return (.month, -3)
-        case .sixMonths:   return (.month, -6)
-        case .oneYear:     return (.year, -1)
-        }
-    }
+    var label: String { rawValue }
 
     private static let dateFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -440,8 +434,17 @@ enum ChartRange: String, CaseIterable, Identifiable {
 
     var dateRange: (from: String, to: String) {
         let today = Date()
-        let (component, value) = calendarComponent
-        let from = Calendar.current.date(byAdding: component, value: value, to: today) ?? today
+        let from: Date
+        switch self {
+        case .oneWeek:     from = Calendar.current.date(byAdding: .day, value: -7, to: today) ?? today
+        case .oneMonth:    from = Calendar.current.date(byAdding: .month, value: -1, to: today) ?? today
+        case .threeMonths: from = Calendar.current.date(byAdding: .month, value: -3, to: today) ?? today
+        case .sixMonths:   from = Calendar.current.date(byAdding: .month, value: -6, to: today) ?? today
+        case .ytd:         from = Calendar.current.date(from: DateComponents(year: Calendar.current.component(.year, from: today), month: 1, day: 1)) ?? today
+        case .oneYear:     from = Calendar.current.date(byAdding: .year, value: -1, to: today) ?? today
+        case .threeYears:  from = Calendar.current.date(byAdding: .year, value: -3, to: today) ?? today
+        case .fiveYears:   from = Calendar.current.date(byAdding: .year, value: -5, to: today) ?? today
+        }
         return (Self.dateFormatter.string(from: from), Self.dateFormatter.string(from: today))
     }
 }
@@ -759,7 +762,7 @@ struct StockDetailView: View {
 
     private var priceChartSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Price History").font(.headline)
+            Text("Price History").textStyle(.sectionTitle)
 
             Picker("Range", selection: $selectedChartRange) {
                 ForEach(ChartRange.allCases) { range in
@@ -821,7 +824,7 @@ struct StockDetailView: View {
 
     private var indicatorsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Technical Indicators").font(.headline)
+            Text("Technical Indicators").textStyle(.sectionTitle)
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                 indicatorCell(
@@ -876,7 +879,7 @@ struct StockDetailView: View {
 
     private var relatedCompaniesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Related Stocks").font(.headline)
+            Text("Related Stocks").textStyle(.sectionTitle)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
@@ -909,7 +912,7 @@ struct StockDetailView: View {
 
     private var splitHistorySection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Stock Splits").font(.headline)
+            Text("Stock Splits").textStyle(.sectionTitle)
 
             ForEach(splits.prefix(5), id: \.executionDate) { split in
                 HStack {

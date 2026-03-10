@@ -40,7 +40,6 @@ struct CryptoBrowserView: View {
                     .listStyle(.plain)
                 }
             }
-            .navigationTitle("Crypto")
             .searchable(text: $query, prompt: "Crypto name or ticker")
             .onChange(of: query) { _, newValue in
                 searchTask?.cancel()

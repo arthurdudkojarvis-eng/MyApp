@@ -90,7 +90,6 @@ struct ETFBrowserView: View {
                     }
                 }
             }
-            .navigationTitle("ETFs")
             .searchable(text: $query, prompt: "ETF ticker or name")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {

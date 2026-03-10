@@ -33,7 +33,7 @@ private struct StrategyRowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(strategy.name)
-                .font(.headline)
+                .textStyle(.cardTitle)
             Text(strategy.description)
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -135,7 +135,7 @@ private struct StrategyDetailView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text("Constituents")
-                    .font(.headline)
+                    .textStyle(.sectionTitle)
                 Spacer()
                 if isLoading {
                     ProgressView()
@@ -149,7 +149,7 @@ private struct StrategyDetailView: View {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(constituent.ticker)
-                            .font(.headline)
+                            .textStyle(.tickerSymbol)
                         Text(constituent.name)
                             .font(.caption)
                             .foregroundStyle(.secondary)

@@ -149,7 +149,7 @@ struct HoldingFutureValueView: View {
     private var chartCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Growth Projection")
-                .font(.headline)
+                .textStyle(.sectionTitle)
 
             Chart(projectionData) { point in
                 AreaMark(

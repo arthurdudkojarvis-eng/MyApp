@@ -118,7 +118,7 @@ struct DividendIncomeHistoryView: View {
     private var chartCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Dividend Income")
-                .font(.headline)
+                .textStyle(.sectionTitle)
 
             Chart(displayData) { bar in
                 BarMark(
@@ -171,7 +171,7 @@ struct DividendIncomeHistoryView: View {
     private var detailList: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Payments by Stock")
-                .font(.headline)
+                .textStyle(.sectionTitle)
                 .padding(.horizontal)
                 .padding(.vertical, 12)
 

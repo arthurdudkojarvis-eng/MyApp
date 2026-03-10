@@ -708,7 +708,7 @@ private struct SectorSlice: Identifiable {
 
         // Pre-compute derived values once at init
         self.displayName = sector.split(separator: " ")
-            .map { $0.prefix(1).uppercased() + $0.dropFirst() }
+            .map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() }
             .joined(separator: " ")
         self.doubleIncome = NSDecimalNumber(decimal: income).doubleValue
         self.percent = total > 0 ? (income / total) * 100 : 0

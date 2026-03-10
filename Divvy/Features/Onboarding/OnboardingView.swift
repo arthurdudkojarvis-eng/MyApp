@@ -117,17 +117,15 @@ private struct AppLogoView: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .fill(LinearGradient(
-                    colors: [
-                        Color(red: 0.055, green: 0.133, blue: 0.231),
-                        Color(red: 0.082, green: 0.196, blue: 0.306)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ))
-            Text("$")
-                .font(.system(size: 52, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
+                .fill(Color(red: 0.11, green: 0.11, blue: 0.118))
+            HStack(spacing: 4) {
+                Image(systemName: "dollarsign.circle.fill")
+                    .font(.system(size: 38, weight: .bold))
+                    .foregroundStyle(Color(red: 0.83, green: 0.69, blue: 0.22))
+                Image(systemName: "arrow.up")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundStyle(Color(red: 0.20, green: 0.78, blue: 0.35))
+            }
         }
         .frame(width: 100, height: 100)
         .shadow(color: .black.opacity(0.2), radius: 8, y: 4)

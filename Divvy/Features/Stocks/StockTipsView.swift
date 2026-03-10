@@ -33,7 +33,7 @@ private struct StockTipRowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(tip.name)
-                .font(.headline)
+                .textStyle(.cardTitle)
             Text(tip.description)
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -138,7 +138,7 @@ private struct StockTipDetailView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text("Example Stocks")
-                    .font(.headline)
+                    .textStyle(.sectionTitle)
                 Spacer()
                 if isLoading {
                     ProgressView()
@@ -158,7 +158,7 @@ private struct StockTipDetailView: View {
                     )
                     VStack(alignment: .leading, spacing: 2) {
                         Text(example.ticker)
-                            .font(.headline)
+                            .textStyle(.tickerSymbol)
                         Text(example.name)
                             .font(.caption)
                             .foregroundStyle(.secondary)

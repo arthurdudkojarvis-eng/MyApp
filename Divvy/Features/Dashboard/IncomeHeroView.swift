@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Charts
 
 // MARK: - IncomeHeroView
 
@@ -7,12 +8,74 @@ struct IncomeHeroView: View {
     let metrics: DashboardMetrics
     let isRefreshing: Bool
 
+    @Environment(\.massiveService) private var massive
+
+    @State private var chartData: [PortfolioValuePoint] = []
+    @State private var isLoadingChart = false
+    @State private var selectedPage = 0
+    @State private var selectedMonth: String?
+    @State private var hideAmounts = false
+    @State private var chartRange: ChartRange = .oneMonth
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            primaryRow
-            Divider().padding(.vertical, 14)
-            secondaryRow
-            refreshRow
+        VStack(alignment: .leading, spacing: 4) {
+            // Top headline — changes based on selected page
+            heroHeadline
+
+            // Chart area — switch with swipe or dot tap
+            Group {
+                if selectedPage == 0 {
+                    VStack(alignment: .leading, spacing: 4) {
+                        portfolioChartOnly
+                        chartRangePicker
+                    }
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .leading),
+                        removal: .move(edge: .leading)
+                    ))
+                } else {
+                    VStack(alignment: .leading, spacing: 0) {
+                        monthlyDividendChartOnly
+                    }
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing),
+                        removal: .move(edge: .trailing)
+                    ))
+                }
+            }
+            .frame(height: 150)
+            .clipped()
+            .gesture(
+                DragGesture(minimumDistance: 30)
+                    .onEnded { drag in
+                        let horizontal = drag.translation.width
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            if horizontal < -30 && selectedPage == 0 {
+                                selectedPage = 1
+                            } else if horizontal > 30 && selectedPage == 1 {
+                                selectedPage = 0
+                                selectedMonth = nil
+                            }
+                        }
+                    }
+            )
+
+            // Custom page dots
+            HStack(spacing: 6) {
+                ForEach(0..<2, id: \.self) { index in
+                    Circle()
+                        .fill(selectedPage == index ? Color.primary : Color.secondary.opacity(0.3))
+                        .frame(width: 6, height: 6)
+                        .onTapGesture {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                selectedPage = index
+                                if index == 0 { selectedMonth = nil }
+                            }
+                        }
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.top, 4)
         }
         .padding()
         .background(
@@ -20,107 +83,439 @@ struct IncomeHeroView: View {
                 .fill(Color(.secondarySystemGroupedBackground))
         )
         .padding(.horizontal)
-    }
-
-    // MARK: - Rows
-
-    /// Annual income (large) + monthly equivalent side by side.
-    private var primaryRow: some View {
-        HStack(alignment: .lastTextBaseline, spacing: 0) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(metrics.projectedAnnualIncome, format: .currency(code: "USD"))
-                    .font(.largeTitle.bold())
-                    .minimumScaleFactor(0.6)
-                    .lineLimit(1)
-                    .accessibilityLabel("Annual income \(metrics.projectedAnnualIncome.formatted(.currency(code: "USD")))")
-                Text("Annual Income")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 16)
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(metrics.monthlyEquivalent, format: .currency(code: "USD"))
-                    .font(.title2.bold())
-                    .minimumScaleFactor(0.6)
-                    .lineLimit(1)
-                    .foregroundStyle(.secondary)
-                    .accessibilityLabel("Monthly income \(metrics.monthlyEquivalent.formatted(.currency(code: "USD")))")
-                Text("per month")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+        .task(id: "\(holdingTickers)|\(chartRange.rawValue)") {
+            await loadChart()
         }
     }
 
-    /// Portfolio value and yield in equal-width columns.
-    private var secondaryRow: some View {
-        HStack(spacing: 0) {
-            MetricCell(
-                label: "Portfolio Value",
-                value: metrics.totalMarketValue.formatted(.currency(code: "USD"))
-            )
-            Divider()
-                .frame(height: 36)
-                .accessibilityHidden(true)
-            MetricCell(
-                label: "Overall Yield",
-                value: yieldString
-            )
-        }
+    /// Stable identifier for triggering chart reload when holdings change.
+    private var holdingTickers: String {
+        Set(metrics.allHoldings.compactMap { $0.stock?.ticker }).sorted().joined(separator: ",")
     }
 
-    /// Shows a refresh spinner while updating, otherwise a delayed-data notice.
-    private var refreshRow: some View {
-        Group {
-            if isRefreshing {
-                HStack(spacing: 6) {
-                    ProgressView()
-                        .scaleEffect(0.75)
-                    Text("Refreshing…")
+    // MARK: - Hero Headline (above TabView)
+
+    @ViewBuilder
+    private var heroHeadline: some View {
+        if selectedPage == 0 {
+            // Portfolio value
+            HStack(spacing: 8) {
+                amountText(metrics.totalMarketValue)
+                eyeButton
+            }
+
+            if chartData.count >= 2 {
+                let firstValue = chartData.first!.value
+                let lastValue = chartData.last!.value
+                let change = lastValue - firstValue
+                let changePercent = firstValue > 0 ? (change / firstValue) * 100 : 0
+                let isPositive = change >= 0
+
+                HStack(spacing: 4) {
+                    Image(systemName: isPositive ? "arrow.up.right" : "arrow.down.right")
+                        .font(.caption2.bold())
+                    if hideAmounts {
+                        Text("****")
+                            .font(.caption.bold())
+                    } else {
+                        Text("\(isPositive ? "+" : "")\(String(format: "%.2f", NSDecimalNumber(decimal: change).doubleValue))")
+                            .font(.caption.bold())
+                            .monospacedDigit()
+                        Text("(\(String(format: "%.2f", NSDecimalNumber(decimal: changePercent).doubleValue))%)")
+                            .font(.caption)
+                            .monospacedDigit()
+                    }
+                    Text(chartRange.label)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
-                .accessibilityLabel("Refreshing data")
+                .foregroundStyle(isPositive ? .green : .red)
+            }
+        } else {
+            // Avg monthly dividend or selected month
+            let data = monthlyDividendData
+            let total = data.reduce(Decimal.zero) { $0 + $1.amount }
+            let avg = data.isEmpty ? Decimal.zero : total / Decimal(data.count)
+
+            if let selected = selectedMonth,
+               let point = data.first(where: { $0.label == selected }) {
+                HStack(spacing: 8) {
+                    amountText(point.amount)
+                    eyeButton
+                }
+
+                HStack(spacing: 6) {
+                    Text(selected)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    if !point.tickers.isEmpty {
+                        HStack(spacing: -4) {
+                            ForEach(Array(point.tickers.prefix(6).enumerated()), id: \.element) { index, ticker in
+                                CompanyLogoView(
+                                    branding: nil,
+                                    ticker: ticker,
+                                    service: massive.service,
+                                    size: 20
+                                )
+                                .zIndex(Double(6 - index))
+                            }
+                            if point.tickers.count > 6 {
+                                Text("+\(point.tickers.count - 6)")
+                                    .font(.system(size: 9, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: 20, height: 20)
+                                    .background(Color.secondary)
+                                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                                    .zIndex(0)
+                            }
+                        }
+                    }
+                }
             } else {
-                Text("Prices delayed 15 min")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-                    .accessibilityLabel("Prices are delayed 15 minutes")
+                HStack(spacing: 8) {
+                    amountText(avg)
+                    eyeButton
+                }
+
+                HStack {
+                    Text("Avg Monthly Dividend")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
-        .frame(height: 20)   // fixed height prevents card from resizing during cross-fade
-        .padding(.top, 10)
-        .animation(.easeInOut(duration: 0.2), value: isRefreshing)
     }
 
-    // MARK: - Helpers
+    // MARK: - Portfolio Value Chart (chart only)
 
-    private var yieldString: String {
-        guard let yield = metrics.overallYield else { return "--" }
-        return yield.formatted(.percent.precision(.fractionLength(2)))
+    @ViewBuilder
+    private var portfolioChartOnly: some View {
+        if isLoadingChart && chartData.isEmpty {
+            HStack {
+                Spacer()
+                ProgressView()
+                    .scaleEffect(0.8)
+                Spacer()
+            }
+            .frame(height: 120)
+        } else if chartData.count >= 2 {
+            let isPositive = chartData.last!.value >= chartData.first!.value
+
+            Chart(chartData) { point in
+                LineMark(
+                    x: .value("Date", point.date),
+                    y: .value("Value", point.doubleValue)
+                )
+                .foregroundStyle(isPositive ? Color.green : Color.red)
+                .lineStyle(StrokeStyle(lineWidth: 2))
+
+                AreaMark(
+                    x: .value("Date", point.date),
+                    y: .value("Value", point.doubleValue)
+                )
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [
+                            (isPositive ? Color.green : Color.red).opacity(0.25),
+                            (isPositive ? Color.green : Color.red).opacity(0.02)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+            }
+            .chartXAxis(.hidden)
+            .chartYAxis(.hidden)
+            .frame(height: 120)
+        }
     }
-}
 
-// MARK: - MetricCell
+    // MARK: - Chart Range Picker
 
-private struct MetricCell: View {
-    let label: String
-    let value: String
+    private var chartRangePicker: some View {
+        HStack(spacing: 0) {
+            ForEach(ChartRange.allCases.filter { $0 != .oneWeek }, id: \.self) { range in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        chartRange = range
+                    }
+                } label: {
+                    Text(range.label)
+                        .font(.system(size: 11, weight: chartRange == range ? .bold : .medium))
+                        .foregroundStyle(chartRange == range ? Color.accentColor : .secondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .background(
+                            chartRange == range
+                                ? Color.accentColor.opacity(0.12)
+                                : Color.clear
+                        )
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.top, 2)
+    }
 
-    var body: some View {
-        VStack(spacing: 4) {
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.title3.bold())
+    @ViewBuilder
+    private func amountText(_ value: Decimal) -> some View {
+        if hideAmounts {
+            Text("****")
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundStyle(.primary)
+        } else {
+            Text(value, format: .currency(code: "USD"))
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .monospacedDigit()
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
         }
-        .frame(maxWidth: .infinity)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(label): \(value)")
     }
+
+    private var eyeButton: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                hideAmounts.toggle()
+            }
+        } label: {
+            Image(systemName: hideAmounts ? "eye.slash" : "eye")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Monthly Dividend Chart (Page 2)
+
+    private var monthlyDividendData: [MonthlyDividendPoint] {
+        let calendar = Calendar.current
+        let now = Date.now
+
+        // For each holding, project payments across the next 12 months
+        // based on dividend schedule frequency and pay date anchor month
+        var byMonthIndex: [Int: Decimal] = [:]  // 0 = current month, 11 = 11 months ahead
+        var tickersByMonth: [Int: Set<String>] = [:]
+
+        for holding in metrics.allHoldings {
+            guard let stock = holding.stock else { continue }
+            for schedule in stock.dividendSchedules {
+                let paymentPerOccurrence = schedule.amountPerShare * holding.shares
+                let anchorMonth = calendar.component(.month, from: schedule.payDate)
+                let currentMonth = calendar.component(.month, from: now)
+
+                switch schedule.frequency {
+                case .monthly:
+                    for i in 0..<12 {
+                        byMonthIndex[i, default: 0] += paymentPerOccurrence
+                        tickersByMonth[i, default: []].insert(stock.ticker)
+                    }
+                case .quarterly:
+                    for i in 0..<12 {
+                        let targetMonth = (currentMonth + i - 1) % 12 + 1
+                        if (targetMonth - anchorMonth + 12) % 3 == 0 {
+                            byMonthIndex[i, default: 0] += paymentPerOccurrence
+                            tickersByMonth[i, default: []].insert(stock.ticker)
+                        }
+                    }
+                case .semiAnnual:
+                    for i in 0..<12 {
+                        let targetMonth = (currentMonth + i - 1) % 12 + 1
+                        if (targetMonth - anchorMonth + 12) % 6 == 0 {
+                            byMonthIndex[i, default: 0] += paymentPerOccurrence
+                            tickersByMonth[i, default: []].insert(stock.ticker)
+                        }
+                    }
+                case .annual:
+                    for i in 0..<12 {
+                        let targetMonth = (currentMonth + i - 1) % 12 + 1
+                        if targetMonth == anchorMonth {
+                            byMonthIndex[i, default: 0] += paymentPerOccurrence
+                            tickersByMonth[i, default: []].insert(stock.ticker)
+                        }
+                    }
+                }
+            }
+        }
+
+        return (0..<12).map { offset in
+            let date = calendar.date(byAdding: .month, value: offset, to: now) ?? now
+            let amount = byMonthIndex[offset] ?? 0
+            let tickers = tickersByMonth[offset]?.sorted() ?? []
+            return MonthlyDividendPoint(
+                label: date.formatted(.dateTime.month(.abbreviated)),
+                amount: amount,
+                offset: offset,
+                tickers: tickers
+            )
+        }
+    }
+
+    @ViewBuilder
+    private var monthlyDividendChartOnly: some View {
+        let data = monthlyDividendData
+        let total = data.reduce(Decimal.zero) { $0 + $1.amount }
+        let avg = data.isEmpty ? Decimal.zero : total / Decimal(data.count)
+        let avgDouble = NSDecimalNumber(decimal: avg).doubleValue
+
+        Chart {
+            ForEach(data) { point in
+                BarMark(
+                    x: .value("Month", point.label),
+                    y: .value("Income", point.doubleAmount)
+                )
+                .foregroundStyle(
+                    selectedMonth == nil
+                        ? Color.accentColor.opacity(0.7).gradient
+                        : (selectedMonth == point.label
+                            ? Color.accentColor.gradient
+                            : Color.accentColor.opacity(0.25).gradient)
+                )
+                .cornerRadius(3)
+            }
+
+            RuleMark(y: .value("Average", avgDouble))
+                .foregroundStyle(.orange)
+                .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
+        }
+        .chartOverlay { proxy in
+            GeometryReader { geo in
+                Rectangle()
+                    .fill(.clear)
+                    .contentShape(Rectangle())
+                    .onTapGesture { location in
+                        let x = location.x - geo[proxy.plotAreaFrame].origin.x
+                        if let label: String = proxy.value(atX: x) {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                selectedMonth = selectedMonth == label ? nil : label
+                            }
+                        }
+                    }
+            }
+        }
+        .chartYAxis(.hidden)
+        .chartXAxis {
+            AxisMarks { value in
+                AxisValueLabel {
+                    if let label = value.as(String.self) {
+                        Text(label)
+                            .font(.system(size: 8))
+                            .fontWeight(selectedMonth == label ? .bold : .regular)
+                            .foregroundStyle(selectedMonth == label ? Color.accentColor : .white)
+                    }
+                }
+            }
+        }
+        .frame(height: 120)
+    }
+
+    // MARK: - Chart Data Loading
+
+    @MainActor
+    private func loadChart() async {
+        let holdings = metrics.allHoldings
+        guard !holdings.isEmpty else {
+            chartData = []
+            return
+        }
+
+        // Build shares-by-ticker map
+        var sharesByTicker: [String: Decimal] = [:]
+        for holding in holdings {
+            guard let ticker = holding.stock?.ticker else { continue }
+            sharesByTicker[ticker, default: 0] += holding.shares
+        }
+        guard !sharesByTicker.isEmpty else { return }
+
+        isLoadingChart = true
+        defer { isLoadingChart = false }
+
+        let range = chartRange.dateRange
+        let fromStr = range.from
+        let toStr = range.to
+
+        // Fetch aggregates for each ticker concurrently
+        var aggsByTicker: [String: [MassiveAggregate]] = [:]
+        await withTaskGroup(of: (String, [MassiveAggregate]).self) { group in
+            for ticker in sharesByTicker.keys {
+                group.addTask {
+                    let aggs = (try? await massive.service.fetchAggregates(
+                        ticker: ticker, from: fromStr, to: toStr
+                    )) ?? []
+                    return (ticker, aggs)
+                }
+            }
+            for await (ticker, aggs) in group {
+                aggsByTicker[ticker] = aggs
+            }
+        }
+
+        // Collect all unique dates
+        var allTimestamps = Set<Int>()
+        for aggs in aggsByTicker.values {
+            for agg in aggs {
+                allTimestamps.insert(agg.t)
+            }
+        }
+
+        guard !allTimestamps.isEmpty else {
+            chartData = []
+            return
+        }
+
+        // Build lookup: ticker -> timestamp -> close price
+        var priceLookup: [String: [Int: Decimal]] = [:]
+        for (ticker, aggs) in aggsByTicker {
+            var map: [Int: Decimal] = [:]
+            for agg in aggs {
+                map[agg.t] = agg.c
+            }
+            priceLookup[ticker] = map
+        }
+
+        // For each date, compute total portfolio value
+        let sortedTimestamps = allTimestamps.sorted()
+        var lastKnownPrice: [String: Decimal] = [:]
+        var points: [PortfolioValuePoint] = []
+
+        for ts in sortedTimestamps {
+            var totalValue = Decimal.zero
+            for (ticker, shares) in sharesByTicker {
+                if let price = priceLookup[ticker]?[ts] {
+                    lastKnownPrice[ticker] = price
+                    totalValue += price * shares
+                } else if let last = lastKnownPrice[ticker] {
+                    totalValue += last * shares
+                }
+                // If no price at all yet for this ticker, it contributes 0
+            }
+            let date = Date(timeIntervalSince1970: TimeInterval(ts) / 1000)
+            points.append(PortfolioValuePoint(date: date, value: totalValue))
+        }
+
+        chartData = points
+    }
+}
+
+// MARK: - Chart Data Model
+
+private struct PortfolioValuePoint: Identifiable {
+    let date: Date
+    let value: Decimal
+
+    var id: Date { date }
+    var doubleValue: Double { NSDecimalNumber(decimal: value).doubleValue }
+}
+
+private struct MonthlyDividendPoint: Identifiable {
+    let label: String
+    let amount: Decimal
+    let offset: Int
+    let tickers: [String]
+
+    var id: Int { offset }
+    var doubleAmount: Double { NSDecimalNumber(decimal: amount).doubleValue }
 }
 
 // MARK: - Previews

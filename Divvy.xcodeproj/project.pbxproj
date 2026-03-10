@@ -13,6 +13,7 @@
 		0979E0EFC122A65E87B6D040 /* KeychainServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */; };
 		0F2DA6D72E887A177DAF9D58 /* WatchlistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CE273883E50C4F702B8DA93 /* WatchlistView.swift */; };
 		10C70E33FFDEDB066F21DFC4 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39954C69C6016976D6D8707B /* SettingsStore.swift */; };
+		335D68DAB10E756BC1CEBF51 /* TextStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92ED9F7E71D179A53ACAA3E3 /* TextStyle.swift */; };
 		14BF60D0BA98FE81C5979572 /* TaxSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A74ED20A31232F6646A2A6 /* TaxSummaryView.swift */; };
 		17AE816DDA9521CBBFDFD69B /* WatchlistItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 545032ABA0D6C2F77F79D93C /* WatchlistItem.swift */; };
 		1BAA2B119C2179B83EE8A41D /* DividendSafetyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796F34EF1AB763776D0CFDB7 /* DividendSafetyView.swift */; };
@@ -79,6 +80,16 @@
 		BB5566778899001122334455 /* PortfolioStrategiesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA5566778899001122334455 /* PortfolioStrategiesView.swift */; };
 		SC001122334455667788990A /* StockScreenerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SC001122334455667788990B /* StockScreenerView.swift */; };
 		EF001122334455667788990A /* ETFScreenerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF001122334455667788990B /* ETFScreenerView.swift */; };
+		804884D153724EC197F7F964 /* DashboardCardModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FE51A5E64ED4D469CE883EB /* DashboardCardModifier.swift */; };
+		13EF2DC33E124A93B9818560 /* UpcomingDividendsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A783004BE08471A90BA053F /* UpcomingDividendsCard.swift */; };
+		F1E2D3C4B5A647089ABCDEF0 /* YieldOverviewCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F647A8B9C0D1E2 /* YieldOverviewCard.swift */; };
+		D5E6F7A8B9C041D2E3F4A5B6 /* AnnualProgressCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F6A7B849C0D1E2F3A4 /* AnnualProgressCard.swift */; };
+		B7C8D9E0F1A243B4C5D6E7F8 /* IncomeFrequencyCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5F6A7B8C9D041E2F3A4B5C6 /* IncomeFrequencyCard.swift */; };
+		EEEE0AA2919445E0A6CF8363 /* PortfolioPerformanceCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9DF3378E1A4FFB80B10DCD /* PortfolioPerformanceCard.swift */; };
+		67A14C7B30464350B4549641 /* TopEarnersCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37953FDF4E2740D69BEC12B4 /* TopEarnersCard.swift */; };
+		F7F85D35EEA3D82A01CC3E83 /* ConcentrationRiskCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534D8F255F5EBC3D58670BD3 /* ConcentrationRiskCard.swift */; };
+		78E6D2DCF1936E4EB105EC1E /* DividendGrowthCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 913C66B1FE79AD4CCC9213B9 /* DividendGrowthCard.swift */; };
+		D4D2010CA69E4660E4E21812 /* HealthScoreCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B125BF53CB7E2709A2412172 /* HealthScoreCard.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -113,6 +124,7 @@
 		2F21C600D487BE92833CD1B9 /* DivvyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DivvyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		37BE0AA6B455F873EB9DE360 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		39954C69C6016976D6D8707B /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
+		92ED9F7E71D179A53ACAA3E3 /* TextStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextStyle.swift; sourceTree = "<group>"; };
 		3E3B95BDB50172AB02EE93A3 /* HoldingPerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingPerformanceTests.swift; sourceTree = "<group>"; };
 		41C018CC84BEF94F929B042E /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		43AC62307FC0866810DDF20F /* DivvyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DivvyApp.swift; sourceTree = "<group>"; };
@@ -167,6 +179,16 @@
 		AA4455667788990011223344 /* HoldingFutureValueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoldingFutureValueView.swift; sourceTree = "<group>"; };
 		AA5566778899001122334455 /* PortfolioStrategiesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfolioStrategiesView.swift; sourceTree = "<group>"; };
 		EF001122334455667788990B /* ETFScreenerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETFScreenerView.swift; sourceTree = "<group>"; };
+		0FE51A5E64ED4D469CE883EB /* DashboardCardModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardCardModifier.swift; sourceTree = "<group>"; };
+		1A783004BE08471A90BA053F /* UpcomingDividendsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpcomingDividendsCard.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F647A8B9C0D1E2 /* YieldOverviewCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YieldOverviewCard.swift; sourceTree = "<group>"; };
+		C3D4E5F6A7B849C0D1E2F3A4 /* AnnualProgressCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnualProgressCard.swift; sourceTree = "<group>"; };
+		E5F6A7B8C9D041E2F3A4B5C6 /* IncomeFrequencyCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomeFrequencyCard.swift; sourceTree = "<group>"; };
+		DC9DF3378E1A4FFB80B10DCD /* PortfolioPerformanceCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfolioPerformanceCard.swift; sourceTree = "<group>"; };
+		37953FDF4E2740D69BEC12B4 /* TopEarnersCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopEarnersCard.swift; sourceTree = "<group>"; };
+		534D8F255F5EBC3D58670BD3 /* ConcentrationRiskCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentrationRiskCard.swift; sourceTree = "<group>"; };
+		913C66B1FE79AD4CCC9213B9 /* DividendGrowthCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendGrowthCard.swift; sourceTree = "<group>"; };
+		B125BF53CB7E2709A2412172 /* HealthScoreCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthScoreCard.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -308,6 +330,7 @@
 				C96668EC89E273296DBA52EA /* Extensions */,
 				B76FB1F0A7CC1372F8252684 /* Persistence */,
 				C8AC4AE645CBA8D182E441DE /* Services */,
+				8450FEC0060596F10930F30D /* Styles */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -401,9 +424,27 @@
 			path = Persistence;
 			sourceTree = "<group>";
 		};
+		A593F04D577A44CDBFAD29E6 /* Cards */ = {
+			isa = PBXGroup;
+			children = (
+				C3D4E5F6A7B849C0D1E2F3A4 /* AnnualProgressCard.swift */,
+				534D8F255F5EBC3D58670BD3 /* ConcentrationRiskCard.swift */,
+				0FE51A5E64ED4D469CE883EB /* DashboardCardModifier.swift */,
+				913C66B1FE79AD4CCC9213B9 /* DividendGrowthCard.swift */,
+				B125BF53CB7E2709A2412172 /* HealthScoreCard.swift */,
+				E5F6A7B8C9D041E2F3A4B5C6 /* IncomeFrequencyCard.swift */,
+				DC9DF3378E1A4FFB80B10DCD /* PortfolioPerformanceCard.swift */,
+				37953FDF4E2740D69BEC12B4 /* TopEarnersCard.swift */,
+				1A783004BE08471A90BA053F /* UpcomingDividendsCard.swift */,
+				A1B2C3D4E5F647A8B9C0D1E2 /* YieldOverviewCard.swift */,
+			);
+			path = Cards;
+			sourceTree = "<group>";
+		};
 		B87D0602EFCA0EE0BFD1C9A7 /* Dashboard */ = {
 			isa = PBXGroup;
 			children = (
+				A593F04D577A44CDBFAD29E6 /* Cards */,
 				D4A233EDCCF999850598369A /* CoverageMeterView.swift */,
 				9C30FC2CD0BC2FBFF38A93D0 /* DashboardMetrics.swift */,
 				4F82B6F194AD4950FEACE8BE /* DashboardView.swift */,
@@ -415,6 +456,14 @@
 				84A74ED20A31232F6646A2A6 /* TaxSummaryView.swift */,
 			);
 			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		8450FEC0060596F10930F30D /* Styles */ = {
+			isa = PBXGroup;
+			children = (
+				92ED9F7E71D179A53ACAA3E3 /* TextStyle.swift */,
+			);
+			path = Styles;
 			sourceTree = "<group>";
 		};
 		C8AC4AE645CBA8D182E441DE /* Services */ = {
@@ -600,6 +649,7 @@
 				F3D8EC4E90AC7D62E61A6B10 /* PortfoliosView.swift in Sources */,
 				D41E216EAECADBB79E988561 /* SectorAllocationView.swift in Sources */,
 				10C70E33FFDEDB066F21DFC4 /* SettingsStore.swift in Sources */,
+				335D68DAB10E756BC1CEBF51 /* TextStyle.swift in Sources */,
 				CC4776AC4CA2ADF98A177337 /* SettingsView.swift in Sources */,
 				AA1D2D9C2F69A518390AD9E9 /* Stock.swift in Sources */,
 				2B2F7F5FE6554DC6CBC1D8B0 /* StockBrowserView.swift in Sources */,
@@ -620,6 +670,16 @@
 				BB3344556677889900112233 /* DividendIncomeHistoryView.swift in Sources */,
 				BB4455667788990011223344 /* HoldingFutureValueView.swift in Sources */,
 				BB5566778899001122334455 /* PortfolioStrategiesView.swift in Sources */,
+				804884D153724EC197F7F964 /* DashboardCardModifier.swift in Sources */,
+				13EF2DC33E124A93B9818560 /* UpcomingDividendsCard.swift in Sources */,
+				F1E2D3C4B5A647089ABCDEF0 /* YieldOverviewCard.swift in Sources */,
+				D5E6F7A8B9C041D2E3F4A5B6 /* AnnualProgressCard.swift in Sources */,
+				B7C8D9E0F1A243B4C5D6E7F8 /* IncomeFrequencyCard.swift in Sources */,
+				EEEE0AA2919445E0A6CF8363 /* PortfolioPerformanceCard.swift in Sources */,
+				67A14C7B30464350B4549641 /* TopEarnersCard.swift in Sources */,
+				F7F85D35EEA3D82A01CC3E83 /* ConcentrationRiskCard.swift in Sources */,
+				78E6D2DCF1936E4EB105EC1E /* DividendGrowthCard.swift in Sources */,
+				D4D2010CA69E4660E4E21812 /* HealthScoreCard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -686,6 +746,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.10;
 			};
