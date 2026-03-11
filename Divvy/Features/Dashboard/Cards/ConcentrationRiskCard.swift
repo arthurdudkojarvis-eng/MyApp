@@ -4,6 +4,8 @@ struct ConcentrationRiskCard: View {
     let holdings: [Holding]
     let totalMarketValue: Decimal
 
+    @Environment(\.massiveService) private var massive
+
     private var topHoldings: [ConcentrationEntry] {
         // Merge by ticker across portfolios
         var byTicker: [String: Decimal] = [:]
@@ -55,13 +57,16 @@ struct ConcentrationRiskCard: View {
                 // Top holdings list
                 ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
                     HStack(spacing: 8) {
-                        Circle()
-                            .fill(index < 3 ? colorForIndex(index) : Color(.tertiarySystemFill))
-                            .frame(width: 8, height: 8)
+                        CompanyLogoView(
+                            branding: nil,
+                            ticker: entry.ticker,
+                            service: massive.service,
+                            size: 22
+                        )
 
                         Text(entry.ticker)
                             .font(.subheadline.bold())
-                            .frame(width: 52, alignment: .leading)
+                            .frame(width: 48, alignment: .leading)
 
                         Spacer()
 

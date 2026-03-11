@@ -16,6 +16,9 @@ struct IncomeHeroView: View {
     @State private var selectedMonth: String?
     @State private var hideAmounts = false
     @State private var chartRange: ChartRange = .oneMonth
+    @State private var dripEnabled = false
+    @State private var projectionYears = 5
+    @State private var showProjectionInfo = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -33,9 +36,18 @@ struct IncomeHeroView: View {
                         insertion: .move(edge: .leading),
                         removal: .move(edge: .leading)
                     ))
-                } else {
+                } else if selectedPage == 1 {
                     VStack(alignment: .leading, spacing: 0) {
                         monthlyDividendChartOnly
+                    }
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing),
+                        removal: .move(edge: .trailing)
+                    ))
+                } else {
+                    VStack(alignment: .leading, spacing: 4) {
+                        futureValueChartOnly
+                        projectionYearPicker
                     }
                     .transition(.asymmetric(
                         insertion: .move(edge: .trailing),
@@ -50,11 +62,14 @@ struct IncomeHeroView: View {
                     .onEnded { drag in
                         let horizontal = drag.translation.width
                         withAnimation(.easeInOut(duration: 0.3)) {
-                            if horizontal < -30 && selectedPage == 0 {
-                                selectedPage = 1
-                            } else if horizontal > 30 && selectedPage == 1 {
-                                selectedPage = 0
+                            if horizontal < -30 && selectedPage < 2 {
+                                selectedPage += 1
+                                if selectedPage != 1 { selectedMonth = nil }
+                                if selectedPage != 2 { showProjectionInfo = false }
+                            } else if horizontal > 30 && selectedPage > 0 {
+                                selectedPage -= 1
                                 selectedMonth = nil
+                                showProjectionInfo = false
                             }
                         }
                     }
@@ -62,14 +77,14 @@ struct IncomeHeroView: View {
 
             // Custom page dots
             HStack(spacing: 6) {
-                ForEach(0..<2, id: \.self) { index in
+                ForEach(0..<3, id: \.self) { index in
                     Circle()
                         .fill(selectedPage == index ? Color.primary : Color.secondary.opacity(0.3))
                         .frame(width: 6, height: 6)
                         .onTapGesture {
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 selectedPage = index
-                                if index == 0 { selectedMonth = nil }
+                                if index != 1 { selectedMonth = nil }
                             }
                         }
                 }
@@ -131,7 +146,7 @@ struct IncomeHeroView: View {
                 }
                 .foregroundStyle(isPositive ? .green : .red)
             }
-        } else {
+        } else if selectedPage == 1 {
             // Avg monthly dividend or selected month
             let data = monthlyDividendData
             let total = data.reduce(Decimal.zero) { $0 + $1.amount }
@@ -182,6 +197,42 @@ struct IncomeHeroView: View {
                     Text("Avg Monthly Dividend")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                }
+            }
+        } else {
+            // Future portfolio value projection (page 3)
+            let projections = futureValueProjections
+            let finalValue = projections.last?.value ?? metrics.totalMarketValue
+
+            HStack(spacing: 8) {
+                amountText(finalValue)
+                eyeButton
+                infoButton
+                Spacer()
+                dripToggleButton
+            }
+
+            HStack(spacing: 4) {
+                Text("\(projectionYears)-Year Projection")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if dripEnabled {
+                    Text("DRIP")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(Color.accentColor)
+                        .clipShape(Capsule())
+                }
+                if !hideAmounts {
+                    let growth = metrics.totalMarketValue > 0
+                        ? ((finalValue - metrics.totalMarketValue) / metrics.totalMarketValue) * 100
+                        : Decimal.zero
+                    let growthDouble = NSDecimalNumber(decimal: growth).doubleValue
+                    Text("\(growthDouble >= 0 ? "+" : "")\(growthDouble, specifier: "%.1f")%")
+                        .font(.caption.bold())
+                        .foregroundStyle(growthDouble >= 0 ? .green : .red)
                 }
             }
         }
@@ -285,6 +336,156 @@ struct IncomeHeroView: View {
                 .foregroundStyle(.secondary)
         }
         .buttonStyle(.plain)
+    }
+
+    private var infoButton: some View {
+        Button {
+            showProjectionInfo.toggle()
+        } label: {
+            Image(systemName: "info.circle")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .buttonStyle(.plain)
+        .popover(isPresented: $showProjectionInfo) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("How it's calculated")
+                    .font(.subheadline.bold())
+                Text("Projection assumes 7% annual growth based on historical market average.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text("**DRIP OFF** — Price appreciation only. Dividends taken as cash.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text("**DRIP ON** — Dividends are reinvested monthly at your current portfolio yield, compounding over time.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text("Actual results will vary with market conditions and dividend changes.")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding()
+            .frame(width: 280)
+            .presentationCompactAdaptation(.popover)
+        }
+    }
+
+    private var dripToggleButton: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                dripEnabled.toggle()
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "arrow.trianglehead.2.clockwise")
+                    .font(.system(size: 10, weight: .semibold))
+                Text("DRIP")
+                    .font(.system(size: 10, weight: .bold))
+            }
+            .foregroundStyle(dripEnabled ? .white : .secondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 5)
+            .background(
+                Capsule()
+                    .fill(dripEnabled ? Color.accentColor : Color(.tertiarySystemFill))
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private static let projectionYearOptions = [1, 5, 10, 15, 20, 25, 30]
+
+    private var projectionYearPicker: some View {
+        HStack(spacing: 0) {
+            ForEach(Self.projectionYearOptions, id: \.self) { years in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        projectionYears = years
+                    }
+                } label: {
+                    Text("\(years)Y")
+                        .font(.system(size: 11, weight: projectionYears == years ? .bold : .medium))
+                        .foregroundStyle(projectionYears == years ? Color.accentColor : .secondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .background(
+                            projectionYears == years
+                                ? Color.accentColor.opacity(0.12)
+                                : Color.clear
+                        )
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.top, 2)
+    }
+
+    // MARK: - Future Value Projections (Page 3)
+
+    private var futureValueProjections: [FutureValuePoint] {
+        let portfolioValue = NSDecimalNumber(decimal: metrics.totalMarketValue).doubleValue
+        guard portfolioValue > 0 else { return [] }
+
+        let annualIncome = NSDecimalNumber(decimal: metrics.allHoldings.reduce(Decimal.zero) {
+            $0 + $1.projectedAnnualIncome
+        }).doubleValue
+        let yield = portfolioValue > 0 ? annualIncome / portfolioValue : 0
+        let growthRate = 0.07 // 7% annual market average
+
+        var points: [FutureValuePoint] = []
+        var value = portfolioValue
+
+        let totalMonths = projectionYears * 12
+        let monthlyGrowth = pow(1 + growthRate, 1.0 / 12.0) - 1
+        let monthlyYield = yield / 12.0
+
+        for month in 0...totalMonths {
+            let decimal = Decimal(floatLiteral: value)
+            points.append(FutureValuePoint(month: month, value: decimal))
+
+            let dividend = value * monthlyYield
+            value *= (1 + monthlyGrowth)
+
+            if dripEnabled {
+                value += dividend
+            }
+        }
+
+        return points
+    }
+
+    @ViewBuilder
+    private var futureValueChartOnly: some View {
+        let data = futureValueProjections
+        if data.count >= 2 {
+            Chart(data) { point in
+                LineMark(
+                    x: .value("Month", point.month),
+                    y: .value("Value", point.doubleValue)
+                )
+                .foregroundStyle(Color.accentColor)
+                .lineStyle(StrokeStyle(lineWidth: 2))
+
+                AreaMark(
+                    x: .value("Month", point.month),
+                    y: .value("Value", point.doubleValue)
+                )
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [
+                            Color.accentColor.opacity(0.25),
+                            Color.accentColor.opacity(0.02)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+            }
+            .chartXAxis(.hidden)
+            .chartYAxis(.hidden)
+            .frame(height: 120)
+        }
     }
 
     // MARK: - Monthly Dividend Chart (Page 2)
@@ -505,6 +706,14 @@ private struct PortfolioValuePoint: Identifiable {
     let value: Decimal
 
     var id: Date { date }
+    var doubleValue: Double { NSDecimalNumber(decimal: value).doubleValue }
+}
+
+private struct FutureValuePoint: Identifiable {
+    let month: Int
+    let value: Decimal
+
+    var id: Int { month }
     var doubleValue: Double { NSDecimalNumber(decimal: value).doubleValue }
 }
 

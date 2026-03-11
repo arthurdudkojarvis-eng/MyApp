@@ -31,6 +31,8 @@ enum FontTheme: String, CaseIterable, Identifiable {
     case gold = "gold"
     case coral = "coral"
     case rose = "rose"
+    case greenLight = "greenLight"
+    case blueLight = "blueLight"
 
     var id: String { rawValue }
 
@@ -45,6 +47,8 @@ enum FontTheme: String, CaseIterable, Identifiable {
         case .gold: return "Gold"
         case .coral: return "Coral"
         case .rose: return "Rose"
+        case .greenLight: return "Mint"
+        case .blueLight: return "Sky"
         }
     }
 
@@ -59,6 +63,8 @@ enum FontTheme: String, CaseIterable, Identifiable {
         case .gold: return Color(red: 0.80, green: 0.65, blue: 0.20)
         case .coral: return Color(red: 0.90, green: 0.40, blue: 0.30)
         case .rose: return Color(red: 0.85, green: 0.30, blue: 0.45)
+        case .greenLight: return Color(red: 0.40, green: 0.85, blue: 0.55)
+        case .blueLight: return Color(red: 0.40, green: 0.70, blue: 0.95)
         }
     }
 }

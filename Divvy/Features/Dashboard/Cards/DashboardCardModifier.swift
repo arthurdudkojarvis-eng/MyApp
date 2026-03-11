@@ -29,15 +29,15 @@ enum DashboardCardID: String, CaseIterable, Identifiable {
 
     var icon: String {
         switch self {
-        case .upcoming:        return "calendar.badge.clock"
-        case .yieldOverview:   return "percent"
-        case .performance:     return "chart.line.uptrend.xyaxis"
-        case .topEarners:      return "star.fill"
-        case .annualProgress:  return "target"
-        case .frequency:       return "clock.arrow.2.circlepath"
-        case .concentration:   return "circle.grid.3x3.fill"
-        case .dividendGrowth:  return "arrow.up.forward"
-        case .healthScore:     return "heart.text.clipboard"
+        case .upcoming:        return "banknote.fill"
+        case .yieldOverview:   return "gauge.open.with.lines.needle.33percent.and.arrowtriangle"
+        case .performance:     return "chart.line.uptrend.xyaxis.circle.fill"
+        case .topEarners:      return "crown.fill"
+        case .annualProgress:  return "rosette"
+        case .frequency:       return "metronome.fill"
+        case .concentration:   return "chart.pie.fill"
+        case .dividendGrowth:  return "leaf.fill"
+        case .healthScore:     return "heart.circle.fill"
         }
     }
 
@@ -70,10 +70,17 @@ struct DashboardCardGrid: View {
                         expandedCard = isSelected ? nil : card
                     }
                 } label: {
-                    VStack(spacing: 6) {
+                    VStack(spacing: 8) {
                         Image(systemName: card.icon)
-                            .font(.title3)
+                            .font(.system(size: 22))
                             .foregroundStyle(isSelected ? .white : Color.accentColor)
+                            .frame(width: 36, height: 36)
+                            .background(
+                                Circle()
+                                    .fill(isSelected
+                                          ? Color.white.opacity(0.2)
+                                          : Color.accentColor.opacity(0.12))
+                            )
                         Text(card.title)
                             .font(.caption2.bold())
                             .foregroundStyle(isSelected ? .white : .primary)
@@ -82,10 +89,10 @@ struct DashboardCardGrid: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
                             .fill(isSelected
-                                  ? Color.accentColor
-                                  : Color(.secondarySystemGroupedBackground))
+                                  ? AnyShapeStyle(Color.accentColor.gradient)
+                                  : AnyShapeStyle(Color(.secondarySystemGroupedBackground)))
                     )
                 }
                 .buttonStyle(.plain)

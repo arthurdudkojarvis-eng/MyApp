@@ -96,6 +96,15 @@ struct DashboardView: View {
             .padding(.bottom, 24)
         }
         .background(Color(.systemGroupedBackground))
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                if expandedCard != nil {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        expandedCard = nil
+                    }
+                }
+            }
+        )
     }
 
     @ViewBuilder
