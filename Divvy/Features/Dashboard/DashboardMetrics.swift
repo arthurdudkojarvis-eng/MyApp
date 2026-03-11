@@ -19,6 +19,9 @@ struct DashboardMetrics {
     /// All holdings across all portfolios (flat list).
     let allHoldings: [Holding]
 
+    /// The source portfolios used to compute these metrics.
+    let portfolios: [Portfolio]
+
     /// Sum of (averageCostBasis × shares) across all holdings.
     let totalCostBasis: Decimal
 
@@ -30,6 +33,7 @@ struct DashboardMetrics {
     let totalUnrealizedGainPercent: Decimal?
 
     init(portfolios: [Portfolio]) {
+        self.portfolios = portfolios
         let allHoldings = portfolios.flatMap { $0.holdings }
 
         // Holding.projectedAnnualIncome and Holding.currentValue already return 0

@@ -32,6 +32,7 @@
 		532A1BF0FBDA072F48C348BD /* DivvyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43AC62307FC0866810DDF20F /* DivvyApp.swift */; };
 		53D1065F0BC685A0EC172A6A /* CoverageMeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A233EDCCF999850598369A /* CoverageMeterView.swift */; };
 		5D5DB28828779CC1549F317F /* IncomeHeroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AC714EC6294F050205D7CBC /* IncomeHeroView.swift */; };
+		A1C2D3E4F5061728394A5B6C /* PortfolioFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2D3E4F5A6172839405B6C7D /* PortfolioFlowView.swift */; };
 		6EAC5C805CD25068CD6B9FD2 /* DividendCalendarRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1679A13FA7597EEABA5E85CA /* DividendCalendarRowView.swift */; };
 		6FB33C4BAF790F222558D82D /* MassiveModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 047526A7CB59A2CEC408D324 /* MassiveModels.swift */; };
 		73B2BA9EDC6ED7AB23745BB6 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 059E338DA8E0E4E6ADFF964C /* OnboardingView.swift */; };
@@ -154,6 +155,7 @@
 		9C30FC2CD0BC2FBFF38A93D0 /* DashboardMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardMetrics.swift; sourceTree = "<group>"; };
 		9F2486D9EA7EB24906D73E6D /* NewsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsView.swift; sourceTree = "<group>"; };
 		AF2A840CEFA0C7ED8794E479 /* Portfolio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Portfolio.swift; sourceTree = "<group>"; };
+		B2D3E4F5A6172839405B6C7D /* PortfolioFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortfolioFlowView.swift; sourceTree = "<group>"; };
 		B5C352E29810DED9E7E134B9 /* AlertsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertsView.swift; sourceTree = "<group>"; };
 		B83BDF54DD70EBE998E82089 /* View+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+Extensions.swift"; sourceTree = "<group>"; };
 		B8CA452D1E6974625C1C5FE7 /* MassiveEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MassiveEnvironment.swift; sourceTree = "<group>"; };
@@ -452,6 +454,7 @@
 				278F70129F8930EDBEC972D3 /* DRIPSimulatorView.swift */,
 				52D51DCCA3313D2E87ABE124 /* IncomeForecastView.swift */,
 				4AC714EC6294F050205D7CBC /* IncomeHeroView.swift */,
+				B2D3E4F5A6172839405B6C7D /* PortfolioFlowView.swift */,
 				6997E6401EA51FED6038B232 /* SectorAllocationView.swift */,
 				84A74ED20A31232F6646A2A6 /* TaxSummaryView.swift */,
 			);
@@ -635,6 +638,7 @@
 				AA0C63AE826F5086197D0657 /* HoldingsView.swift in Sources */,
 				CE68D103E010F4F931536ABC /* IncomeForecastView.swift in Sources */,
 				5D5DB28828779CC1549F317F /* IncomeHeroView.swift in Sources */,
+				A1C2D3E4F5061728394A5B6C /* PortfolioFlowView.swift in Sources */,
 				F4BF44D5393BCAC3B259F3AD /* KeychainService.swift in Sources */,
 				FD12A43066297F415F8C701B /* LogPaymentView.swift in Sources */,
 				8FFF33A49D1A9FC856F4D3AC /* MainTabView.swift in Sources */,

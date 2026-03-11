@@ -18,7 +18,10 @@ struct IncomeHeroView: View {
     @State private var chartRange: ChartRange = .oneMonth
     @State private var dripEnabled = false
     @State private var projectionYears = 5
+    @State private var scrubPoint: PortfolioValuePoint?
+    @State private var showPulse = false
     @State private var showProjectionInfo = false
+    @State private var showFlowView = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -98,6 +101,12 @@ struct IncomeHeroView: View {
                 .fill(Color(.secondarySystemGroupedBackground))
         )
         .padding(.horizontal)
+        .fullScreenCover(isPresented: $showFlowView) {
+            PortfolioFlowView(
+                portfolios: metrics.portfolios,
+                totalValue: metrics.totalMarketValue
+            )
+        }
         .task(id: "\(holdingTickers)|\(chartRange.rawValue)") {
             await loadChart()
         }
@@ -113,17 +122,23 @@ struct IncomeHeroView: View {
     @ViewBuilder
     private var heroHeadline: some View {
         if selectedPage == 0 {
-            // Portfolio value
+            // Portfolio value — shows scrubbed point when dragging
+            let displayValue = scrubPoint?.value ?? metrics.totalMarketValue
+
             HStack(spacing: 8) {
-                amountText(metrics.totalMarketValue)
+                amountText(displayValue)
                 eyeButton
+                Spacer()
+                if metrics.allHoldings.count > 1 {
+                    flowExpandButton
+                }
             }
 
             if chartData.count >= 2 {
-                let firstValue = chartData.first!.value
-                let lastValue = chartData.last!.value
-                let change = lastValue - firstValue
-                let changePercent = firstValue > 0 ? (change / firstValue) * 100 : 0
+                let baseValue = chartData.first!.value
+                let compareValue = scrubPoint?.value ?? chartData.last!.value
+                let change = compareValue - baseValue
+                let changePercent = baseValue > 0 ? (change / baseValue) * 100 : Decimal.zero
                 let isPositive = change >= 0
 
                 HStack(spacing: 4) {
@@ -140,9 +155,15 @@ struct IncomeHeroView: View {
                             .font(.caption)
                             .monospacedDigit()
                     }
-                    Text(chartRange.label)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                    if let scrub = scrubPoint {
+                        Text(scrub.date.formatted(.dateTime.month(.abbreviated).day()))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text(chartRange.label)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 .foregroundStyle(isPositive ? .green : .red)
             }
@@ -252,33 +273,133 @@ struct IncomeHeroView: View {
             .frame(height: 120)
         } else if chartData.count >= 2 {
             let isPositive = chartData.last!.value >= chartData.first!.value
+            let trendColor: Color = isPositive ? .green : .red
+            let startValue = chartData.first!.doubleValue
+            let minPoint = chartData.min(by: { $0.doubleValue < $1.doubleValue })!
+            let maxPoint = chartData.max(by: { $0.doubleValue < $1.doubleValue })!
+            let lastPoint = chartData.last!
 
-            Chart(chartData) { point in
-                LineMark(
-                    x: .value("Date", point.date),
-                    y: .value("Value", point.doubleValue)
-                )
-                .foregroundStyle(isPositive ? Color.green : Color.red)
-                .lineStyle(StrokeStyle(lineWidth: 2))
+            Chart {
+                // Starting value reference line
+                RuleMark(y: .value("Start", startValue))
+                    .foregroundStyle(Color.secondary.opacity(0.3))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
 
-                AreaMark(
-                    x: .value("Date", point.date),
-                    y: .value("Value", point.doubleValue)
-                )
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [
-                            (isPositive ? Color.green : Color.red).opacity(0.25),
-                            (isPositive ? Color.green : Color.red).opacity(0.02)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
+                // Main line + area
+                ForEach(chartData) { point in
+                    LineMark(
+                        x: .value("Date", point.date),
+                        y: .value("Value", point.doubleValue)
                     )
+                    .foregroundStyle(trendColor)
+                    .lineStyle(StrokeStyle(lineWidth: 2))
+                    .interpolationMethod(.catmullRom)
+
+                    AreaMark(
+                        x: .value("Date", point.date),
+                        y: .value("Value", point.doubleValue)
+                    )
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [
+                                trendColor.opacity(0.25),
+                                trendColor.opacity(0.02)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .interpolationMethod(.catmullRom)
+                }
+
+                // Min marker
+                if minPoint.doubleValue < maxPoint.doubleValue {
+                    PointMark(
+                        x: .value("Date", minPoint.date),
+                        y: .value("Value", minPoint.doubleValue)
+                    )
+                    .symbolSize(20)
+                    .foregroundStyle(.red.opacity(0.8))
+                    .annotation(position: .bottom, spacing: 2) {
+                        Text("L")
+                            .font(.system(size: 7, weight: .bold))
+                            .foregroundStyle(.red)
+                    }
+                }
+
+                // Max marker
+                if minPoint.doubleValue < maxPoint.doubleValue {
+                    PointMark(
+                        x: .value("Date", maxPoint.date),
+                        y: .value("Value", maxPoint.doubleValue)
+                    )
+                    .symbolSize(20)
+                    .foregroundStyle(.green.opacity(0.8))
+                    .annotation(position: .top, spacing: 2) {
+                        Text("H")
+                            .font(.system(size: 7, weight: .bold))
+                            .foregroundStyle(.green)
+                    }
+                }
+
+                // Pulsing dot at latest value
+                PointMark(
+                    x: .value("Date", lastPoint.date),
+                    y: .value("Value", lastPoint.doubleValue)
                 )
+                .symbolSize(showPulse ? 40 : 20)
+                .foregroundStyle(trendColor)
+
+                // Crosshair when scrubbing
+                if let scrub = scrubPoint {
+                    RuleMark(x: .value("Date", scrub.date))
+                        .foregroundStyle(Color.primary.opacity(0.4))
+                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
+
+                    PointMark(
+                        x: .value("Date", scrub.date),
+                        y: .value("Value", scrub.doubleValue)
+                    )
+                    .symbolSize(50)
+                    .foregroundStyle(trendColor)
+                }
             }
             .chartXAxis(.hidden)
             .chartYAxis(.hidden)
+            .chartOverlay { proxy in
+                GeometryReader { geo in
+                    Rectangle()
+                        .fill(.clear)
+                        .contentShape(Rectangle())
+                        .gesture(
+                            LongPressGesture(minimumDuration: 0.2)
+                                .sequenced(before: DragGesture(minimumDistance: 0))
+                                .onChanged { value in
+                                    switch value {
+                                    case .second(true, let drag):
+                                        guard let drag else { return }
+                                        let x = drag.location.x - geo[proxy.plotAreaFrame].origin.x
+                                        guard let date: Date = proxy.value(atX: x) else { return }
+                                        let nearest = chartData.min(by: {
+                                            abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date))
+                                        })
+                                        scrubPoint = nearest
+                                    default:
+                                        break
+                                    }
+                                }
+                                .onEnded { _ in
+                                    scrubPoint = nil
+                                }
+                        )
+                }
+            }
             .frame(height: 120)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+                    showPulse = true
+                }
+            }
         }
     }
 
@@ -332,6 +453,17 @@ struct IncomeHeroView: View {
             }
         } label: {
             Image(systemName: hideAmounts ? "eye.slash" : "eye")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var flowExpandButton: some View {
+        Button {
+            showFlowView = true
+        } label: {
+            Image(systemName: "arrow.up.left.and.arrow.down.right")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }

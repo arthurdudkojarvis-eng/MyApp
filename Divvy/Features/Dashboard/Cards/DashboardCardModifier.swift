@@ -59,13 +59,17 @@ enum DashboardCardID: String, CaseIterable, Identifiable {
 struct DashboardCardGrid: View {
     @Binding var expandedCard: DashboardCardID?
 
+    @State private var pressedCard: DashboardCardID?
+
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
+    private let haptic = UIImpactFeedbackGenerator(style: .medium)
 
     var body: some View {
         LazyVGrid(columns: columns, spacing: 10) {
             ForEach(DashboardCardID.allCases) { card in
                 let isSelected = expandedCard == card
                 Button {
+                    haptic.impactOccurred()
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                         expandedCard = isSelected ? nil : card
                     }
@@ -81,6 +85,7 @@ struct DashboardCardGrid: View {
                                           ? Color.white.opacity(0.2)
                                           : Color.accentColor.opacity(0.12))
                             )
+                            .symbolEffect(.bounce, value: isSelected)
                         Text(card.title)
                             .font(.caption2.bold())
                             .foregroundStyle(isSelected ? .white : .primary)
@@ -94,9 +99,17 @@ struct DashboardCardGrid: View {
                                   ? AnyShapeStyle(Color.accentColor.gradient)
                                   : AnyShapeStyle(Color(.secondarySystemGroupedBackground)))
                     )
+                    .shadow(color: isSelected ? Color.accentColor.opacity(0.3) : .clear,
+                            radius: 8, y: 4)
+                    .scaleEffect(pressedCard == card ? 0.92 : 1.0)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(card.title)
+                .onLongPressGesture(minimumDuration: 0.5) {} onPressingChanged: { pressing in
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        pressedCard = pressing ? card : nil
+                    }
+                }
             }
         }
         .padding(.horizontal)

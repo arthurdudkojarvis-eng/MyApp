@@ -74,26 +74,38 @@ struct DashboardView: View {
     // MARK: - Main content (portfolios non-empty)
 
     private var mainContent: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                if let error = stockRefresh.lastRefreshError {
-                    RefreshErrorBannerView(message: error) {
-                        stockRefresh.dismissRefreshError()
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 16) {
+                    if let error = stockRefresh.lastRefreshError {
+                        RefreshErrorBannerView(message: error) {
+                            stockRefresh.dismissRefreshError()
+                        }
+                    }
+                    IncomeHeroView(
+                        metrics: metrics,
+                        isRefreshing: stockRefresh.isRefreshing
+                    )
+                    DashboardCardGrid(expandedCard: $expandedCard)
+
+                    if let expandedCard {
+                        expandedCardContent(expandedCard)
+                            .id("expandedCard")
+                            .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                 }
-                IncomeHeroView(
-                    metrics: metrics,
-                    isRefreshing: stockRefresh.isRefreshing
-                )
-                DashboardCardGrid(expandedCard: $expandedCard)
-
-                if let expandedCard {
-                    expandedCardContent(expandedCard)
-                        .transition(.opacity.combined(with: .move(edge: .top)))
+                .padding(.top, 8)
+                .padding(.bottom, 24)
+            }
+            .onChange(of: expandedCard) { _, newValue in
+                if newValue != nil {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            proxy.scrollTo("expandedCard", anchor: .top)
+                        }
+                    }
                 }
             }
-            .padding(.top, 8)
-            .padding(.bottom, 24)
         }
         .background(Color(.systemGroupedBackground))
         .simultaneousGesture(
