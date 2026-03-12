@@ -31,7 +31,9 @@ final class Stock {
         self.sector = sector
         self.currentPrice = currentPrice
         self.currency = currency
-        lastUpdated = .now
+        // Mark as stale when created without a real price so the next
+        // refreshStaleStocks() call picks it up immediately.
+        lastUpdated = currentPrice > 0 ? .now : .distantPast
     }
 
     // MARK: - Income Projections
@@ -65,7 +67,7 @@ final class Stock {
     // MARK: - Staleness
 
     /// Shared by `StockRefreshService` so the threshold stays in one place.
-    static let staleThresholdHours = -24
+    static let staleThresholdHours = -1
 
     var isStale: Bool {
         let threshold = Calendar.current.date(

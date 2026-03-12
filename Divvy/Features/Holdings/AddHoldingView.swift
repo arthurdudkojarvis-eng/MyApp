@@ -144,6 +144,7 @@ struct AddHoldingView: View {
             averageCostBasis: price,
             purchaseDate: purchaseDate
         )
+        holding.isManuallyConfigured = true
         holding.portfolio = portfolio
         holding.stock = stock
         modelContext.insert(holding)

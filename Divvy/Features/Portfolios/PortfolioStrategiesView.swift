@@ -231,6 +231,13 @@ private struct StrategyDetailView: View {
             }
 
             let price = prices[ticker]
+
+            // Set currentPrice on the stock so gain/loss is visible immediately
+            if let price, price > 0 {
+                stock.currentPrice = price
+                stock.lastUpdated = .now
+            }
+
             let shares: Decimal
             if let price, price > 0 {
                 shares = (notional * Decimal(constituent.allocationPercent) / 100) / price

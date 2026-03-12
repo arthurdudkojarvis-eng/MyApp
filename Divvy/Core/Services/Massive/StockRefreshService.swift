@@ -52,56 +52,66 @@ final class StockRefreshService {
         await refreshTicker(ticker)
     }
 
-    /// Refresh all stale stocks. Call when the app returns to foreground.
-    /// Checks market status first and skips refresh when the market is closed (STORY-034).
-    /// Uses grouped daily endpoint for batch price fetch when multiple tickers are stale (STORY-035).
-    func refreshStaleStocks() async {
+    /// Refresh all stale stocks. Call when the app returns to foreground or the
+    /// Portfolios tab appears. Set `force` to true (e.g. pull-to-refresh) to
+    /// skip the staleness check and refresh every stock.
+    func refreshStaleStocks(force: Bool = false) async {
         guard !isRefreshing else { return }
         lastRefreshError = nil   // clear previous error on every new refresh attempt
 
-        // STORY-034: Check market status — skip refresh when market is closed.
-        // Fail-open: if the status check fails, proceed with refresh anyway.
-        let shouldSkip = await checkMarketClosed()
-        if shouldSkip {
-            logger.info("Market is closed — skipping stale stock refresh.")
-            return
+        // Skip automatic refresh when market is closed; pull-to-refresh (force) always runs.
+        if !force {
+            let shouldSkip = await checkMarketClosed()
+            if shouldSkip {
+                logger.info("Market is closed — skipping automatic refresh.")
+                return
+            }
         }
 
-        // Push the staleness filter into SwiftData instead of fetching all stocks
-        // and filtering in Swift — avoids loading every Stock into memory.
-        guard let cutoff = Calendar.current.date(
-            byAdding: .hour, value: Stock.staleThresholdHours, to: .now
-        ) else {
-            logger.error("Date arithmetic failed computing staleness cutoff — skipping refresh.")
-            return
-        }
         let context = ModelContext(container)
-        let staleStocks: [Stock]
-        do {
-            let descriptor = FetchDescriptor<Stock>(
-                predicate: #Predicate<Stock> { $0.lastUpdated < cutoff }
-            )
-            staleStocks = try context.fetch(descriptor)
-        } catch {
-            logger.error("Failed to fetch stale stocks: \(error.localizedDescription)")
-            return
+        let stocksToRefresh: [Stock]
+
+        if force {
+            // Pull-to-refresh: refresh ALL stocks regardless of staleness
+            do {
+                stocksToRefresh = try context.fetch(FetchDescriptor<Stock>())
+            } catch {
+                logger.error("Failed to fetch stocks: \(error.localizedDescription)")
+                return
+            }
+        } else {
+            guard let cutoff = Calendar.current.date(
+                byAdding: .hour, value: Stock.staleThresholdHours, to: .now
+            ) else {
+                logger.error("Date arithmetic failed computing staleness cutoff — skipping refresh.")
+                return
+            }
+            do {
+                let descriptor = FetchDescriptor<Stock>(
+                    predicate: #Predicate<Stock> { $0.lastUpdated < cutoff }
+                )
+                stocksToRefresh = try context.fetch(descriptor)
+            } catch {
+                logger.error("Failed to fetch stale stocks: \(error.localizedDescription)")
+                return
+            }
         }
-        guard !staleStocks.isEmpty else { return }
+        guard !stocksToRefresh.isEmpty else { return }
         isRefreshing = true
         defer { isRefreshing = false }
 
         // STORY-035: Batch price fetch via grouped daily when multiple stale tickers.
         // Single call replaces N per-ticker snapshot calls.
         let batchPrices: [String: Decimal]
-        if staleStocks.count >= 2 {
+        if stocksToRefresh.count >= 2 {
             batchPrices = await fetchBatchPrices()
         } else {
             batchPrices = [:]
         }
 
-        for (index, stock) in staleStocks.enumerated() {
+        for (index, stock) in stocksToRefresh.enumerated() {
             await refreshTicker(stock.ticker, batchPrice: batchPrices[stock.ticker])
-            if index < staleStocks.count - 1 {
+            if index < stocksToRefresh.count - 1 {
                 do {
                     try await Task.sleep(for: interTickerDelay)
                 } catch {

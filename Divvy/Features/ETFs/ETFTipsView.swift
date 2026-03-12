@@ -241,6 +241,12 @@ private struct ETFTipDetailView: View {
             }
 
             let price = prices[ticker]
+
+            if let price, price > 0 {
+                stock.currentPrice = price
+                stock.lastUpdated = .now
+            }
+
             let shares: Decimal
             if let price, price > 0, count > 0 {
                 shares = (notional / Decimal(count)) / price

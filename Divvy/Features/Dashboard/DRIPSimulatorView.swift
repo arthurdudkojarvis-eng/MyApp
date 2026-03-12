@@ -36,13 +36,15 @@ struct DRIPSimulatorView: View {
 
         for year in 1...years {
             let income = dripValue * yield
+            let reinvested = income * reinvestFraction
             totalDividends += income
-            totalReinvested += income * reinvestFraction
-            dripValue += income * reinvestFraction
+            totalReinvested += reinvested
+            dripValue += reinvested
             dripProjections.append(YearProjection(
                 year: year,
                 annualIncome: dripValue * yield,
-                portfolioValue: dripValue
+                portfolioValue: dripValue,
+                reinvestedAmount: reinvested
             ))
         }
 
@@ -592,7 +594,7 @@ struct DRIPSimulatorView: View {
             Divider()
 
             ForEach(snap.dripProjections.dropFirst()) { proj in
-                let reinvested = proj.annualIncome * (reinvestmentRate / 100.0)
+                let reinvested = proj.reinvestedAmount
                 HStack {
                     Text("Y\(proj.year)")
                         .font(.caption.bold())
@@ -705,6 +707,7 @@ private struct YearProjection: Identifiable {
     let year: Int
     let annualIncome: Double
     let portfolioValue: Double
+    var reinvestedAmount: Double = 0  // actual amount reinvested this year
 
     var id: Int { year }
 }

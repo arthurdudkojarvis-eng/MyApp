@@ -126,12 +126,21 @@ final class SchemaTests: XCTestCase {
     }
 
     func test_stock_isStale_falseForRecentlyUpdated() throws {
-        let stock = Stock(ticker: "AAPL")
-        // lastUpdated defaults to .now in init
+        // Stock with a non-zero price gets lastUpdated = .now (not stale).
+        let stock = Stock(ticker: "AAPL", currentPrice: 150)
         context.insert(stock)
         try context.save()
 
         XCTAssertFalse(stock.isStale)
+    }
+
+    func test_stock_isStale_trueForZeroPriceStock() throws {
+        // Stock with zero price gets lastUpdated = .distantPast (immediately stale).
+        let stock = Stock(ticker: "NEW0")
+        context.insert(stock)
+        try context.save()
+
+        XCTAssertTrue(stock.isStale)
     }
 
     func test_stock_nextExDate_returnsUpcomingDate() throws {

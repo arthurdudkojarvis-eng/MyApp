@@ -9,6 +9,7 @@ final class Holding {
     var purchaseDate: Date
     var currency: String             // ISO 4217 — ready for multi-currency
     var externalId: String?          // broker position ID — required for future sync
+    var isManuallyConfigured: Bool = false  // true once the user sets real shares/cost basis
 
     // Inverse declared on Portfolio via @Relationship(inverse: \Holding.portfolio).
     // Explicit annotation here makes the delete rule clear: Portfolio deletion does
@@ -34,6 +35,7 @@ final class Holding {
         self.averageCostBasis = averageCostBasis
         self.purchaseDate = purchaseDate
         self.currency = currency
+        // isManuallyConfigured uses property-level default (false)
     }
 
     // MARK: - Income Metrics

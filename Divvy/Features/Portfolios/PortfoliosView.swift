@@ -7,6 +7,7 @@ struct PortfoliosView: View {
     @Query(sort: \Portfolio.createdAt) private var portfolios: [Portfolio]
     @Environment(\.modelContext) private var modelContext
     @Environment(SettingsStore.self) private var settings
+    @Environment(StockRefreshService.self) private var stockRefresh
     @State private var showAddPortfolio = false
     @State private var showStrategies = false
     @State private var portfolioToDelete: Portfolio?
@@ -53,6 +54,9 @@ struct PortfoliosView: View {
                         .padding(.vertical, 12)
                     }
                     .background(Color(.systemGroupedBackground))
+                    .refreshable {
+                        await stockRefresh.refreshStaleStocks(force: true)
+                    }
                 }
             }
             .toolbar {
@@ -106,6 +110,7 @@ struct PortfoliosView: View {
                     settings.lastActivePortfolioID = portfolios[0].id.uuidString
                 }
             }
+            .task { await stockRefresh.refreshStaleStocks() }
         }
     }
 }
@@ -306,6 +311,9 @@ struct PortfolioHoldingsView: View {
                     }
                 }
                 .listStyle(.insetGrouped)
+                .refreshable {
+                    await stockRefresh.refreshStaleStocks(force: true)
+                }
             }
         }
         .navigationTitle(portfolio.name)

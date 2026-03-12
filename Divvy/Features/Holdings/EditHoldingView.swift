@@ -77,6 +77,7 @@ struct EditHoldingView: View {
         holding.shares = shares
         holding.averageCostBasis = costBasis
         holding.purchaseDate = purchaseDate
+        holding.isManuallyConfigured = true
         dismiss()
     }
 }
