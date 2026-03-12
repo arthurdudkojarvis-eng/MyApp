@@ -58,7 +58,7 @@ struct IncomeHeroView: View {
                     ))
                 }
             }
-            .frame(height: 150)
+            .frame(height: 280)
             .clipped()
             .gesture(
                 DragGesture(minimumDistance: 30)
@@ -270,85 +270,21 @@ struct IncomeHeroView: View {
                     .scaleEffect(0.8)
                 Spacer()
             }
-            .frame(height: 120)
+            .frame(height: 250)
         } else if chartData.count >= 2 {
             let isPositive = chartData.last!.value >= chartData.first!.value
             let trendColor: Color = isPositive ? .green : .red
-            let startValue = chartData.first!.doubleValue
-            let minPoint = chartData.min(by: { $0.doubleValue < $1.doubleValue })!
-            let maxPoint = chartData.max(by: { $0.doubleValue < $1.doubleValue })!
-            let lastPoint = chartData.last!
 
             Chart {
-                // Starting value reference line
-                RuleMark(y: .value("Start", startValue))
-                    .foregroundStyle(Color.secondary.opacity(0.3))
-                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
-
-                // Main line + area
                 ForEach(chartData) { point in
                     LineMark(
                         x: .value("Date", point.date),
                         y: .value("Value", point.doubleValue)
                     )
                     .foregroundStyle(trendColor)
-                    .lineStyle(StrokeStyle(lineWidth: 2))
-                    .interpolationMethod(.catmullRom)
-
-                    AreaMark(
-                        x: .value("Date", point.date),
-                        y: .value("Value", point.doubleValue)
-                    )
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [
-                                trendColor.opacity(0.25),
-                                trendColor.opacity(0.02)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
+                    .lineStyle(StrokeStyle(lineWidth: 1.5))
                     .interpolationMethod(.catmullRom)
                 }
-
-                // Min marker
-                if minPoint.doubleValue < maxPoint.doubleValue {
-                    PointMark(
-                        x: .value("Date", minPoint.date),
-                        y: .value("Value", minPoint.doubleValue)
-                    )
-                    .symbolSize(20)
-                    .foregroundStyle(.red.opacity(0.8))
-                    .annotation(position: .bottom, spacing: 2) {
-                        Text("L")
-                            .font(.system(size: 7, weight: .bold))
-                            .foregroundStyle(.red)
-                    }
-                }
-
-                // Max marker
-                if minPoint.doubleValue < maxPoint.doubleValue {
-                    PointMark(
-                        x: .value("Date", maxPoint.date),
-                        y: .value("Value", maxPoint.doubleValue)
-                    )
-                    .symbolSize(20)
-                    .foregroundStyle(.green.opacity(0.8))
-                    .annotation(position: .top, spacing: 2) {
-                        Text("H")
-                            .font(.system(size: 7, weight: .bold))
-                            .foregroundStyle(.green)
-                    }
-                }
-
-                // Pulsing dot at latest value
-                PointMark(
-                    x: .value("Date", lastPoint.date),
-                    y: .value("Value", lastPoint.doubleValue)
-                )
-                .symbolSize(showPulse ? 40 : 20)
-                .foregroundStyle(trendColor)
 
                 // Crosshair when scrubbing
                 if let scrub = scrubPoint {
@@ -360,10 +296,17 @@ struct IncomeHeroView: View {
                         x: .value("Date", scrub.date),
                         y: .value("Value", scrub.doubleValue)
                     )
-                    .symbolSize(50)
+                    .symbolSize(40)
                     .foregroundStyle(trendColor)
                 }
             }
+            .chartYScale(domain: {
+                let values = chartData.map { $0.doubleValue }
+                let lo = values.min() ?? 0
+                let hi = values.max() ?? 1
+                let padding = max((hi - lo) * 0.3, hi * 0.01)
+                return (lo - padding)...(hi + padding)
+            }())
             .chartXAxis(.hidden)
             .chartYAxis(.hidden)
             .chartOverlay { proxy in
@@ -394,12 +337,7 @@ struct IncomeHeroView: View {
                         )
                 }
             }
-            .frame(height: 120)
-            .onAppear {
-                withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
-                    showPulse = true
-                }
-            }
+            .frame(height: 250)
         }
     }
 
@@ -407,17 +345,17 @@ struct IncomeHeroView: View {
 
     private var chartRangePicker: some View {
         HStack(spacing: 0) {
-            ForEach(ChartRange.allCases.filter { $0 != .oneWeek }, id: \.self) { range in
+            ForEach(ChartRange.allCases, id: \.self) { range in
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         chartRange = range
                     }
                 } label: {
                     Text(range.label)
-                        .font(.system(size: 11, weight: chartRange == range ? .bold : .medium))
+                        .font(.system(size: 10, weight: chartRange == range ? .bold : .medium))
                         .foregroundStyle(chartRange == range ? Color.accentColor : .secondary)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
+                        .padding(.vertical, 5)
                         .background(
                             chartRange == range
                                 ? Color.accentColor.opacity(0.12)
@@ -616,7 +554,7 @@ struct IncomeHeroView: View {
             }
             .chartXAxis(.hidden)
             .chartYAxis(.hidden)
-            .frame(height: 120)
+            .frame(height: 250)
         }
     }
 
@@ -740,7 +678,7 @@ struct IncomeHeroView: View {
                 }
             }
         }
-        .frame(height: 120)
+        .frame(height: 250)
     }
 
     // MARK: - Chart Data Loading

@@ -411,6 +411,7 @@ private struct StockSearchRowView: View {
 // MARK: - Chart Range
 
 enum ChartRange: String, CaseIterable, Identifiable {
+    case oneDay = "1D"
     case oneWeek = "1W"
     case oneMonth = "1M"
     case threeMonths = "3M"
@@ -436,6 +437,7 @@ enum ChartRange: String, CaseIterable, Identifiable {
         let today = Date()
         let from: Date
         switch self {
+        case .oneDay:      from = Calendar.current.date(byAdding: .day, value: -1, to: today) ?? today
         case .oneWeek:     from = Calendar.current.date(byAdding: .day, value: -7, to: today) ?? today
         case .oneMonth:    from = Calendar.current.date(byAdding: .month, value: -1, to: today) ?? today
         case .threeMonths: from = Calendar.current.date(byAdding: .month, value: -3, to: today) ?? today
