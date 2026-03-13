@@ -179,8 +179,7 @@ private struct MetricCell: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .textStyle(.rowDetail)
             Text(value)
                 .font(.subheadline.bold())
                 .foregroundStyle(.primary)
@@ -203,8 +202,7 @@ private struct PerformanceCell: View {
     var body: some View {
         VStack(alignment: .trailing, spacing: 2) {
             Text("Gain / Loss")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .textStyle(.rowDetail)
             if let pct = gainPercent {
                 Text(percentString(pct))
                     .font(.subheadline.bold())
@@ -409,7 +407,7 @@ private struct PortfolioHoldingRowView: View {
                         .font(.caption)
                         .foregroundStyle(gainColor)
                 } else {
-                    Text("—").font(.caption).foregroundStyle(.secondary)
+                    Text("—").textStyle(.rowDetail)
                 }
             }
             Button {

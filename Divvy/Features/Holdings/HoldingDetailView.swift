@@ -41,8 +41,7 @@ struct HoldingDetailView: View {
                         Text("Market data")
                         Spacer()
                         Text("Not loaded yet")
-                            .foregroundStyle(.secondary)
-                            .font(.subheadline)
+                            .textStyle(.controlLabel)
                     }
                 }
             }
@@ -61,8 +60,7 @@ struct HoldingDetailView: View {
                         Text("Dividend data")
                         Spacer()
                         Text("Not loaded yet")
-                            .foregroundStyle(.secondary)
-                            .font(.subheadline)
+                            .textStyle(.controlLabel)
                     }
                 }
             }

@@ -84,8 +84,7 @@ struct HealthScoreCard: View {
                         .font(.title3)
                         .foregroundStyle(.tertiary)
                     Text("Add holdings to see health score")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.controlLabel)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
@@ -150,8 +149,7 @@ private struct ScoreRow: View {
     var body: some View {
         HStack(spacing: 6) {
             Text(label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .textStyle(.statLabel)
                 .frame(width: 68, alignment: .leading)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
@@ -165,7 +163,7 @@ private struct ScoreRow: View {
             }
             .frame(height: 4)
             Text("\(score)")
-                .font(.caption2.bold())
+                .textStyle(.badge)
                 .monospacedDigit()
                 .foregroundStyle(color)
                 .frame(width: 24, alignment: .trailing)

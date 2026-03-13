@@ -112,15 +112,14 @@ private struct CryptoSearchRowView: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(displayTicker)
-                    .font(.headline)
+                    .textStyle(.rowTitle)
                 Text(result.name)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.rowDetail)
                     .lineLimit(1)
             }
             Spacer()
             Text("USD")
-                .font(.caption2.bold())
+                .textStyle(.badge)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
                 .background(Color.accentColor.opacity(0.12))

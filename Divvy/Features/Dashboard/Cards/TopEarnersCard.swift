@@ -34,8 +34,7 @@ struct TopEarnersCard: View {
                         .font(.title3)
                         .foregroundStyle(.tertiary)
                     Text("No dividend income yet")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.controlLabel)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {

@@ -41,8 +41,7 @@ struct DividendGrowthCard: View {
                         .font(.title3)
                         .foregroundStyle(.tertiary)
                     Text("No dividend payments recorded yet")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.controlLabel)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
@@ -56,18 +55,16 @@ struct DividendGrowthCard: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("6-Month Total")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.rowDetail)
                         Text(totalReceived, format: .currency(code: "USD"))
-                            .font(.title3.bold())
-                            .monospacedDigit()
+                            .textStyle(.metricValue)
                     }
                     Spacer()
                     HStack(spacing: 3) {
                         Image(systemName: trend.icon)
                             .font(.caption.bold())
                         Text(trend.label)
-                            .font(.caption.bold())
+                            .textStyle(.captionBold)
                     }
                     .foregroundStyle(trend.color)
                     .padding(.horizontal, 8)

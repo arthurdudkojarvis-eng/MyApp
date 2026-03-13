@@ -31,8 +31,7 @@ struct ConcentrationRiskCard: View {
                         .font(.title3)
                         .foregroundStyle(.tertiary)
                     Text("No holdings to analyze")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.controlLabel)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
@@ -71,12 +70,11 @@ struct ConcentrationRiskCard: View {
                         Spacer()
 
                         Text(entry.value, format: .currency(code: "USD"))
-                            .font(.caption)
+                            .textStyle(.rowDetail)
                             .monospacedDigit()
-                            .foregroundStyle(.secondary)
 
                         Text(entry.percentString)
-                            .font(.caption.bold())
+                            .textStyle(.captionBold)
                             .monospacedDigit()
                             .foregroundStyle(entry.pct > 30 ? .orange : .primary)
                             .frame(width: 44, alignment: .trailing)
@@ -90,7 +88,7 @@ struct ConcentrationRiskCard: View {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .font(.caption2)
                         Text("Top holding is \(String(format: "%.0f", topPct))% of portfolio")
-                            .font(.caption2)
+                            .textStyle(.chartAxis)
                     }
                     .foregroundStyle(.orange)
                     .padding(.top, 2)

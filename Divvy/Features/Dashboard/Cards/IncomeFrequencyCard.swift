@@ -38,8 +38,7 @@ struct IncomeFrequencyCard: View {
                         .font(.title3)
                         .foregroundStyle(.tertiary)
                     Text("No dividend schedules yet")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.controlLabel)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
@@ -67,8 +66,7 @@ struct IncomeFrequencyCard: View {
                         }
 
                         Text("\(bucket.count)")
-                            .font(.subheadline.bold())
-                            .monospacedDigit()
+                            .textStyle(.statValue)
                             .frame(width: 24, alignment: .trailing)
                     }
                 }

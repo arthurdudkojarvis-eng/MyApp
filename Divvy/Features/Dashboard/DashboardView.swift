@@ -264,11 +264,10 @@ private struct DashboardFeaturesSheet: View {
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
-                        .font(.headline)
+                        .textStyle(.rowTitle)
                         .foregroundStyle(.primary)
                     Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                         .lineLimit(1)
                 }
                 Spacer()

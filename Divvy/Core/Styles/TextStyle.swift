@@ -4,6 +4,7 @@ enum AppTextStyle {
     case sectionTitle, rowDetail, statLabel, statValue, metricValue
     case heroDisplay, scoreDisplay, microLabel, badge, chartAxis
     case cardTitle, tickerSymbol
+    case cardHero, rowTitle, controlLabel, captionBold, microBadge, smallCaption
 }
 
 struct TextStyleModifier: ViewModifier {
@@ -23,6 +24,12 @@ struct TextStyleModifier: ViewModifier {
         case .chartAxis:     content.font(.caption2)
         case .cardTitle:     content.font(.system(.headline, design: .rounded, weight: .semibold)).tracking(0.2)
         case .tickerSymbol:  content.font(.subheadline.weight(.bold)).tracking(0.3)
+        case .cardHero:      content.font(.system(size: 28, weight: .bold, design: .rounded)).monospacedDigit()
+        case .rowTitle:      content.font(.headline)
+        case .controlLabel:  content.font(.subheadline).foregroundStyle(.secondary)
+        case .captionBold:   content.font(.caption.bold())
+        case .microBadge:    content.font(.system(size: 9, weight: .semibold))
+        case .smallCaption:  content.font(.system(size: 10))
         }
     }
 }

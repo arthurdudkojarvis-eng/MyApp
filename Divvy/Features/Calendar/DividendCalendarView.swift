@@ -147,12 +147,11 @@ struct DividendCalendarView: View {
         return VStack(spacing: 14) {
             HStack {
                 Text(summary.monthLabel)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.controlLabel)
                 Spacer()
                 if summary.paymentCount > 0 {
                     Text("\(summary.paymentCount) payment\(summary.paymentCount == 1 ? "" : "s")")
-                        .font(.caption.bold())
+                        .textStyle(.captionBold)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                         .background(Color.accentColor.opacity(0.12))
@@ -367,10 +366,9 @@ private struct SummaryQuickStat: View {
                 .foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 1) {
                 Text(label)
-                    .font(.system(size: 9))
-                    .foregroundStyle(.tertiary)
+                    .textStyle(.microLabel)
                 Text(value)
-                    .font(.caption.bold())
+                    .textStyle(.captionBold)
                     .monospacedDigit()
                     .lineLimit(1)
             }
@@ -454,10 +452,10 @@ private struct MonthGridView: View {
             // Month header
             HStack(alignment: .firstTextBaseline) {
                 Text(month.formatted(.dateTime.month(.wide).year()))
-                    .font(.headline)
+                    .textStyle(.rowTitle)
                 if total > 0 {
                     Text(total, format: .currency(code: "USD"))
-                        .font(.caption.bold())
+                        .textStyle(.captionBold)
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
                 }
@@ -550,8 +548,7 @@ private struct MonthSummarySheet: View {
                     // Grand total card
                     VStack(spacing: 4) {
                         Text("Month Total")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.rowDetail)
                         Text(grandTotal, format: .currency(code: "USD"))
                             .font(.title2.bold())
                             .monospacedDigit()
@@ -578,20 +575,17 @@ private struct MonthSummarySheet: View {
                                 )
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(summary.ticker)
-                                        .font(.headline)
+                                        .textStyle(.rowTitle)
                                     Text(summary.companyName)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .textStyle(.rowDetail)
                                         .lineLimit(1)
                                 }
                                 Spacer()
                                 VStack(alignment: .trailing, spacing: 2) {
                                     Text(summary.totalAmount, format: .currency(code: "USD"))
-                                        .font(.subheadline.bold())
-                                        .monospacedDigit()
+                                        .textStyle(.statValue)
                                     Text("\(summary.paymentCount) payment\(summary.paymentCount == 1 ? "" : "s")")
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
+                                        .textStyle(.statLabel)
                                 }
                             }
                             .padding(.horizontal, 16)
@@ -763,8 +757,7 @@ private struct DividendDaySheet: View {
                     if events.count > 1 {
                         VStack(spacing: 4) {
                             Text("Day Total")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .textStyle(.rowDetail)
                             Text(dayTotal, format: .currency(code: "USD"))
                                 .font(.title2.bold())
                                 .monospacedDigit()
@@ -793,22 +786,20 @@ private struct DividendDaySheet: View {
                                 VStack(alignment: .leading, spacing: 3) {
                                     HStack(spacing: 6) {
                                         Text(event.ticker)
-                                            .font(.headline)
+                                            .textStyle(.rowTitle)
                                         statusBadge(event.status)
                                     }
                                     Text(event.companyName)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .textStyle(.rowDetail)
                                         .lineLimit(1)
                                 }
                                 Spacer()
                                 VStack(alignment: .trailing, spacing: 3) {
                                     Text(event.totalAmount, format: .currency(code: "USD"))
-                                        .font(.headline)
+                                        .textStyle(.rowTitle)
                                         .monospacedDigit()
                                     Text("\(event.amountPerShare.formatted(.currency(code: "USD"))) / share")
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
+                                        .textStyle(.statLabel)
                                 }
                             }
                             .padding(.horizontal, 16)

@@ -33,10 +33,9 @@ private struct ETFTipRowView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(tip.name)
-                .font(.headline)
+                .textStyle(.rowTitle)
             Text(tip.description)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .textStyle(.rowDetail)
                 .lineLimit(2)
             HStack(spacing: 8) {
                 HStack(spacing: 2) {
@@ -97,32 +96,28 @@ private struct ETFTipDetailView: View {
     private var headerCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(tip.description)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .textStyle(.controlLabel)
 
             Divider()
 
             HStack(spacing: 24) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Category")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Text(tip.category)
                         .font(.subheadline.bold())
                         .foregroundStyle(.blue)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Risk Level")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Text(tip.riskLevel)
                         .font(.subheadline.bold())
                         .foregroundStyle(etfRiskColor(for: tip.riskLevel))
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Examples")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Text("\(tip.examples.count)")
                         .font(.subheadline.bold())
                         .foregroundStyle(.purple)
@@ -138,7 +133,7 @@ private struct ETFTipDetailView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text("Example ETFs")
-                    .font(.headline)
+                    .textStyle(.rowTitle)
                 Spacer()
                 if isLoading {
                     ProgressView()
@@ -158,10 +153,9 @@ private struct ETFTipDetailView: View {
                     )
                     VStack(alignment: .leading, spacing: 2) {
                         Text(example.ticker)
-                            .font(.headline)
+                            .textStyle(.rowTitle)
                         Text(example.name)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.rowDetail)
                             .lineLimit(1)
                     }
                     Spacer()
@@ -171,8 +165,7 @@ private struct ETFTipDetailView: View {
                                 .font(.subheadline.bold())
                         }
                         Text(example.note)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.statLabel)
                             .lineLimit(1)
                     }
                 }

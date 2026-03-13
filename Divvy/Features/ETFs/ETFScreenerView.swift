@@ -224,8 +224,7 @@ struct ETFScreenerView: View {
                                 Text(source == .myETFs
                                      ? "Screening \(uniqueETFTickers.count) ETFs..."
                                      : "Searching & screening \(selectedSector ?? "sector")...")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .textStyle(.rowDetail)
                             }
                             Spacer()
                         }
@@ -307,7 +306,7 @@ struct ETFScreenerView: View {
             }
         } header: {
             Label("ETF Source", systemImage: "tray.full.fill")
-                .font(.caption.bold())
+                .textStyle(.captionBold)
                 .foregroundStyle(tint)
         }
     }
@@ -344,7 +343,7 @@ struct ETFScreenerView: View {
                                 VStack(alignment: .leading, spacing: 6) {
                                     HStack(spacing: 6) {
                                         Text(preset.rawValue)
-                                            .font(.caption.bold())
+                                            .textStyle(.captionBold)
                                             .lineLimit(1)
                                         if isSelected {
                                             Image(systemName: "checkmark.circle.fill")
@@ -427,7 +426,8 @@ struct ETFScreenerView: View {
                         .font(.subheadline.weight(.medium))
                     Spacer()
                     Text(minFrequency.displayName)
-                        .font(.caption.monospacedDigit().bold())
+                        .textStyle(.captionBold)
+                        .monospacedDigit()
                         .foregroundStyle(.white)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 3)
@@ -495,7 +495,7 @@ struct ETFScreenerView: View {
             ) { maxRSI = $0; selectedPreset = .manual }
         } header: {
             Label("Screening Criteria", systemImage: "slider.horizontal.3")
-                .font(.caption.bold())
+                .textStyle(.captionBold)
                 .foregroundStyle(tint)
         } footer: {
             Text(criteriaFooter)
@@ -566,7 +566,7 @@ struct ETFScreenerView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Text(preset.rawValue)
-                                .font(.headline)
+                                .textStyle(.rowTitle)
                                 .foregroundStyle(.primary)
                             Spacer()
                             if isSelected {
@@ -577,8 +577,7 @@ struct ETFScreenerView: View {
                         }
 
                         Text(preset.strategyDetail)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.rowDetail)
                             .fixedSize(horizontal: false, vertical: true)
 
                         presetCriteriaPills(preset)
@@ -625,7 +624,8 @@ struct ETFScreenerView: View {
                 .font(.caption2)
                 .foregroundStyle(tint.opacity(0.7))
             Text(value)
-                .font(.caption2.monospacedDigit().bold())
+                .textStyle(.badge)
+                .monospacedDigit()
                 .foregroundStyle(tint)
         }
         .padding(.horizontal, 6)
@@ -656,7 +656,8 @@ struct ETFScreenerView: View {
                 }
                 Spacer()
                 Text(String(format: format, value))
-                    .font(.caption.monospacedDigit().bold())
+                    .textStyle(.captionBold)
+                    .monospacedDigit()
                     .foregroundStyle(.white)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 3)
@@ -693,7 +694,7 @@ struct ETFScreenerView: View {
                 HStack {
                     Spacer()
                     Label(screenButtonLabel, systemImage: "sparkle.magnifyingglass")
-                        .font(.headline)
+                        .textStyle(.rowTitle)
                         .foregroundStyle(.white)
                     Spacer()
                 }
@@ -756,10 +757,9 @@ struct ETFScreenerView: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(passCount) of \(total) Passed")
-                        .font(.headline)
+                        .textStyle(.rowTitle)
                     Text("ETFs meeting all screening criteria")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                 }
                 Spacer()
             }
@@ -780,7 +780,7 @@ struct ETFScreenerView: View {
             }
         } header: {
             Label("Results", systemImage: "list.bullet.clipboard.fill")
-                .font(.caption.bold())
+                .textStyle(.captionBold)
                 .foregroundStyle(tint)
         }
     }
@@ -796,16 +796,16 @@ struct ETFScreenerView: View {
                     size: 40
                 )
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(result.ticker).font(.headline)
+                    Text(result.ticker).textStyle(.rowTitle)
                     Text(result.name)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                         .lineLimit(1)
                 }
                 Spacer()
                 HStack(spacing: 4) {
                     Text("\(result.passCount)/\(totalCriteria)")
-                        .font(.caption2.bold().monospacedDigit())
+                        .textStyle(.badge)
+                        .monospacedDigit()
                         .foregroundStyle(result.passesAll ? .green : (result.passCount >= 3 ? .orange : .red))
                     if result.passesAll {
                         Image(systemName: "checkmark.seal.fill")
@@ -892,7 +892,8 @@ struct ETFScreenerView: View {
                 .foregroundStyle(hasValue ? (passes ? .white.opacity(0.85) : .red.opacity(0.7)) : .secondary)
             HStack(spacing: 2) {
                 Text(displayText)
-                    .font(.caption2.monospacedDigit().bold())
+                    .textStyle(.badge)
+                    .monospacedDigit()
                 Image(systemName: passes ? "checkmark.circle.fill" : "xmark.circle.fill")
                     .font(.caption2)
                     .foregroundStyle(hasValue ? (passes ? .white : .red) : .gray)
@@ -926,7 +927,8 @@ struct ETFScreenerView: View {
             HStack(spacing: 2) {
                 if let value {
                     Text(String(format: format, value))
-                        .font(.caption2.monospacedDigit().bold())
+                        .textStyle(.badge)
+                        .monospacedDigit()
                 } else {
                     Text("N/A")
                         .font(.caption2)
@@ -1157,7 +1159,8 @@ private struct ETFSummaryRingView: View {
                 )
                 .rotationEffect(.degrees(-90))
             Text("\(passed)")
-                .font(.caption.bold().monospacedDigit())
+                .textStyle(.captionBold)
+                .monospacedDigit()
                 .foregroundStyle(tint)
         }
     }

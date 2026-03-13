@@ -93,10 +93,9 @@ struct HoldingFutureValueView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Projection Period")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.controlLabel)
                     Text("\(years) years")
-                        .font(.headline)
+                        .textStyle(.rowTitle)
                 }
                 Spacer()
                 Stepper("", value: $years, in: 1...40)
@@ -108,8 +107,7 @@ struct HoldingFutureValueView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text("Appreciation Rate")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.controlLabel)
                     Spacer()
                     Text("\(String(format: "%.1f", appreciationRate))%")
                         .font(.headline)
@@ -124,16 +122,14 @@ struct HoldingFutureValueView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Current Value")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Text(Decimal(initialValue), format: .currency(code: "USD"))
                         .font(.subheadline.bold())
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("Yield on Cost")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Text("\(String(format: "%.2f", annualYield * 100))%")
                         .font(.subheadline.bold())
                 }
@@ -180,7 +176,7 @@ struct HoldingFutureValueView: View {
                 AxisMarks(values: Array(Swift.stride(from: 0, through: years, by: step))) { value in
                     AxisValueLabel {
                         if let y = value.as(Int.self) {
-                            Text("Y\(y)").font(.caption2)
+                            Text("Y\(y)").textStyle(.chartAxis)
                         }
                     }
                     AxisGridLine()
@@ -191,7 +187,7 @@ struct HoldingFutureValueView: View {
                     AxisGridLine()
                     AxisValueLabel {
                         if let d = value.as(Double.self) {
-                            Text(compactDollar(d)).font(.caption2)
+                            Text(compactDollar(d)).textStyle(.chartAxis)
                         }
                     }
                 }
@@ -205,16 +201,14 @@ struct HoldingFutureValueView: View {
                         .fill(Color.accentColor)
                         .frame(width: 16, height: 3)
                     Text("With DRIP")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.statLabel)
                 }
                 HStack(spacing: 4) {
                     RoundedRectangle(cornerRadius: 2)
                         .fill(Color.gray)
                         .frame(width: 16, height: 3)
                     Text("Without DRIP")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.statLabel)
                 }
             }
         }
@@ -263,8 +257,7 @@ struct HoldingFutureValueView: View {
                 .lineLimit(1)
             HStack(spacing: 2) {
                 Text(label)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.statLabel)
                 Button {
                     infoText = info
                 } label: {

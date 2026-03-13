@@ -293,8 +293,7 @@ private struct SummaryPill: View {
                 .font(.title3.bold())
                 .foregroundStyle(.primary)
             Text(label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .textStyle(.statLabel)
         }
         .frame(maxWidth: .infinity)
     }
@@ -379,11 +378,10 @@ private struct WatchlistCard: View {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 6) {
                             Text(item.ticker)
-                                .font(.headline)
-                                .foregroundStyle(.primary)
+                                .textStyle(.rowTitle)
                             if let freq = enriched?.frequencyLabel {
                                 Text(freq)
-                                    .font(.system(size: 9, weight: .semibold))
+                                    .textStyle(.microBadge)
                                     .padding(.horizontal, 5)
                                     .padding(.vertical, 2)
                                     .background(Color.accentColor.opacity(0.12))
@@ -393,8 +391,7 @@ private struct WatchlistCard: View {
                         }
                         if !displayName.isEmpty {
                             Text(displayName)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .textStyle(.rowDetail)
                                 .lineLimit(1)
                         }
                     }
@@ -414,7 +411,7 @@ private struct WatchlistCard: View {
 
                         if let yield = yieldText, let yieldValue = enriched?.dividendYield {
                             Text(yield)
-                                .font(.caption2.bold())
+                                .textStyle(.badge)
                                 .foregroundStyle(yieldCapsuleColor(yieldValue))
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
@@ -456,7 +453,7 @@ private struct WatchlistCard: View {
                                 .font(.caption2.weight(.medium))
                             if let days, days >= 0 {
                                 Text("(\(days)d)")
-                                    .font(.caption2)
+                                    .textStyle(.chartAxis)
                             }
                         }
                         .foregroundStyle(urgencyColor(days: days))
@@ -494,8 +491,7 @@ private struct WatchlistCard: View {
                             .font(.system(size: 10))
                             .foregroundStyle(.secondary)
                         Text(item.notes)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.rowDetail)
                             .lineLimit(2)
                             .multilineTextAlignment(.leading)
                     }
@@ -586,7 +582,7 @@ private struct InfoChip: View {
             Image(systemName: icon)
                 .font(.system(size: 8))
             Text(text)
-                .font(.system(size: 10))
+                .textStyle(.smallCaption)
                 .lineLimit(1)
         }
         .foregroundStyle(color)
@@ -617,11 +613,10 @@ private struct EditNoteSheet: View {
                 Section {
                     HStack(spacing: 10) {
                         Text(item.ticker)
-                            .font(.headline)
+                            .textStyle(.rowTitle)
                         if !item.companyName.isEmpty {
                             Text(item.companyName)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                .textStyle(.controlLabel)
                         }
                     }
                 }

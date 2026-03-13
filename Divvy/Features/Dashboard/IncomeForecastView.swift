@@ -135,11 +135,9 @@ struct IncomeForecastView: View {
             // Main total
             VStack(alignment: .leading, spacing: 4) {
                 Text("12-Month Projection")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.controlLabel)
                 Text(snap.total, format: .currency(code: "USD"))
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
-                    .monospacedDigit()
+                    .textStyle(.heroDisplay)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -185,17 +183,16 @@ struct IncomeForecastView: View {
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Monthly Breakdown")
-                    .font(.headline)
+                    .textStyle(.rowTitle)
                 Spacer()
                 if let selected = selectedForecast {
                     VStack(alignment: .trailing, spacing: 1) {
                         Text(selected.label)
-                            .font(.caption.bold())
+                            .textStyle(.captionBold)
                             .foregroundStyle(Color.accentColor)
                         Text(selected.income, format: .currency(code: "USD"))
-                            .font(.caption)
+                            .textStyle(.rowDetail)
                             .monospacedDigit()
-                            .foregroundStyle(.secondary)
                     }
                     .transition(.opacity)
                 }
@@ -221,7 +218,7 @@ struct IncomeForecastView: View {
                         .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
                         .annotation(position: .top, spacing: 4) {
                             Text(item.income, format: .currency(code: "USD"))
-                                .font(.caption2.bold())
+                                .textStyle(.badge)
                                 .monospacedDigit()
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
@@ -241,7 +238,7 @@ struct IncomeForecastView: View {
                     AxisValueLabel {
                         if let d = value.as(Double.self) {
                             Text("$\(Int(d))")
-                                .font(.caption2)
+                                .textStyle(.chartAxis)
                         }
                     }
                 }
@@ -251,7 +248,7 @@ struct IncomeForecastView: View {
                     AxisValueLabel {
                         if let label = value.as(String.self) {
                             Text(label)
-                                .font(.caption2)
+                                .textStyle(.chartAxis)
                                 .fontWeight(currentMonthLabels.contains(label) ? .bold : .regular)
                                 .foregroundStyle(currentMonthLabels.contains(label) ? Color.accentColor : .secondary)
                         }
@@ -268,7 +265,7 @@ struct IncomeForecastView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Divider()
                     Text("\(selected.label) Contributors")
-                        .font(.caption.bold())
+                        .textStyle(.captionBold)
                         .foregroundStyle(.secondary)
                     ForEach(Array(selected.contributors.prefix(5))) { contrib in
                         HStack(spacing: 8) {
@@ -279,12 +276,11 @@ struct IncomeForecastView: View {
                                 size: 24
                             )
                             Text(contrib.ticker)
-                                .font(.caption.bold())
+                                .textStyle(.captionBold)
                             Spacer()
                             Text(contrib.amount, format: .currency(code: contrib.currency))
-                                .font(.caption)
+                                .textStyle(.rowDetail)
                                 .monospacedDigit()
-                                .foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -308,7 +304,7 @@ struct IncomeForecastView: View {
     private func contributorsCard(_ snap: ForecastSnapshot) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Top Contributors")
-                .font(.headline)
+                .textStyle(.rowTitle)
 
             let maxAmount = snap.topContributors.first?.amount ?? 1
 
@@ -325,15 +321,13 @@ struct IncomeForecastView: View {
                             .font(.subheadline.bold())
                         if !contrib.companyName.isEmpty {
                             Text(contrib.companyName)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
+                                .textStyle(.statLabel)
                                 .lineLimit(1)
                         }
                     }
                     Spacer()
                     Text(contrib.amount, format: .currency(code: contrib.currency))
-                        .font(.subheadline.bold())
-                        .monospacedDigit()
+                        .textStyle(.statValue)
                 }
 
                 // Progress bar
@@ -385,7 +379,7 @@ struct IncomeForecastView: View {
     private func quarterlyCard(_ snap: ForecastSnapshot) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Quarterly Breakdown")
-                .font(.headline)
+                .textStyle(.rowTitle)
 
             LazyVGrid(columns: [
                 GridItem(.flexible(), spacing: 10),
@@ -401,20 +395,18 @@ struct IncomeForecastView: View {
                                 let pct = (quarter.total / snap.total) * 100
                                 let pctDouble = (pct as NSDecimalNumber).doubleValue
                                 Text("\(String(format: "%.0f", pctDouble))%")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
+                                    .textStyle(.statLabel)
                                     .monospacedDigit()
                             }
                         }
                         Text(quarter.total, format: .currency(code: "USD"))
-                            .font(.title3.bold().monospacedDigit())
+                            .textStyle(.metricValue)
                             .minimumScaleFactor(0.7)
                             .lineLimit(1)
                         HStack(spacing: 4) {
                             ForEach(quarter.months) { m in
                                 Text(m.label)
-                                    .font(.system(size: 9))
-                                    .foregroundStyle(.tertiary)
+                                    .textStyle(.microLabel)
                             }
                         }
                     }
@@ -444,8 +436,7 @@ struct IncomeForecastView: View {
                 .foregroundStyle(.secondary)
                 .font(.caption)
             Text("Uses declared dividend schedules where available, otherwise distributes projected income evenly across months. Actual payments may vary.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .textStyle(.rowDetail)
         }
         .padding()
         .background(
@@ -471,12 +462,10 @@ private struct SummaryMetric: View {
                     .font(.system(size: 9))
                     .foregroundStyle(iconColor)
                 Text(label)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.statLabel)
             }
             Text(value)
-                .font(.caption.bold())
-                .foregroundStyle(.primary)
+                .textStyle(.captionBold)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }

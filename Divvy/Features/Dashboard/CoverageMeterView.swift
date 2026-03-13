@@ -68,7 +68,7 @@ struct CoverageMeterView: View {
             // Title + unclamped percentage (not capped at 100%)
             HStack {
                 Text("Coverage")
-                    .font(.headline)
+                    .textStyle(.rowTitle)
                 Spacer()
                 Text(coverage.coverageRatio, format: .percent.precision(.fractionLength(1)))
                     .font(.headline)
@@ -89,8 +89,7 @@ struct CoverageMeterView: View {
                 "covering \(monthlyEquivalent.formatted(.currency(code: "USD"))) " +
                 "of \(monthlyExpenseTarget.formatted(.currency(code: "USD"))) monthly target"
             )
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
+            .textStyle(.controlLabel)
         }
     }
 

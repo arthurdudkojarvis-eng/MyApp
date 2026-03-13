@@ -217,8 +217,7 @@ struct StockScreenerView: View {
                                 Text(source == .myStocks
                                      ? "Screening \(uniqueTickers.count) stocks..."
                                      : "Searching & screening \(selectedSector ?? "sector")...")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .textStyle(.rowDetail)
                             }
                             Spacer()
                         }
@@ -300,7 +299,7 @@ struct StockScreenerView: View {
             }
         } header: {
             Label("Stock Source", systemImage: "tray.full.fill")
-                .font(.caption.bold())
+                .textStyle(.captionBold)
                 .foregroundStyle(tint)
         }
     }
@@ -337,7 +336,7 @@ struct StockScreenerView: View {
                                 VStack(alignment: .leading, spacing: 6) {
                                     HStack(spacing: 6) {
                                         Text(preset.rawValue)
-                                            .font(.caption.bold())
+                                            .textStyle(.captionBold)
                                             .lineLimit(1)
                                         if isSelected {
                                             Image(systemName: "checkmark.circle.fill")
@@ -433,7 +432,7 @@ struct StockScreenerView: View {
             ) { minMarketCapB = $0; selectedPreset = .manual }
         } header: {
             Label("Screening Criteria", systemImage: "slider.horizontal.3")
-                .font(.caption.bold())
+                .textStyle(.captionBold)
                 .foregroundStyle(tint)
         } footer: {
             Text(criteriaFooter)
@@ -515,8 +514,7 @@ struct StockScreenerView: View {
                         }
 
                         Text(preset.strategyDetail)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.rowDetail)
                             .fixedSize(horizontal: false, vertical: true)
 
                         presetCriteriaPills(preset)
@@ -545,10 +543,10 @@ struct StockScreenerView: View {
     private func presetCriteriaPill(_ label: String, value: String) -> some View {
         VStack(spacing: 1) {
             Text(label)
-                .font(.caption2)
+                .textStyle(.chartAxis)
                 .foregroundStyle(tint.opacity(0.7))
             Text(value)
-                .font(.caption2.monospacedDigit().bold())
+                .textStyle(.badge).monospacedDigit()
                 .foregroundStyle(tint)
         }
         .padding(.horizontal, 8)
@@ -579,7 +577,7 @@ struct StockScreenerView: View {
                 }
                 Spacer()
                 Text(String(format: format, value))
-                    .font(.caption.monospacedDigit().bold())
+                    .textStyle(.captionBold).monospacedDigit()
                     .foregroundStyle(.white)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 3)
@@ -616,7 +614,7 @@ struct StockScreenerView: View {
                 HStack {
                     Spacer()
                     Label(screenButtonLabel, systemImage: "sparkle.magnifyingglass")
-                        .font(.headline)
+                        .textStyle(.rowTitle)
                         .foregroundStyle(.white)
                     Spacer()
                 }
@@ -682,8 +680,7 @@ struct StockScreenerView: View {
                     Text("\(passCount) of \(total) Passed")
                         .textStyle(.sectionTitle)
                     Text("Stocks meeting all screening criteria")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                 }
                 Spacer()
             }
@@ -704,7 +701,7 @@ struct StockScreenerView: View {
             }
         } header: {
             Label("Results", systemImage: "list.bullet.clipboard.fill")
-                .font(.caption.bold())
+                .textStyle(.captionBold)
                 .foregroundStyle(tint)
         }
     }
@@ -721,14 +718,13 @@ struct StockScreenerView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(result.ticker).textStyle(.tickerSymbol)
                     Text(result.companyName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                         .lineLimit(1)
                 }
                 Spacer()
                 HStack(spacing: 4) {
                     Text("\(result.passCount)/4")
-                        .font(.caption2.bold().monospacedDigit())
+                        .textStyle(.badge).monospacedDigit()
                         .foregroundStyle(result.passesAll ? .green : (result.passCount >= 2 ? .orange : .red))
                     if result.passesAll {
                         Image(systemName: "checkmark.seal.fill")
@@ -761,15 +757,15 @@ struct StockScreenerView: View {
         let hasValue = value != nil
         return VStack(spacing: 2) {
             Text(label)
-                .font(.caption2)
+                .textStyle(.chartAxis)
                 .foregroundStyle(hasValue ? (passes ? .white.opacity(0.85) : .red.opacity(0.7)) : .secondary)
             HStack(spacing: 2) {
                 if let value {
                     Text(String(format: format, value))
-                        .font(.caption2.monospacedDigit().bold())
+                        .textStyle(.badge).monospacedDigit()
                 } else {
                     Text("N/A")
-                        .font(.caption2)
+                        .textStyle(.chartAxis)
                 }
                 Image(systemName: passes ? "checkmark.circle.fill" : "xmark.circle.fill")
                     .font(.caption2)
@@ -965,7 +961,7 @@ private struct SummaryRingView: View {
                 )
                 .rotationEffect(.degrees(-90))
             Text("\(passed)")
-                .font(.caption.bold().monospacedDigit())
+                .textStyle(.captionBold).monospacedDigit()
                 .foregroundStyle(tint)
         }
     }

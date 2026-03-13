@@ -165,8 +165,7 @@ struct ETFBrowserView: View {
                     ProgressView()
                         .controlSize(.small)
                     Text("Loading details…")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Spacer()
                 }
                 .listRowSeparator(.hidden)
@@ -338,10 +337,9 @@ private struct ETFSearchRowView: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(result.ticker)
-                    .font(.headline)
+                    .textStyle(.rowTitle)
                 Text(result.name)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.rowDetail)
                     .lineLimit(1)
             }
             Spacer()

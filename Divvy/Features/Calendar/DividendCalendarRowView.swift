@@ -13,10 +13,9 @@ struct DividendCalendarRowView: View {
             // Left column: ticker + company name
             VStack(alignment: .leading, spacing: 2) {
                 Text(ticker)
-                    .font(.headline)
+                    .textStyle(.rowTitle)
                 Text(companyName)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.controlLabel)
                     .lineLimit(1)
             }
 
@@ -28,13 +27,11 @@ struct DividendCalendarRowView: View {
                     .font(.subheadline)
 
                 Text(schedule.amountPerShare, format: .currency(code: "USD"))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.controlLabel)
 
                 HStack(spacing: 4) {
                     Text(schedule.frequency.rawValue)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
 
                     Circle()
                         .fill(schedule.status.calendarColor)

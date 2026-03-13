@@ -110,15 +110,13 @@ struct AlertsView: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Upcoming Dividends")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.controlLabel)
                     Text(totalIncome, format: .currency(code: "USD"))
                         .font(.system(size: 36, weight: .bold, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(.primary)
                     Text("estimated income")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                 }
                 Spacer()
 
@@ -138,8 +136,7 @@ struct AlertsView: View {
                         .animation(.spring(response: 0.8, dampingFraction: 0.7), value: animateCards)
                     VStack(spacing: 0) {
                         Text("\(weekCount)")
-                            .font(.title3.bold())
-                            .monospacedDigit()
+                            .textStyle(.metricValue)
                         Text("this week")
                             .font(.system(size: 8))
                             .foregroundStyle(.secondary)
@@ -201,12 +198,11 @@ struct AlertsView: View {
                     Text("Notifications Disabled")
                         .font(.subheadline.bold())
                     Text("Enable notifications to get reminders before ex-dividend dates.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                 }
                 Spacer()
                 Button("Enable") { openSettings() }
-                    .font(.caption.bold())
+                    .textStyle(.captionBold)
                     .buttonStyle(.bordered)
                     .tint(.orange)
             }
@@ -266,7 +262,7 @@ struct AlertsView: View {
     private func timelineCard(alerts: [UpcomingAlert]) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Ex-Date Timeline")
-                .font(.headline)
+                .textStyle(.rowTitle)
                 .padding(.horizontal)
                 .padding(.top)
                 .padding(.bottom, 8)
@@ -423,13 +419,12 @@ private struct AlertTimelineRow: View {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 6) {
                             Text(alert.ticker)
-                                .font(.headline)
+                                .textStyle(.rowTitle)
                             urgencyBadge
                         }
                         if !alert.companyName.isEmpty {
                             Text(alert.companyName)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .textStyle(.rowDetail)
                                 .lineLimit(1)
                         }
                     }
@@ -438,8 +433,7 @@ private struct AlertTimelineRow: View {
 
                     VStack(alignment: .trailing, spacing: 3) {
                         Text(alert.estimatedPayment, format: .currency(code: "USD"))
-                            .font(.subheadline.bold())
-                            .monospacedDigit()
+                            .textStyle(.statValue)
                             .foregroundStyle(.primary)
                         Text("\(alert.shares.formatted()) shares")
                             .font(.caption2)
@@ -465,10 +459,9 @@ private struct AlertTimelineRow: View {
                     if alert.amountPerShare > 0 {
                         VStack(alignment: .trailing, spacing: 1) {
                             Text("Per Share")
-                                .font(.system(size: 9))
-                                .foregroundStyle(.tertiary)
+                                .textStyle(.microLabel)
                             Text(alert.amountPerShare, format: .currency(code: "USD"))
-                                .font(.caption.bold())
+                                .textStyle(.captionBold)
                                 .monospacedDigit()
                                 .foregroundStyle(.secondary)
                         }
@@ -490,7 +483,7 @@ private struct AlertTimelineRow: View {
 
     private var urgencyBadge: some View {
         Text(daysUntil == 0 ? "Today" : daysUntil == 1 ? "Tomorrow" : "in \(daysUntil)d")
-            .font(.caption2.bold())
+            .textStyle(.badge)
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
             .background(urgencyColor.opacity(0.15))
@@ -505,10 +498,9 @@ private struct AlertTimelineRow: View {
                 .foregroundStyle(highlight ? urgencyColor : Color.secondary)
             VStack(alignment: .leading, spacing: 0) {
                 Text(label)
-                    .font(.system(size: 9))
-                    .foregroundStyle(.tertiary)
+                    .textStyle(.microLabel)
                 Text(date, format: .dateTime.month(.abbreviated).day())
-                    .font(.caption.bold())
+                    .textStyle(.captionBold)
                     .foregroundStyle(highlight ? .primary : .secondary)
             }
         }
@@ -529,10 +521,9 @@ private struct QuickStat: View {
                 .font(.caption)
                 .foregroundStyle(color)
             Text(label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .textStyle(.statLabel)
             Text(value)
-                .font(.caption.bold())
+                .textStyle(.captionBold)
                 .monospacedDigit()
                 .foregroundStyle(.primary)
                 .lineLimit(1)

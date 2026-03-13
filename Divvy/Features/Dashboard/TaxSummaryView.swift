@@ -65,7 +65,7 @@ struct TaxSummaryView: View {
 
         return VStack(spacing: 12) {
             Text("All-Time Totals")
-                .font(.headline)
+                .textStyle(.rowTitle)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 0) {
@@ -89,8 +89,7 @@ struct TaxSummaryView: View {
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
             Text(label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .textStyle(.statLabel)
         }
         .frame(maxWidth: .infinity)
     }
@@ -102,7 +101,7 @@ struct TaxSummaryView: View {
             message: Text("My dividend income summary from Divvy")
         ) {
             Label("Export as CSV", systemImage: "square.and.arrow.up")
-                .font(.headline)
+                .textStyle(.rowTitle)
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(Color.accentColor)
@@ -127,11 +126,10 @@ private struct YearSummaryCard: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text(String(year))
-                    .font(.headline)
+                    .textStyle(.rowTitle)
                 Spacer()
                 Text("\(payments.count) payments")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.rowDetail)
             }
 
             HStack(spacing: 20) {
@@ -150,8 +148,7 @@ private struct YearSummaryCard: View {
     private func taxRow(label: String, value: Decimal, isNegative: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .textStyle(.rowDetail)
             Text(value, format: .currency(code: "USD"))
                 .font(.subheadline.bold())
                 .foregroundStyle(isNegative ? .red : .primary)

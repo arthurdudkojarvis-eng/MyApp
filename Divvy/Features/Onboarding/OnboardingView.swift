@@ -148,7 +148,7 @@ private struct FeatureRow: View {
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.subheadline.bold())
-                Text(subtitle).font(.caption).foregroundStyle(.secondary)
+                Text(subtitle).textStyle(.rowDetail)
             }
         }
         .accessibilityElement(children: .combine)
@@ -167,7 +167,7 @@ private struct PrimaryButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.headline)
+                .textStyle(.rowTitle)
                 .frame(maxWidth: .infinity)
                 .padding()
                 .background(Color.accentColor)

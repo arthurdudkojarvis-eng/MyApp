@@ -44,8 +44,7 @@ struct UpcomingDividendsCard: View {
                         .font(.title3)
                         .foregroundStyle(.tertiary)
                     Text("No upcoming dividends")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.controlLabel)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
@@ -63,7 +62,7 @@ struct UpcomingDividendsCard: View {
                             .frame(width: 48, alignment: .leading)
 
                         Text(payment.isDeclared ? "Declared" : "Estimated")
-                            .font(.system(size: 9, weight: .semibold))
+                            .textStyle(.microBadge)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 2)
                             .background(
@@ -76,8 +75,7 @@ struct UpcomingDividendsCard: View {
                         Spacer()
 
                         Text(payment.amount, format: .currency(code: "USD"))
-                            .font(.subheadline.bold())
-                            .monospacedDigit()
+                            .textStyle(.statValue)
 
                         Text("in \(payment.daysUntil)d")
                             .font(.caption)

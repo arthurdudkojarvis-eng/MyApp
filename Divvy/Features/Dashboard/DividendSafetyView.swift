@@ -191,8 +191,7 @@ struct DividendSafetyView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 4) {
                         Text("Portfolio Safety Score")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.controlLabel)
                         Button {
                             showScoreInfo = true
                         } label: {
@@ -205,8 +204,7 @@ struct DividendSafetyView: View {
                     }
                     HStack(alignment: .firstTextBaseline, spacing: 4) {
                         Text("\(snap.safetyScore)")
-                            .font(.system(size: 48, weight: .bold, design: .rounded))
-                            .monospacedDigit()
+                            .textStyle(.scoreDisplay)
                             .foregroundStyle(scoreColor(snap.safetyScore))
                         Text("/ 100")
                             .font(.title3)
@@ -305,7 +303,7 @@ struct DividendSafetyView: View {
     private func distributionCard(_ snap: SafetySnapshot) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Risk Distribution")
-                .font(.headline)
+                .textStyle(.rowTitle)
 
             // Stacked horizontal bar
             if !snap.distribution.isEmpty {
@@ -339,12 +337,11 @@ struct DividendSafetyView: View {
                             .frame(width: 8, height: 8)
                         VStack(alignment: .leading, spacing: 0) {
                             Text(slice.risk.label)
-                                .font(.caption2.bold())
+                                .textStyle(.badge)
+                                .foregroundStyle(.secondary)
                             Text("\(slice.count) holding\(slice.count == 1 ? "" : "s")")
-                                .font(.system(size: 9))
-                                .foregroundStyle(.tertiary)
+                                .textStyle(.microLabel)
                         }
-                        .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -366,7 +363,7 @@ struct DividendSafetyView: View {
             // Header with sort control
             HStack {
                 Text("Holdings")
-                    .font(.headline)
+                    .textStyle(.rowTitle)
                 Spacer()
                 Menu {
                     ForEach(SortOrder.allCases) { order in
@@ -428,8 +425,7 @@ struct DividendSafetyView: View {
                 .foregroundStyle(.secondary)
                 .font(.caption)
             Text("Risk level is estimated from current dividend yield on market price. High-yield stocks may indicate elevated cut risk. Always research fundamentals including payout ratio and earnings coverage.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .textStyle(.rowDetail)
         }
         .padding()
         .background(
@@ -461,13 +457,12 @@ private struct SafetyRowView: View {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
                     Text(assessment.ticker)
-                        .font(.headline)
+                        .textStyle(.rowTitle)
                     riskBadge
                 }
                 if !assessment.companyName.isEmpty {
                     Text(assessment.companyName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                         .lineLimit(1)
                 }
 
@@ -497,24 +492,21 @@ private struct SafetyRowView: View {
 
             VStack(alignment: .trailing, spacing: 3) {
                 Text(String(format: "%.2f%%", locale: posixLocale, assessment.currentYield))
-                    .font(.subheadline.bold())
-                    .monospacedDigit()
+                    .textStyle(.statValue)
                     .foregroundStyle(assessment.risk.color)
                 HStack(spacing: 2) {
                     Text("YoC")
-                        .font(.system(size: 9))
-                        .foregroundStyle(.tertiary)
+                        .textStyle(.microLabel)
                     Text(assessment.yieldOnCost > 0
                          ? String(format: "%.2f%%", locale: posixLocale, assessment.yieldOnCost)
                          : "—")
-                        .font(.caption2.bold())
+                        .textStyle(.badge)
                         .monospacedDigit()
                         .foregroundStyle(.secondary)
                 }
                 if assessment.paymentCount > 0 {
                     Text("\(assessment.paymentCount) payment\(assessment.paymentCount == 1 ? "" : "s")")
-                        .font(.system(size: 9))
-                        .foregroundStyle(.tertiary)
+                        .textStyle(.microLabel)
                 }
             }
         }
@@ -526,7 +518,7 @@ private struct SafetyRowView: View {
 
     private var riskBadge: some View {
         Text(assessment.risk.shortLabel)
-            .font(.system(size: 9, weight: .semibold))
+            .textStyle(.microBadge)
             .padding(.horizontal, 5)
             .padding(.vertical, 2)
             .background(
@@ -546,10 +538,9 @@ private struct QuickStat: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .textStyle(.statLabel)
             Text(value)
-                .font(.caption.bold())
+                .textStyle(.captionBold)
                 .monospacedDigit()
                 .foregroundStyle(color)
                 .lineLimit(1)
@@ -643,10 +634,9 @@ private struct SafetyScoreInfoSheet: View {
                     .fill(color)
                     .frame(width: 10, height: 10)
                 Text(label)
-                    .font(.caption.bold())
+                    .textStyle(.captionBold)
                 Text(detail)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.rowDetail)
             }
             Text(description)
                 .font(.caption)

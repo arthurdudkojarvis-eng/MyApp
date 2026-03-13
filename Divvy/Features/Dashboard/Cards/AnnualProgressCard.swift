@@ -53,11 +53,9 @@ struct AnnualProgressCard: View {
             HStack(spacing: 0) {
                 VStack(spacing: 4) {
                     Text("YTD Earned")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Text(snap.ytdIncome, format: .currency(code: "USD"))
-                        .font(.subheadline.bold())
-                        .monospacedDigit()
+                        .textStyle(.statValue)
                         .foregroundStyle(.green)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
@@ -69,11 +67,9 @@ struct AnnualProgressCard: View {
 
                 VStack(spacing: 4) {
                     Text("Annual Target")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Text(snap.projectedAnnual, format: .currency(code: "USD"))
-                        .font(.subheadline.bold())
-                        .monospacedDigit()
+                        .textStyle(.statValue)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                 }
@@ -106,12 +102,11 @@ struct AnnualProgressCard: View {
 
                 HStack {
                     Text("\(Int(snap.progress * 100))% earned")
-                        .font(.caption2.bold())
+                        .textStyle(.badge)
                         .foregroundStyle(Color.accentColor)
                     Spacer()
                     Text("\(snap.daysRemaining)d remaining")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.statLabel)
                         .monospacedDigit()
                 }
             }

@@ -143,10 +143,9 @@ struct DRIPSimulatorView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Projection Period")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.controlLabel)
                     Text("\(years) years")
-                        .font(.headline)
+                        .textStyle(.rowTitle)
                 }
                 Spacer()
                 Stepper("", value: $years, in: 1...40)
@@ -158,11 +157,10 @@ struct DRIPSimulatorView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text("Reinvestment Rate")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.controlLabel)
                     Spacer()
                     Text("\(Int(reinvestmentRate))%")
-                        .font(.headline)
+                        .textStyle(.rowTitle)
                         .monospacedDigit()
                 }
                 Slider(value: $reinvestmentRate, in: 0...100, step: 5)
@@ -174,30 +172,24 @@ struct DRIPSimulatorView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Starting Value")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Text(snap.initialPortfolioValue, format: .currency(code: "USD"))
-                        .font(.subheadline.bold())
-                        .monospacedDigit()
+                        .textStyle(.statValue)
                 }
                 Spacer()
                 VStack(alignment: .center, spacing: 2) {
                     Text("Avg Yield")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Text(snap.averageYield, format: .percent.precision(.fractionLength(2)))
-                        .font(.subheadline.bold())
-                        .monospacedDigit()
+                        .textStyle(.statValue)
                         .foregroundStyle(.green)
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("Annual Income")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Text(snap.initialAnnualIncome, format: .currency(code: "USD"))
-                        .font(.subheadline.bold())
-                        .monospacedDigit()
+                        .textStyle(.statValue)
                 }
             }
         }
@@ -218,16 +210,14 @@ struct DRIPSimulatorView: View {
             // Final income highlight
             VStack(alignment: .leading, spacing: 4) {
                 Text("Year \(years) Annual Income")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.controlLabel)
                 if let final = snap.dripProjections.last {
                     Text(Decimal(final.annualIncome), format: .currency(code: "USD"))
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
-                        .monospacedDigit()
+                        .textStyle(.heroDisplay)
                         .foregroundStyle(Color.accentColor)
                 } else {
                     Text("—")
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .textStyle(.heroDisplay)
                         .foregroundStyle(.secondary)
                 }
             }
@@ -280,17 +270,16 @@ struct DRIPSimulatorView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Income Growth")
-                    .font(.headline)
+                    .textStyle(.rowTitle)
                 Spacer()
                 if let sel = selectedProjection {
                     VStack(alignment: .trailing, spacing: 1) {
                         Text("Year \(sel.year)")
-                            .font(.caption.bold())
+                            .textStyle(.captionBold)
                             .foregroundStyle(Color.accentColor)
                         Text(Decimal(sel.annualIncome), format: .currency(code: "USD"))
-                            .font(.caption)
+                            .textStyle(.rowDetail)
                             .monospacedDigit()
-                            .foregroundStyle(.secondary)
                     }
                     .transition(.opacity)
                 }
@@ -421,7 +410,7 @@ struct DRIPSimulatorView: View {
     private func milestonesCard(_ snap: DRIPSnapshot) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Milestones")
-                .font(.headline)
+                .textStyle(.rowTitle)
 
             ForEach(Array(snap.milestones.enumerated()), id: \.element.id) { index, milestone in
                 HStack(spacing: 10) {
@@ -435,14 +424,13 @@ struct DRIPSimulatorView: View {
                     }
                     VStack(alignment: .leading, spacing: 1) {
                         Text(milestone.label)
-                            .font(.subheadline.bold())
+                            .textStyle(.statValue)
                         Text("Reached in year \(milestone.year)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.rowDetail)
                     }
                     Spacer()
                     Text("Y\(milestone.year)")
-                        .font(.caption.bold())
+                        .textStyle(.captionBold)
                         .monospacedDigit()
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -479,7 +467,7 @@ struct DRIPSimulatorView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Projection Details")
-                    .font(.headline)
+                    .textStyle(.rowTitle)
                 Spacer()
                 Button {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -557,12 +545,10 @@ struct DRIPSimulatorView: View {
                     .font(.system(size: 10))
                     .foregroundStyle(color)
                 Text(label)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.statLabel)
             }
             Text(value)
-                .font(.subheadline.bold())
-                .monospacedDigit()
+                .textStyle(.statValue)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
@@ -579,15 +565,15 @@ struct DRIPSimulatorView: View {
     private func yearBreakdownCard(_ snap: DRIPSnapshot) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Year-by-Year Breakdown")
-                .font(.headline)
+                .textStyle(.rowTitle)
 
             // Header
             HStack {
-                Text("Year").font(.caption2.bold()).frame(width: 36, alignment: .leading)
+                Text("Year").textStyle(.badge).frame(width: 36, alignment: .leading)
                 Spacer()
-                Text("Income").font(.caption2.bold()).frame(width: 80, alignment: .trailing)
-                Text("Reinvested").font(.caption2.bold()).frame(width: 80, alignment: .trailing)
-                Text("Portfolio").font(.caption2.bold()).frame(width: 90, alignment: .trailing)
+                Text("Income").textStyle(.badge).frame(width: 80, alignment: .trailing)
+                Text("Reinvested").textStyle(.badge).frame(width: 80, alignment: .trailing)
+                Text("Portfolio").textStyle(.badge).frame(width: 90, alignment: .trailing)
             }
             .foregroundStyle(.secondary)
 
@@ -597,7 +583,7 @@ struct DRIPSimulatorView: View {
                 let reinvested = proj.reinvestedAmount
                 HStack {
                     Text("Y\(proj.year)")
-                        .font(.caption.bold())
+                        .textStyle(.captionBold)
                         .monospacedDigit()
                         .frame(width: 36, alignment: .leading)
                     Spacer()
@@ -641,8 +627,7 @@ struct DRIPSimulatorView: View {
                 .foregroundStyle(.secondary)
                 .font(.caption)
             Text("Assumes a constant dividend yield equal to current portfolio average. Reinvested dividends purchase additional shares at current prices. Actual results will vary with price changes and yield fluctuations.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .textStyle(.rowDetail)
         }
         .padding()
         .background(
@@ -677,11 +662,9 @@ private struct ResultMetric: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .textStyle(.statLabel)
             Text(value)
-                .font(.subheadline.bold())
-                .monospacedDigit()
+                .textStyle(.statValue)
                 .foregroundStyle(color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)

@@ -44,8 +44,7 @@ struct SettingsView: View {
 
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Font Theme")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.controlLabel)
 
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 56))], spacing: 12) {
                             ForEach(FontTheme.allCases.filter { $0 != .defaultTheme }) { theme in
@@ -63,8 +62,7 @@ struct SettingsView: View {
                                         }
                                         .frame(width: 46, height: 46)
                                     Text(theme.label)
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
+                                        .textStyle(.statLabel)
                                 }
                                 .accessibilityLabel(theme.label)
                                 .onTapGesture {

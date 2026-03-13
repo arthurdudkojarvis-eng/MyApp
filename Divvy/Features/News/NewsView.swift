@@ -63,8 +63,7 @@ struct NewsView: View {
             VStack(spacing: 12) {
                 ProgressView()
                 Text("Loading news...")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.rowDetail)
             }
             .frame(maxWidth: .infinity, minHeight: 240)
         } else if let error = loadError {
@@ -212,7 +211,7 @@ private struct FeaturedArticleCard: View {
                         HStack(spacing: 6) {
                             ForEach(tickers.prefix(4), id: \.self) { ticker in
                                 Text(ticker)
-                                    .font(.caption2.bold())
+                                    .textStyle(.badge)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 3)
                                     .background(Color.accentColor.opacity(0.12))
@@ -223,15 +222,14 @@ private struct FeaturedArticleCard: View {
                     }
 
                     Text(article.title)
-                        .font(.headline)
+                        .textStyle(.rowTitle)
                         .multilineTextAlignment(.leading)
                         .lineLimit(3)
                         .foregroundStyle(.primary)
 
                     if let description = article.description, !description.isEmpty {
                         Text(description)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.controlLabel)
                             .lineLimit(2)
                             .multilineTextAlignment(.leading)
                     }
@@ -305,7 +303,7 @@ private struct NewsArticleRow: View {
                     HStack(spacing: 6) {
                         if let tickers = article.tickers, !tickers.isEmpty {
                             Text(tickers.prefix(2).joined(separator: " "))
-                                .font(.caption2.bold())
+                                .textStyle(.badge)
                                 .foregroundStyle(Color.accentColor)
 
                             Circle()

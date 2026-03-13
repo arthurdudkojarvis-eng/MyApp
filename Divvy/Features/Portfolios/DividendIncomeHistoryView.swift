@@ -133,7 +133,7 @@ struct DividendIncomeHistoryView: View {
                     AxisValueLabel {
                         if let d = value.as(Double.self) {
                             Text(d >= 1000 ? "$\(Int(d / 1000))k" : "$\(Int(d))")
-                                .font(.caption2)
+                                .textStyle(.chartAxis)
                         }
                     }
                 }
@@ -142,7 +142,7 @@ struct DividendIncomeHistoryView: View {
                 AxisMarks { value in
                     AxisValueLabel {
                         if let s = value.as(String.self) {
-                            Text(s).font(.caption2)
+                            Text(s).textStyle(.chartAxis)
                         }
                     }
                 }
@@ -157,11 +157,10 @@ struct DividendIncomeHistoryView: View {
     private var totalCard: some View {
         HStack {
             Text("Total Received")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .textStyle(.controlLabel)
             Spacer()
             Text(totalReceived, format: .currency(code: "USD"))
-                .font(.headline)
+                .textStyle(.rowTitle)
         }
         .padding()
         .background(Color(.secondarySystemGroupedBackground))

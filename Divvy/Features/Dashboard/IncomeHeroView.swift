@@ -146,10 +146,10 @@ struct IncomeHeroView: View {
                         .font(.caption2.bold())
                     if hideAmounts {
                         Text("****")
-                            .font(.caption.bold())
+                            .textStyle(.captionBold)
                     } else {
                         Text("\(isPositive ? "+" : "")\(String(format: "%.2f", NSDecimalNumber(decimal: change).doubleValue))")
-                            .font(.caption.bold())
+                            .textStyle(.captionBold)
                             .monospacedDigit()
                         Text("(\(String(format: "%.2f", NSDecimalNumber(decimal: changePercent).doubleValue))%)")
                             .font(.caption)
@@ -157,12 +157,10 @@ struct IncomeHeroView: View {
                     }
                     if let scrub = scrubPoint {
                         Text(scrub.date.formatted(.dateTime.month(.abbreviated).day()))
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.statLabel)
                     } else {
                         Text(chartRange.label)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.statLabel)
                     }
                 }
                 .foregroundStyle(isPositive ? .green : .red)
@@ -182,8 +180,7 @@ struct IncomeHeroView: View {
 
                 HStack(spacing: 6) {
                     Text(selected)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
 
                     if !point.tickers.isEmpty {
                         HStack(spacing: -4) {
@@ -216,8 +213,7 @@ struct IncomeHeroView: View {
 
                 HStack {
                     Text("Avg Monthly Dividend")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                 }
             }
         } else {
@@ -235,8 +231,7 @@ struct IncomeHeroView: View {
 
             HStack(spacing: 4) {
                 Text("\(projectionYears)-Year Projection")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.rowDetail)
                 if dripEnabled {
                     Text("DRIP")
                         .font(.system(size: 9, weight: .bold))
@@ -252,7 +247,7 @@ struct IncomeHeroView: View {
                         : Decimal.zero
                     let growthDouble = NSDecimalNumber(decimal: growth).doubleValue
                     Text("\(growthDouble >= 0 ? "+" : "")\(growthDouble, specifier: "%.1f")%")
-                        .font(.caption.bold())
+                        .textStyle(.captionBold)
                         .foregroundStyle(growthDouble >= 0 ? .green : .red)
                 }
             }
@@ -373,12 +368,11 @@ struct IncomeHeroView: View {
     private func amountText(_ value: Decimal) -> some View {
         if hideAmounts {
             Text("****")
-                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .textStyle(.cardHero)
                 .foregroundStyle(.primary)
         } else {
             Text(value, format: .currency(code: "USD"))
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .monospacedDigit()
+                .textStyle(.cardHero)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
         }
@@ -422,14 +416,11 @@ struct IncomeHeroView: View {
                 Text("How it's calculated")
                     .font(.subheadline.bold())
                 Text("Projection assumes 7% annual growth based on historical market average.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.rowDetail)
                 Text("**DRIP OFF** — Price appreciation only. Dividends taken as cash.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.rowDetail)
                 Text("**DRIP ON** — Dividends are reinvested monthly at your current portfolio yield, compounding over time.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.rowDetail)
                 Text("Actual results will vary with market conditions and dividend changes.")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)

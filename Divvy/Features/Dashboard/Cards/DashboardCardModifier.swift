@@ -87,7 +87,7 @@ struct DashboardCardGrid: View {
                             )
                             .symbolEffect(.bounce, value: isSelected)
                         Text(card.title)
-                            .font(.caption2.bold())
+                            .textStyle(.badge)
                             .foregroundStyle(isSelected ? .white : .primary)
                             .lineLimit(1)
                     }

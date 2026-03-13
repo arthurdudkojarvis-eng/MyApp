@@ -118,11 +118,9 @@ private struct YieldMetric: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .textStyle(.rowDetail)
             Text(value)
-                .font(.subheadline.bold())
-                .monospacedDigit()
+                .textStyle(.statValue)
                 .foregroundStyle(color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)

@@ -202,8 +202,7 @@ struct StockBrowserView: View {
                     ProgressView()
                         .controlSize(.small)
                     Text("Loading details…")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Spacer()
                 }
                 .listRowSeparator(.hidden)
@@ -218,7 +217,7 @@ struct StockBrowserView: View {
         Section {
             // Sector chips
             VStack(alignment: .leading, spacing: 6) {
-                Text("Sector").font(.caption.bold()).foregroundStyle(.secondary)
+                Text("Sector").textStyle(.captionBold).foregroundStyle(.secondary)
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(sectorChips, id: \.self) { sector in
@@ -244,7 +243,7 @@ struct StockBrowserView: View {
 
             // Market cap picker
             VStack(alignment: .leading, spacing: 6) {
-                Text("Market Cap").font(.caption.bold()).foregroundStyle(.secondary)
+                Text("Market Cap").textStyle(.captionBold).foregroundStyle(.secondary)
                 Picker("Market Cap", selection: $marketCapRange) {
                     ForEach(MarketCapRange.allCases) { range in
                         Text(range.rawValue).tag(range)
@@ -257,7 +256,7 @@ struct StockBrowserView: View {
             // Dividend yield slider
             VStack(alignment: .leading, spacing: 6) {
                 Text("Min Dividend Yield: \(minDividendYield, specifier: "%.1f")%")
-                    .font(.caption.bold())
+                    .textStyle(.captionBold)
                     .foregroundStyle(.secondary)
                 Slider(value: $minDividendYield, in: 0...15, step: 0.5)
                     .onChange(of: minDividendYield) { _, _ in triggerEnrichIfNeeded() }
@@ -381,7 +380,7 @@ private struct StockSearchRowView: View {
                     // STORY-026: Security-type badge (CS / ETF / PFD / etc.)
                     if let type = result.type, !type.isEmpty {
                         Text(type)
-                            .font(.caption2.bold())
+                            .textStyle(.badge)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(Color.accentColor.opacity(0.12))
@@ -390,8 +389,7 @@ private struct StockSearchRowView: View {
                     }
                 }
                 Text(result.name)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.rowDetail)
                     .lineLimit(1)
             }
             Spacer()
@@ -683,8 +681,7 @@ struct StockDetailView: View {
 
                 if let sector = details?.sicDescription, !sector.isEmpty {
                     Text(sector)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                 }
 
                 HStack(spacing: 6) {
@@ -861,8 +858,7 @@ struct StockDetailView: View {
     private func indicatorCell(label: String, value: String?, subtitle: String? = nil) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .textStyle(.rowDetail)
             Text(value ?? "—")
                 .font(.subheadline.bold())
                 .lineLimit(1)
@@ -893,7 +889,7 @@ struct StockDetailView: View {
                             ))
                         } label: {
                             Text(ticker)
-                                .font(.caption.bold())
+                                .textStyle(.captionBold)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
                                 .background(Color.accentColor.opacity(0.1))
@@ -1129,8 +1125,7 @@ private struct CriteriaCell: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .textStyle(.rowDetail)
             Text(value)
                 .font(.subheadline.bold())
                 .foregroundStyle(.primary)
@@ -1195,8 +1190,7 @@ private struct HoldingPickerSheet: View {
                         Text(holding.portfolio?.name ?? "Unknown Portfolio")
                         Spacer()
                         Text("\(holding.shares.description) shares")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.rowDetail)
                     }
                 }
             }

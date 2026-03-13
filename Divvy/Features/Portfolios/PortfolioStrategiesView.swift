@@ -35,8 +35,7 @@ private struct StrategyRowView: View {
             Text(strategy.name)
                 .textStyle(.cardTitle)
             Text(strategy.description)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .textStyle(.rowDetail)
                 .lineLimit(2)
             HStack(spacing: 8) {
                 HStack(spacing: 2) {
@@ -94,32 +93,28 @@ private struct StrategyDetailView: View {
     private var headerCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(strategy.description)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .textStyle(.controlLabel)
 
             Divider()
 
             HStack(spacing: 24) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Risk Profile")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Text(strategy.riskProfile)
                         .font(.subheadline.bold())
                         .foregroundStyle(riskColor(for: strategy.riskProfile))
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Expected Yield")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Text(strategy.expectedYieldRange)
                         .font(.subheadline.bold())
                         .foregroundStyle(.orange)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Stocks")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                     Text("\(strategy.constituents.count)")
                         .font(.subheadline.bold())
                         .foregroundStyle(.blue)
@@ -151,8 +146,7 @@ private struct StrategyDetailView: View {
                         Text(constituent.ticker)
                             .textStyle(.tickerSymbol)
                         Text(constituent.name)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.rowDetail)
                             .lineLimit(1)
                     }
                     Spacer()
@@ -162,8 +156,7 @@ private struct StrategyDetailView: View {
                             .foregroundStyle(.purple)
                         if let price = prices[constituent.ticker] {
                             Text(price, format: .currency(code: "USD"))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .textStyle(.rowDetail)
                         }
                     }
                 }

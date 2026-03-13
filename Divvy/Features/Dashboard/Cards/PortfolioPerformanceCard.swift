@@ -24,13 +24,11 @@ struct PortfolioPerformanceCard: View {
             // Bottom row: Unrealized Gain
             HStack {
                 Text("Unrealized Gain")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.controlLabel)
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(metrics.totalUnrealizedGain, format: .currency(code: "USD"))
-                        .font(.subheadline.bold())
-                        .monospacedDigit()
+                        .textStyle(.statValue)
                         .foregroundStyle(gainColor)
                     if let pct = metrics.totalUnrealizedGainPercent {
                         Text(formattedPercent(pct))
@@ -66,8 +64,7 @@ private struct MetricColumn: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .textStyle(.rowDetail)
             Text(value)
                 .font(.title3.bold())
                 .minimumScaleFactor(0.6)

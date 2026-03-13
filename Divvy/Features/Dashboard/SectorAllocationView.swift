@@ -134,8 +134,7 @@ struct SectorAllocationView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 4) {
                         Text("Diversification Score")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.controlLabel)
                         Button {
                             showInfo = true
                         } label: {
@@ -148,8 +147,7 @@ struct SectorAllocationView: View {
                     }
                     HStack(alignment: .firstTextBaseline, spacing: 4) {
                         Text("\(score)")
-                            .font(.system(size: 48, weight: .bold, design: .rounded))
-                            .monospacedDigit()
+                            .textStyle(.scoreDisplay)
                             .foregroundStyle(color)
                         Text("/ 100")
                             .font(.title3)
@@ -313,21 +311,19 @@ struct SectorAllocationView: View {
                     .multilineTextAlignment(.center)
                     .minimumScaleFactor(0.8)
                 Text(selected.income, format: .currency(code: "USD"))
-                    .font(.title3.bold().monospacedDigit())
+                    .textStyle(.metricValue)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
                 Text("\(selected.percentString)%")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.statLabel)
                     .monospacedDigit()
             } else {
                 Text(totalIncome, format: .currency(code: "USD"))
-                    .font(.title3.bold().monospacedDigit())
+                    .textStyle(.metricValue)
                     .minimumScaleFactor(0.6)
                     .lineLimit(1)
                 Text("Annual Income")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.rowDetail)
             }
         }
         .frame(maxWidth: 120)
@@ -345,11 +341,10 @@ struct SectorAllocationView: View {
         return VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text("Sector Breakdown")
-                    .font(.headline)
+                    .textStyle(.rowTitle)
                 Spacer()
                 Text("\(sliceCount) sector\(sliceCount == 1 ? "" : "s")")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.rowDetail)
             }
             .padding(.horizontal)
             .padding(.top)
@@ -371,16 +366,14 @@ struct SectorAllocationView: View {
                         Spacer()
                         VStack(alignment: .trailing, spacing: 1) {
                             Text(slice.income, format: .currency(code: "USD"))
-                                .font(.subheadline.bold())
-                                .monospacedDigit()
+                                .textStyle(.statValue)
                             HStack(spacing: 4) {
                                 Text("\(slice.percentString)%")
                                     .font(.caption2)
                                     .foregroundStyle(color)
                                     .monospacedDigit()
                                 Text("\(slice.holdingCount) holding\(slice.holdingCount == 1 ? "" : "s")")
-                                    .font(.system(size: 9))
-                                    .foregroundStyle(.tertiary)
+                                    .textStyle(.microLabel)
                             }
                         }
                     }
@@ -424,17 +417,16 @@ struct SectorAllocationView: View {
                                         )
                                         VStack(alignment: .leading, spacing: 1) {
                                             Text(stock.ticker)
-                                                .font(.caption.bold())
+                                                .textStyle(.captionBold)
                                             if !stock.companyName.isEmpty {
                                                 Text(stock.companyName)
-                                                    .font(.caption2)
-                                                    .foregroundStyle(.secondary)
+                                                    .textStyle(.statLabel)
                                                     .lineLimit(1)
                                             }
                                         }
                                         Spacer()
                                         Text(holding.projectedAnnualIncome, format: .currency(code: holding.currency))
-                                            .font(.caption.bold())
+                                            .textStyle(.captionBold)
                                             .monospacedDigit()
                                             .foregroundStyle(color)
                                     }
@@ -481,8 +473,7 @@ struct SectorAllocationView: View {
                 .foregroundStyle(.secondary)
                 .font(.caption)
             Text("Sector allocation is based on projected annual dividend income, not market value. Holdings without sector data are grouped as \"Unclassified\". Diversification does not guarantee against loss.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .textStyle(.rowDetail)
         }
         .padding()
         .background(
@@ -570,10 +561,9 @@ private struct QuickStat: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .textStyle(.statLabel)
             Text(value)
-                .font(.caption.bold())
+                .textStyle(.captionBold)
                 .monospacedDigit()
                 .foregroundStyle(color)
                 .lineLimit(1)
@@ -675,7 +665,7 @@ private struct SectorAllocationInfoSheet: View {
                     .fill(color)
                     .frame(width: 10, height: 10)
                 Text(label)
-                    .font(.caption.bold())
+                    .textStyle(.captionBold)
             }
             Text(description)
                 .font(.caption)

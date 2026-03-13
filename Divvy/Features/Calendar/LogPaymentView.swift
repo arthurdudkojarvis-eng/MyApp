@@ -183,8 +183,7 @@ private struct HoldingPaymentRow: View {
                 Text(ticker)
                     .font(.subheadline)
                 Text("\(holding.shares.formatted()) shares")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.rowDetail)
             }
         }
         .accessibilityElement(children: .combine)

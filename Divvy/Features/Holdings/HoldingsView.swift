@@ -129,12 +129,10 @@ private struct HoldingRowView: View {
             // Leading: ticker + company
             VStack(alignment: .leading, spacing: 2) {
                 Text(ticker)
-                    .font(.headline)
-                    .foregroundStyle(.primary)
+                    .textStyle(.rowTitle)
                 if !companyName.isEmpty {
                     Text(companyName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                         .lineLimit(1)
                 }
             }
@@ -148,12 +146,10 @@ private struct HoldingRowView: View {
                     .foregroundStyle(.primary)
                 if let yieldText {
                     Text(yieldText)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                 } else {
                     Text(valueText)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .textStyle(.rowDetail)
                 }
             }
         }
