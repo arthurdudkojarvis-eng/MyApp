@@ -2,7 +2,7 @@
 
 **Stack:** SwiftUI + SwiftData + Massive API (Starter $29/mo) + Cloudflare Worker proxy
 **Platform:** iOS 17+, Solo dev, Free app
-**Last updated:** 2026-03-03
+**Last updated:** 2026-03-13
 
 ---
 
@@ -16,6 +16,8 @@
 | Sprint 14 | Stock Detail: Future Value + Holding Actions | Done |
 | Sprint 15 | Notifications + Quotes | Done |
 | Sprint 16 | UX Polish + Unstarted Icon | Partial (STORY-013 blocked on design) |
+| Sprint 17 | Schwab Portfolio Import (OAuth + one-time import) | 🆕 New |
+| Sprint 18 | Stock Intelligence (Screener, Signal Scores, AI Reports, Risk Analysis) | 🆕 New |
 
 ---
 
@@ -498,7 +500,251 @@ STORY-050 (Colored fonts)            — no deps
 
 ---
 
-## Descoped / Not Recommended
+---
+
+## Sprint 17 — Schwab Portfolio Import
+
+**Sprint goal:** Allow the user to log in to their Charles Schwab brokerage account via OAuth and perform a one-time import of real positions into an existing Portfolio. No live sync. No token storage beyond the import session.
+
+| ID | Story | Type | Priority | Size | Status |
+|---|---|---|---|---|---|
+| STORY-051 | Schwab OAuth login flow (ASWebAuthenticationSession) | Feature | P1 | M | 🆕 New |
+| STORY-052 | Schwab token exchange via Cloudflare Worker | Feature | P1 | M | 🆕 New |
+| STORY-053 | Schwab positions fetch + import preview screen | Feature | P1 | L | 🆕 New |
+| STORY-054 | Import confirmation: create Holdings in SwiftData | Feature | P1 | M | 🆕 New |
+| STORY-055 | Settings: Schwab app credentials entry (app key + secret) | Feature | P1 | S | 🆕 New |
+
+**Dependency order:** STORY-055 → STORY-051 → STORY-052 → STORY-053 → STORY-054
+
+---
+
+## Story Details — Sprint 17
+
+---
+
+### STORY-051: Schwab OAuth Login Flow
+
+**Status:** 🆕 New
+**Priority:** P1
+**Size:** M
+**Type:** Feature
+**Story:** As a user, I want to tap "Import from Schwab" and be taken through a secure login flow so that I can authorize the app to read my Schwab positions without sharing my password with the app.
+
+**Acceptance Criteria:**
+- [ ] A "Import from Schwab" button exists in `PortfoliosView` toolbar (or within a portfolio's detail view — see open question below)
+- [ ] Tapping the button opens Schwab's OAuth authorization URL in `ASWebAuthenticationSession` (not `SFSafariViewController` — the session-based API handles the callback URL automatically)
+- [ ] The authorization URL is: `https://api.schwabapi.com/v1/oauth/authorize?response_type=code&client_id={APP_KEY}&redirect_uri={REDIRECT_URI}&scope=readonly`
+- [ ] The redirect URI scheme is a custom URL scheme registered in `Info.plist` (e.g. `myapp://schwab/callback`) — this scheme is also registered in the Schwab developer portal
+- [ ] On successful authorization, `ASWebAuthenticationSession` delivers the full callback URL including `?code=...`
+- [ ] The auth code is extracted from the callback URL query parameters and passed to STORY-052
+- [ ] On user cancellation (taps "Cancel" in the browser), the flow is dismissed cleanly with no error alert shown
+- [ ] On OAuth error callback (e.g. `?error=access_denied`), an alert is shown: "Schwab authorization was denied. You can try again from Settings."
+- [ ] The `ASWebAuthenticationSession` is stored as a `@State` property to prevent early deallocation
+- [ ] `prefersEphemeralWebBrowserSession: true` is set so the login sheet shows a fresh browser session (no stored Schwab session cookies leak in)
+
+**Implementation notes:**
+- `ASWebAuthenticationSession` requires a `presentationContextProvider` — use a UIWindowScene anchor via a helper struct conforming to `ASWebAuthenticationPresentationContextProviding`
+- Redirect URI must exactly match what is registered in the Schwab developer portal. Use `myapp://schwab/callback` as the default — can be changed in STORY-055 if the dev uses a different scheme
+- Do NOT use `openURL` environment action — it opens Safari and cannot receive the callback URL
+
+**Files to create/modify:**
+- `/Users/arthurdudkoagent_1/Developer/MyApp/MyApp/Features/Portfolios/SchwabImportView.swift` (new — hosts the full import flow as a sheet)
+- `/Users/arthurdudkoagent_1/Developer/MyApp/MyApp/Core/Services/Schwab/SchwabOAuthService.swift` (new)
+- `/Users/arthurdudkoagent_1/Developer/MyApp/MyApp/Features/Portfolios/PortfoliosView.swift` (add Import button)
+- `MyApp/Info.plist` (register `myapp` URL scheme)
+
+**Dependencies:** STORY-055 (app key must be stored in Keychain before OAuth URL can be built)
+
+**Open question:** Should "Import from Schwab" live in the Portfolios list toolbar, or inside a specific Portfolio's holdings view (i.e. user picks the target portfolio first, then imports)? Recommendation: import from within `PortfolioHoldingsView` — that way the target portfolio is unambiguous. Needs developer confirmation.
+
+---
+
+### STORY-052: Schwab Token Exchange via Cloudflare Worker
+
+**Status:** 🆕 New
+**Priority:** P1
+**Size:** M
+**Type:** Feature
+**Story:** As a developer, I want the OAuth authorization code to be exchanged for an access token via the existing Cloudflare Worker proxy so that the Schwab app secret never lives inside the iOS binary.
+
+**Acceptance Criteria:**
+- [ ] A new route is added to the Cloudflare Worker (`POST /schwab/token`) that accepts `{ code, redirect_uri }` in the request body and calls the Schwab token endpoint on behalf of the app
+- [ ] The worker holds `SCHWAB_APP_KEY` and `SCHWAB_APP_SECRET` as Wrangler secrets (never in the iOS binary or source code)
+- [ ] The worker constructs the Basic Auth header (`base64(app_key:app_secret)`) and calls `POST https://api.schwabapi.com/v1/oauth/token` with `grant_type=authorization_code`
+- [ ] On success, the worker returns `{ access_token, refresh_token, expires_in }` to the iOS app
+- [ ] The worker does NOT log or store tokens
+- [ ] The iOS `SchwabOAuthService` calls `POST {workerBaseURL}/schwab/token` with the `X-App-Token` header (existing auth pattern)
+- [ ] On HTTP error from Schwab, the worker returns the upstream status code and error body to iOS unchanged
+- [ ] The iOS client surfaces a user-readable error on failure: "Could not connect to Schwab. Please try again."
+- [ ] The access token and refresh token are held in memory only (NOT written to Keychain or UserDefaults) — they exist only for the duration of the import session. After import completes or the sheet is dismissed, they are discarded.
+
+**Implementation notes:**
+- The existing worker only handles GET. This route requires POST with a JSON body — add a `POST` method check branch
+- Schwab token endpoint requires `Content-Type: application/x-www-form-urlencoded` for the upstream request, but the iOS → worker leg can use JSON for simplicity
+- The worker must NOT forward the `X-App-Token` header to Schwab's servers
+
+**Files to create/modify:**
+- `/Users/arthurdudkoagent_1/Developer/MyApp/worker/src/index.ts` (add `/schwab/token` POST route)
+- `/Users/arthurdudkoagent_1/Developer/MyApp/MyApp/Core/Services/Schwab/SchwabOAuthService.swift` (add `exchangeCode(code:redirectURI:)` method)
+
+**Dependencies:** STORY-051 (need auth code from OAuth callback)
+
+**Security note:** This is the most security-sensitive story in the sprint. The Schwab app secret must never touch the iOS binary. The worker-as-proxy pattern is the right call. Flag for `security-auditor`.
+
+---
+
+### STORY-053: Schwab Positions Fetch + Import Preview Screen
+
+**Status:** 🆕 New
+**Priority:** P1
+**Size:** L
+**Type:** Feature
+**Story:** As a user who has authorized Schwab, I want to see a preview list of my real Schwab positions (ticker, shares, cost basis) before importing so that I can review exactly what will be added to my portfolio.
+
+**Acceptance Criteria:**
+- [ ] After successful token exchange (STORY-052), `SchwabOAuthService` calls `GET https://api.schwabapi.com/trader/v1/accounts/accountNumbers` to get account hash(es), passing `Authorization: Bearer {access_token}`
+- [ ] If multiple accounts exist, a picker or list is shown so the user can choose which account to import from
+- [ ] Then calls `GET https://api.schwabapi.com/trader/v1/accounts/{accountHash}?fields=positions` to get positions
+- [ ] A `SchwabPosition` Swift struct is decoded from the response: `{ symbol, quantity, averagePrice, marketValue }` (Schwab field names: `symbol`, `longQuantity`, `averagePrice`)
+- [ ] The Schwab API is called directly from iOS using the bearer token (NOT proxied via the worker — the worker proxy is only needed for token exchange where the secret is required). Direct calls from iOS to Schwab's trader API are fine with a bearer token.
+- [ ] A preview screen (`SchwabImportPreviewView`) lists all fetched positions in a `List`
+- [ ] Each row shows: ticker symbol, shares (formatted to 4 decimal places for fractional shares), average cost per share (formatted as currency), and an estimated total cost basis
+- [ ] Positions with zero quantity are filtered out
+- [ ] Options/derivatives (where `assetType != "EQUITY"`) are filtered out — dividend tracker only cares about equities and ETFs
+- [ ] Each row has a toggle (default ON) so the user can deselect positions they do not want to import
+- [ ] A "Select All / Deselect All" button is in the toolbar
+- [ ] The preview screen shows which portfolio the holdings will be added to (portfolio name in the nav title or subtitle)
+- [ ] A "Import X Positions" button (disabled when zero selected) triggers STORY-054
+
+**Schwab response shape (abridged):**
+```json
+{
+  "securitiesAccount": {
+    "positions": [
+      {
+        "instrument": { "symbol": "AAPL", "assetType": "EQUITY" },
+        "longQuantity": 10.0,
+        "averagePrice": 145.23,
+        "marketValue": 1832.10
+      }
+    ]
+  }
+}
+```
+
+**Files to create/modify:**
+- `/Users/arthurdudkoagent_1/Developer/MyApp/MyApp/Core/Services/Schwab/SchwabAPIService.swift` (new — separate from OAuthService; handles trader API calls with bearer token)
+- `/Users/arthurdudkoagent_1/Developer/MyApp/MyApp/Core/Services/Schwab/SchwabModels.swift` (new — `SchwabPosition`, `SchwabAccount`, response wrappers)
+- `/Users/arthurdudkoagent_1/Developer/MyApp/MyApp/Features/Portfolios/SchwabImportPreviewView.swift` (new)
+
+**Dependencies:** STORY-052 (needs access token)
+
+**Risk:** Schwab returns positions for ALL account types (brokerage, IRA, 401k). Filter to only `type == "MARGIN"` or `"CASH"` accounts, or show all accounts and let the user pick. Confirm filter logic with developer before implementing.
+
+---
+
+### STORY-054: Import Confirmation — Create Holdings in SwiftData
+
+**Status:** 🆕 New
+**Priority:** P1
+**Size:** M
+**Type:** Feature
+**Story:** As a user who has reviewed my Schwab positions, I want to tap "Import" and have those positions created as Holdings in my selected Portfolio so that my real brokerage positions are reflected in the app.
+
+**Acceptance Criteria:**
+- [ ] Tapping "Import X Positions" on the preview screen triggers the import logic
+- [ ] For each selected `SchwabPosition`, the service checks if a `Stock` with that ticker already exists in SwiftData (`FetchDescriptor` with `#Predicate { $0.ticker == symbol }`)
+- [ ] If the `Stock` exists, use it; if not, insert a new `Stock` with the ticker symbol and `currentPrice = 0` (price will be fetched by `StockRefreshService` on next refresh)
+- [ ] A new `Holding` is inserted: `shares = longQuantity`, `averagesCostBasis = averagePrice`, `purchaseDate = .now`, `externalId = schwabAccountHash + ":" + symbol`
+- [ ] The holding is linked to the target `Portfolio` and the resolved `Stock`
+- [ ] If a Holding with the same `externalId` already exists in the portfolio (re-import guard), it is skipped and counted separately
+- [ ] A summary sheet is shown after import: "Imported 8 positions. 2 skipped (already exist). Tap Done to close."
+- [ ] The `modelContext.save()` is called once after all holdings are inserted (not per-holding)
+- [ ] On SwiftData save error, the transaction is rolled back and an error alert is shown — no partial import
+- [ ] After dismissing the summary, `StockRefreshService.refreshAll()` is triggered in a `Task` to fetch live prices for the newly imported stocks
+- [ ] The access token is explicitly nil'd after import completes (even if it would have been deallocated anyway — explicit is better for sensitive data)
+
+**Files to create/modify:**
+- `/Users/arthurdudkoagent_1/Developer/MyApp/MyApp/Core/Services/Schwab/SchwabImportService.swift` (new — pure SwiftData logic, `@MainActor`)
+- `/Users/arthurdudkoagent_1/Developer/MyApp/MyApp/Features/Portfolios/SchwabImportPreviewView.swift` (wire up import action, show summary)
+
+**Dependencies:** STORY-053 (preview positions), existing `Stock` and `Holding` SwiftData models
+
+**Note:** `externalId` already exists on `Holding` (it was added for exactly this use case — see `Holding.swift` line 12). Use it.
+
+---
+
+### STORY-055: Settings — Schwab App Credentials Entry
+
+**Status:** 🆕 New
+**Priority:** P1
+**Size:** S
+**Type:** Feature
+**Story:** As a user setting up the Schwab import, I want to enter my Schwab app key in Settings so that the OAuth flow can be initialized with my registered developer credentials.
+
+**Acceptance Criteria:**
+- [ ] A new "Schwab Integration" section appears in `SettingsView` (below the existing API key section)
+- [ ] A secure text field (or standard text field — app key is not a password) accepts the Schwab App Key
+- [ ] The app key is stored in Keychain under the key `"schwabAppKey"` using the existing `KeychainService`
+- [ ] The app key is NOT stored in `SettingsStore` / `UserDefaults` — Keychain only
+- [ ] A status indicator shows "Connected" (green dot) if a key is saved, "Not configured" (gray) if not
+- [ ] A "Remove" button clears the Keychain entry and resets the indicator to "Not configured"
+- [ ] The Schwab App Secret is NOT entered by the user — it lives only in the Cloudflare Worker as a Wrangler secret (see STORY-052). This must be clearly communicated in the UI: "Your Schwab App Secret is stored securely in the server proxy — not on this device."
+- [ ] A "Learn more" link (opens a modal or Safari) explains the setup steps: register at developer.schwab.com, create an app with readonly scope, copy the app key here
+- [ ] If the user taps "Import from Schwab" without having entered an app key, a sheet is shown directing them to Settings to configure it first
+
+**Files to modify:**
+- `/Users/arthurdudkoagent_1/Developer/MyApp/MyApp/Features/Settings/SettingsView.swift`
+- `/Users/arthurdudkoagent_1/Developer/MyApp/MyApp/Core/Services/Schwab/SchwabOAuthService.swift` (read app key from Keychain)
+
+**Dependencies:** None (can be built and shipped independently; must be done before STORY-051)
+
+---
+
+## Dependency Map — Sprint 17
+
+```
+STORY-055 (Settings: enter Schwab app key)          — no deps; must ship first
+  └─ STORY-051 (OAuth login via ASWebAuthSession)   — needs app key from Keychain
+       └─ STORY-052 (Token exchange via CF Worker)  — needs auth code from STORY-051
+            └─ STORY-053 (Fetch positions + preview) — needs access token from STORY-052
+                 └─ STORY-054 (Create Holdings)      — needs selected positions from STORY-053
+```
+
+## Architecture Decisions — Sprint 17
+
+### Decision 1: One-time import vs. live sync
+**Choice: One-time import only (MVP)**
+Rationale: Schwab access tokens expire in 30 min, refresh tokens expire in 7 days. Live sync requires background token refresh and persistent refresh token storage in Keychain. That is a significant surface area for auth bugs and complicates the UX ("why is my data stale?"). For a solo dev free app, one-time import on demand is the right call. The user can re-import at any time by tapping the button again — the re-import guard (externalId dedup) prevents duplicates.
+Revisit: Add refresh token persistence in a later sprint if users request live sync.
+
+### Decision 2: Where does the Schwab App Secret live?
+**Choice: Cloudflare Worker only**
+The iOS binary cannot safely hold the Schwab App Secret — it would be extractable from the IPA. The existing Cloudflare Worker proxy is the right place. The worker holds `SCHWAB_APP_KEY` and `SCHWAB_APP_SECRET` as Wrangler secrets. The iOS app only stores the App Key (needed for building the OAuth authorization URL — this is a public identifier, not a secret).
+
+### Decision 3: Direct Schwab API calls for positions (no worker proxy)
+**Choice: iOS calls Schwab Trader API directly with bearer token**
+The worker proxy was needed for the Massive API because the Massive API key is a long-lived secret. The Schwab bearer token is ephemeral (30 min) and is the user's own credential — it is appropriate for the iOS client to use it directly. Routing position fetches through the worker adds latency and complexity with no security benefit.
+
+### Decision 4: Token lifetime and storage
+**Choice: In-memory only, discarded after import**
+Tokens are held as `@State` (or a local variable in a service) in the import sheet. They are not written to Keychain, UserDefaults, or any persistent store. When the sheet is dismissed, the tokens are deallocated. This is the simplest, most secure approach for a one-time import flow.
+
+---
+
+## Open Questions — Sprint 17 (need developer answers before stories start)
+
+| # | Question | Impact | Default if no answer |
+|---|---|---|---|
+| 1 | Where does "Import from Schwab" button live: Portfolios list toolbar, or inside PortfolioHoldingsView? | Determines where the target portfolio is selected | Default: inside PortfolioHoldingsView (target portfolio is explicit) |
+| 2 | What redirect URI scheme should be used? Must match Schwab developer portal registration. | STORY-051 cannot start without this | Default: `myapp://schwab/callback` |
+| 3 | Does the developer already have a Schwab developer account and registered app? | Unblocks STORY-055 | Assume not yet — STORY-055 includes setup instructions |
+| 4 | Should the Cloudflare Worker hold the Schwab App Key AND Secret, or just the Secret? | If Worker holds both, the iOS Settings entry for app key is unnecessary | Decision 2 above assumes iOS holds app key (public), Worker holds secret only |
+| 5 | How should re-import behave for changed positions (e.g. user bought more shares)? | STORY-054 currently skips existing externalIds — should it update shares/cost basis instead? | Default: skip existing, user edits manually. Can revisit. |
+
+---
+
+## Items Flagged for Clarification or Feasibility Review
 
 | Request | Reason |
 |---|---|
@@ -544,6 +790,29 @@ STORY-050 (Colored fonts)            — no deps
 | STORY-048 | Future Value modal | 14 | — |
 | STORY-049 | Investing quotes | 15 | — |
 | STORY-050 | Font theme | 16 | — |
+
+---
+
+## Sprint 18 — Stock Intelligence (Screener, Signal Scores, AI Reports, Risk Analysis)
+
+**Sprint goal:** Give dividend investors a research-grade edge without leaving the app. Surface composite signal scores, AI-generated bear/bull narratives, analyst price targets, and rule-based risk flags — all grounded in data that is either free or already paid for.
+
+**Full sprint plan:** `/Users/arthurdudkoagent_1/Developer/MyApp/.claude/pm/sprint-18-stock-intelligence.md`
+
+| ID | Story | Type | Priority | Size | Status |
+|---|---|---|---|---|---|
+| STORY-056 | Finnhub API integration (Keychain, proxy route, FinnhubFetching protocol) | Foundation | P0 | S | 🆕 New |
+| STORY-057 | Dividend Signal Score (rule-based composite score calculator) | Feature | P1 | M | 🆕 New |
+| STORY-058 | Stock Screener view (sortable table, signal badges, search) | Feature | P1 | M | 🆕 New |
+| STORY-059 | Analyst Price Target card (bear/target/bull gradient bar in StockDetailView) | Feature | P1 | M | 🆕 New |
+| STORY-060 | AI Research Report (bear/bull narratives via Claude Haiku + CF Worker) | Feature | P2 | L | 🆕 New |
+| STORY-061 | Risk Analysis — rule-based Phase 1 (8 financial risk rules + RiskFactorsCard) | Feature | P1 | M | ✅ Done |
+| STORY-062 | Report cache layer (CacheStore, Cacheable protocol, TTL expiry) | Infrastructure | P1 | S | 🆕 New |
+
+**Dependency order:**
+- STORY-056 first (blocks 057, 059, 060); STORY-061 and STORY-062 can start immediately in parallel
+- STORY-057 + STORY-059 + STORY-062 can run in parallel after STORY-056
+- STORY-058 after STORY-057; STORY-060 after STORY-056 + STORY-059 + STORY-062
 
 ---
 

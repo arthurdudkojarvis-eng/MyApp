@@ -45,6 +45,7 @@ private let sectorChips: [String] = [
 
 struct StockBrowserView: View {
     @Environment(\.massiveService) private var massive
+    @Environment(\.finnhubService) private var finnhub
 
     @State private var query = ""
     @State private var results: [MassiveTickerSearchResult] = []
@@ -53,6 +54,8 @@ struct StockBrowserView: View {
     @State private var searchTask: Task<Void, Never>?
     @State private var showTips = false
     @State private var showScreener = false
+    @State private var stocksPage = 0
+    @State private var screenerViewModel: SignalScreenerViewModel?
 
     // STORY-043: Filter state
     @State private var showFilters = false
@@ -95,6 +98,19 @@ struct StockBrowserView: View {
     }
 
     var body: some View {
+        ZStack {
+            Color(.systemGroupedBackground).ignoresSafeArea()
+            TabView(selection: $stocksPage) {
+                searchPage.tag(0)
+                screenerPage.tag(1)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .automatic))
+        }
+    }
+
+    // MARK: - Search Page
+
+    private var searchPage: some View {
         NavigationStack {
             Group {
                 if query.isEmpty {
@@ -177,6 +193,21 @@ struct StockBrowserView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Screener Page
+
+    private var screenerPage: some View {
+        NavigationStack {
+            SignalScreenerContentView(viewModel: ensureScreenerViewModel())
+        }
+    }
+
+    private func ensureScreenerViewModel() -> SignalScreenerViewModel {
+        if let vm = screenerViewModel { return vm }
+        let vm = SignalScreenerViewModel()
+        screenerViewModel = vm
+        return vm
     }
 
     // MARK: - Results List
@@ -366,6 +397,18 @@ struct StockBrowserView: View {
     }
 }
 
+// MARK: - Shared Helpers
+
+func formatMarketCap(_ value: Decimal) -> String {
+    let d = (value as NSDecimalNumber).doubleValue
+    switch d {
+    case 1_000_000_000_000...: return String(format: "%.1fT", d / 1_000_000_000_000)
+    case 1_000_000_000...:     return String(format: "%.1fB", d / 1_000_000_000)
+    case 1_000_000...:         return String(format: "%.1fM", d / 1_000_000)
+    default:                   return value.formatted(.currency(code: "USD"))
+    }
+}
+
 // MARK: - Search Row
 
 private struct StockSearchRowView: View {
@@ -496,7 +539,7 @@ struct StockDetailView: View {
     @State private var details: MassiveTickerDetails?
     @State private var currentPrice: Decimal?
     @State private var dividends: [MassiveDividend] = []
-    @State private var latestFinancial: MassiveFinancial?
+    @State private var financials: [MassiveFinancial] = []
     @State private var priceHistory: [MassiveAggregate] = []
     @State private var selectedChartRange: ChartRange = .threeMonths
     @State private var relatedTickers: [String] = []
@@ -534,6 +577,7 @@ struct StockDetailView: View {
     private var existingHoldings: [Holding] { existingStock?.holdings ?? [] }
     private var isAlreadyAdded: Bool { !existingHoldings.isEmpty }
     private var watchlistItem: WatchlistItem? { watchlistItems.first }
+    private var latestFinancial: MassiveFinancial? { financials.first }
 
     private var annualDividendPerShare: Decimal? {
         let regulars = dividends.filter { $0.dividendType == "CD" }
@@ -573,6 +617,70 @@ struct StockDetailView: View {
               let eps = latestFinancial?.dilutedEarningsPerShare,
               eps > 0 else { return nil }
         return (annual / eps) * 100
+    }
+
+    // MARK: - Risk Analysis (STORY-061)
+
+    private var revenueGrowthYoY: Decimal? {
+        guard financials.count >= 2,
+              let current = financials[0].revenues,
+              let previous = financials[1].revenues,
+              previous > 0 else { return nil }
+        return ((current - previous) / previous) * 100
+    }
+
+    private var debtToEquity: Decimal? {
+        guard let liabilities = latestFinancial?.liabilities,
+              let equity = latestFinancial?.equity,
+              equity > 0 else { return nil }
+        return liabilities / equity
+    }
+
+    private var dividendGrowthStreak: Int? {
+        let regulars = dividends.filter { $0.dividendType == "CD" }
+        guard !regulars.isEmpty else { return nil }
+
+        // Group by year, take the last payment per year as the representative amount.
+        var amountByYear: [Int: Decimal] = [:]
+        let calendar = Calendar.current
+        for div in regulars {
+            guard let date = Self.exDateFormatter.date(from: div.exDividendDate) else { continue }
+            let year = calendar.component(.year, from: date)
+            // Dividends are sorted desc; first seen per year is the most recent payment.
+            if amountByYear[year] == nil {
+                amountByYear[year] = div.cashAmount
+            }
+        }
+
+        let sortedYears = amountByYear.keys.sorted(by: >)
+        guard sortedYears.count >= 2 else { return 0 }
+
+        var streak = 0
+        for i in 0..<(sortedYears.count - 1) {
+            let currentYear = sortedYears[i]
+            let previousYear = sortedYears[i + 1]
+            guard currentYear - previousYear == 1 else { break }
+            guard let currentAmount = amountByYear[currentYear],
+                  let previousAmount = amountByYear[previousYear],
+                  currentAmount > previousAmount else { break }
+            streak += 1
+        }
+        return streak
+    }
+
+    private var riskInputs: RiskInputs {
+        RiskInputs(
+            payoutRatio: payoutRatio,
+            dividendYield: dividendYield,
+            revenueGrowthYoY: revenueGrowthYoY,
+            debtToEquity: debtToEquity,
+            eps: latestFinancial?.dilutedEarningsPerShare,
+            dividendGrowthStreak: dividendGrowthStreak
+        )
+    }
+
+    private var riskFactors: [RiskFactor] {
+        RiskRuleEngine.evaluate(riskInputs)
     }
 
     private var nextExDate: String? {
@@ -617,6 +725,7 @@ struct StockDetailView: View {
                     criteriaGrid
                     indicatorsSection
                     analystTargetSection
+                    RiskFactorsCard(factors: riskFactors)
                     if !relatedTickers.isEmpty {
                         relatedCompaniesSection
                     }
@@ -1051,9 +1160,9 @@ struct StockDetailView: View {
             do { return try await api.fetchDividends(ticker: ticker, limit: 13) }
             catch { detailLogger.warning("Dividend fetch failed: \(error.localizedDescription)"); return [] }
         }()
-        async let financialsTask: MassiveFinancial? = {
-            do { return try await api.fetchFinancials(ticker: ticker, limit: 1).first }
-            catch { detailLogger.warning("Financials fetch failed: \(error.localizedDescription)"); return nil }
+        async let financialsTask: [MassiveFinancial] = {
+            do { return try await api.fetchFinancials(ticker: ticker, limit: 2) }
+            catch { detailLogger.warning("Financials fetch failed: \(error.localizedDescription)"); return [] }
         }()
         async let splitsTask: [MassiveSplit] = {
             do { return try await api.fetchSplits(ticker: ticker) }
@@ -1070,7 +1179,7 @@ struct StockDetailView: View {
             await loadPriceTarget(ticker: ticker)
         }()
 
-        (dividends, latestFinancial, splits, relatedTickers, indicators, priceTarget) =
+        (dividends, financials, splits, relatedTickers, indicators, priceTarget) =
             await (dividendsTask, financialsTask, splitsTask, relatedTask, indicatorsTask, priceTargetTask)
 
         // Load initial price chart
@@ -1179,17 +1288,6 @@ struct StockDetailView: View {
         }
     }
 
-    // MARK: - Helpers
-
-    private func formatMarketCap(_ value: Decimal) -> String {
-        let d = (value as NSDecimalNumber).doubleValue
-        switch d {
-        case 1_000_000_000_000...: return String(format: "%.1fT", d / 1_000_000_000_000)
-        case 1_000_000_000...:     return String(format: "%.1fB", d / 1_000_000_000)
-        case 1_000_000...:         return String(format: "%.1fM", d / 1_000_000)
-        default:                   return value.formatted(.currency(code: "USD"))
-        }
-    }
 }
 
 // MARK: - Criteria Cell

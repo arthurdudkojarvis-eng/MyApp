@@ -26,6 +26,8 @@
 		2219A3D66CC6A7AE4E870849 /* EditHoldingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8600F9CD4E0ECCF8DA305D42 /* EditHoldingView.swift */; };
 		2811D99258A809FCFBD5EBDB /* OnboardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B301CF32A5E5ECBF36F3E32 /* OnboardingTests.swift */; };
 		2B2F7F5FE6554DC6CBC1D8B0 /* StockBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBF85C275AC60329CD30EE9A /* StockBrowserView.swift */; };
+		5A1B2C3D4E5F6A7B8C9D0E1F /* SignalScreenerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1B2C3D4E5F6A7B8C9D0E10 /* SignalScreenerViewModel.swift */; };
+		5A1B2C3D4E5F6A7B8C9D0E2F /* SignalScreenerContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A1B2C3D4E5F6A7B8C9D0E20 /* SignalScreenerContentView.swift */; };
 		302708F25D08CD1BCE76FC2D /* CoverageMeterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67CCEAC201176AF06A2EEE86 /* CoverageMeterTests.swift */; };
 		39CE7770F3D82C44F3117BBF /* DividendSchedule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76B968D0039281DB8983FA03 /* DividendSchedule.swift */; };
 		4733A1B96E03A2AE728F9093 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F82B6F194AD4950FEACE8BE /* DashboardView.swift */; };
@@ -101,6 +103,9 @@
 		FB0156A1B2C3D4E5F6A7B005 /* FinnhubServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0156A1B2C3D4E5F6A7B005 /* FinnhubServiceTests.swift */; };
 		S1G001122334455667788990A /* SignalScoreCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = S1G001122334455667788990B /* SignalScoreCalculator.swift */; };
 		S1G001122334455667788990C /* SignalScoreCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = S1G001122334455667788990D /* SignalScoreCalculatorTests.swift */; };
+		R061001122334455667788AA /* RiskRuleEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = R061001122334455667788AB /* RiskRuleEngine.swift */; };
+		R061001122334455667788CC /* RiskFactorsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = R061001122334455667788CD /* RiskFactorsCard.swift */; };
+		R061001122334455667788EE /* RiskRuleEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = R061001122334455667788EF /* RiskRuleEngineTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -116,6 +121,9 @@
 /* Begin PBXFileReference section */
 		A059001122334455667788AB /* AnalystTargetCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalystTargetCard.swift; sourceTree = "<group>"; };
 		A059001122334455667788CD /* PriceTargetCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceTargetCache.swift; sourceTree = "<group>"; };
+		R061001122334455667788AB /* RiskRuleEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiskRuleEngine.swift; sourceTree = "<group>"; };
+		R061001122334455667788CD /* RiskFactorsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiskFactorsCard.swift; sourceTree = "<group>"; };
+		R061001122334455667788EF /* RiskRuleEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiskRuleEngineTests.swift; sourceTree = "<group>"; };
 		01BD360246A6F91A42303E1A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		047526A7CB59A2CEC408D324 /* MassiveModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MassiveModels.swift; sourceTree = "<group>"; };
 		059E338DA8E0E4E6ADFF964C /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -175,6 +183,8 @@
 		BBC36DA4D1479658B4AC9D33 /* MassiveService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MassiveService.swift; sourceTree = "<group>"; };
 		C9AF13E5B9F14E0CDA9E3FC3 /* LogPaymentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPaymentTests.swift; sourceTree = "<group>"; };
 		CBF85C275AC60329CD30EE9A /* StockBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockBrowserView.swift; sourceTree = "<group>"; };
+		5A1B2C3D4E5F6A7B8C9D0E10 /* SignalScreenerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalScreenerViewModel.swift; sourceTree = "<group>"; };
+		5A1B2C3D4E5F6A7B8C9D0E20 /* SignalScreenerContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalScreenerContentView.swift; sourceTree = "<group>"; };
 		CDB2A6E31CD31D98D7365571 /* Holding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Holding.swift; sourceTree = "<group>"; };
 		D3B8D08E73975BE9DB195BBC /* DividendCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendCalendarView.swift; sourceTree = "<group>"; };
 		D4A233EDCCF999850598369A /* CoverageMeterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverageMeterView.swift; sourceTree = "<group>"; };
@@ -304,6 +314,9 @@
 			isa = PBXGroup;
 			children = (
 				A059001122334455667788AB /* AnalystTargetCard.swift */,
+				R061001122334455667788CD /* RiskFactorsCard.swift */,
+				5A1B2C3D4E5F6A7B8C9D0E20 /* SignalScreenerContentView.swift */,
+				5A1B2C3D4E5F6A7B8C9D0E10 /* SignalScreenerViewModel.swift */,
 				CBF85C275AC60329CD30EE9A /* StockBrowserView.swift */,
 				SC001122334455667788990B /* StockScreenerView.swift */,
 				DD2233445566778899001122 /* StockTipsView.swift */,
@@ -452,6 +465,7 @@
 				F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */,
 				C9AF13E5B9F14E0CDA9E3FC3 /* LogPaymentTests.swift */,
 				4B301CF32A5E5ECBF36F3E32 /* OnboardingTests.swift */,
+				R061001122334455667788EF /* RiskRuleEngineTests.swift */,
 				70AD67C8B61F19099B90170A /* SchemaTests.swift */,
 				2332EC481425613D04D5FF2A /* SettingsStoreTests.swift */,
 				S1G001122334455667788990D /* SignalScoreCalculatorTests.swift */,
@@ -517,6 +531,7 @@
 			children = (
 				0E027B60436A61420ED999E3 /* AppColorScheme+SwiftUI.swift */,
 				41C018CC84BEF94F929B042E /* KeychainService.swift */,
+				R061001122334455667788AB /* RiskRuleEngine.swift */,
 				39954C69C6016976D6D8707B /* SettingsStore.swift */,
 				S1G001122334455667788990B /* SignalScoreCalculator.swift */,
 				FC0156A1B2C3D4E5F6A7B001 /* Finnhub */,
@@ -656,6 +671,7 @@
 				C3D4E5F6A7B8C9D0E1F2A3B4 /* StockBrowserFilterTests.swift in Sources */,
 				FB0156A1B2C3D4E5F6A7B005 /* FinnhubServiceTests.swift in Sources */,
 				S1G001122334455667788990C /* SignalScoreCalculatorTests.swift in Sources */,
+				R061001122334455667788EE /* RiskRuleEngineTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -705,6 +721,8 @@
 				335D68DAB10E756BC1CEBF51 /* TextStyle.swift in Sources */,
 				CC4776AC4CA2ADF98A177337 /* SettingsView.swift in Sources */,
 				AA1D2D9C2F69A518390AD9E9 /* Stock.swift in Sources */,
+				5A1B2C3D4E5F6A7B8C9D0E2F /* SignalScreenerContentView.swift in Sources */,
+				5A1B2C3D4E5F6A7B8C9D0E1F /* SignalScreenerViewModel.swift in Sources */,
 				2B2F7F5FE6554DC6CBC1D8B0 /* StockBrowserView.swift in Sources */,
 				SC001122334455667788990A /* StockScreenerView.swift in Sources */,
 				BD4A40AB295269B2F1E9D6BA /* StockRefreshService.swift in Sources */,
@@ -740,6 +758,8 @@
 				S1G001122334455667788990A /* SignalScoreCalculator.swift in Sources */,
 				A059001122334455667788AA /* AnalystTargetCard.swift in Sources */,
 				A059001122334455667788CC /* PriceTargetCache.swift in Sources */,
+				R061001122334455667788AA /* RiskRuleEngine.swift in Sources */,
+				R061001122334455667788CC /* RiskFactorsCard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
