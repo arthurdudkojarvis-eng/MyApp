@@ -1,6 +1,27 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - Glass Card Modifier
+
+private struct GlassCard: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .background(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.regularMaterial)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .shadow(color: .black.opacity(0.08), radius: 16, y: 6)
+            .shadow(color: .black.opacity(0.03), radius: 2, y: 1)
+    }
+}
+
+private extension View {
+    func glassCard() -> some View {
+        modifier(GlassCard())
+    }
+}
+
 // MARK: - PortfoliosView
 
 struct PortfoliosView: View {
@@ -11,6 +32,7 @@ struct PortfoliosView: View {
     @State private var showAddPortfolio = false
     @State private var showStrategies = false
     @State private var portfolioToDelete: Portfolio?
+    @State private var cardsAppeared = false
 
     private var activePortfolioID: String {
         settings.lastActivePortfolioID
@@ -27,8 +49,8 @@ struct PortfoliosView: View {
                     )
                 } else {
                     ScrollView {
-                        LazyVStack(spacing: 12) {
-                            ForEach(portfolios) { portfolio in
+                        LazyVStack(spacing: 16) {
+                            ForEach(Array(portfolios.enumerated()), id: \.element.id) { index, portfolio in
                                 NavigationLink {
                                     PortfolioHoldingsView(portfolio: portfolio)
                                 } label: {
@@ -48,6 +70,13 @@ struct PortfoliosView: View {
                                         Label("Delete", systemImage: "trash")
                                     }
                                 }
+                                .opacity(cardsAppeared ? 1 : 0)
+                                .offset(y: cardsAppeared ? 0 : 20)
+                                .animation(
+                                    .spring(response: 0.5, dampingFraction: 0.8)
+                                        .delay(Double(index) * 0.08),
+                                    value: cardsAppeared
+                                )
                             }
                         }
                         .padding(.horizontal)
@@ -59,6 +88,7 @@ struct PortfoliosView: View {
                     }
                 }
             }
+            .sensoryFeedback(.selection, trigger: activePortfolioID)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -105,10 +135,11 @@ struct PortfoliosView: View {
                 Text("Delete '\(portfolio.name)' and all its holdings?")
             }
             .onAppear {
-                // Auto-select if only one portfolio and none selected
                 if portfolios.count == 1, settings.lastActivePortfolioID.isEmpty {
                     settings.lastActivePortfolioID = portfolios[0].id.uuidString
                 }
+                guard !cardsAppeared else { return }
+                cardsAppeared = true
             }
             .task { await stockRefresh.refreshStaleStocks() }
         }
@@ -124,50 +155,103 @@ private struct PortfolioCardView: View {
 
     private var tint: Color { settings.fontTheme.color ?? Color.accentColor }
 
+    private var topHoldings: [Holding] {
+        portfolio.holdings
+            .sorted { $0.currentValue > $1.currentValue }
+            .prefix(3)
+            .map { $0 }
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Header row
-            HStack {
-                Text(portfolio.name)
-                    .textStyle(.cardTitle)
-                    .foregroundStyle(.primary)
-                if isActive {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.caption)
+        HStack(spacing: 0) {
+            // Left accent bar for active portfolio
+            if isActive {
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .fill(tint)
+                    .frame(width: 4)
+                    .padding(.vertical, 8)
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                // Header row
+                HStack {
+                    Text(portfolio.name)
+                        .textStyle(.cardTitle)
+                        .foregroundStyle(.primary)
+                    if isActive {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.caption)
+                            .foregroundStyle(tint)
+                    }
+                    Spacer()
+                    Text("\(portfolio.holdings.count) holdings")
+                        .font(.caption2.weight(.medium))
                         .foregroundStyle(tint)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule()
+                                .fill(tint.opacity(0.12))
+                        )
                 }
-                Spacer()
-            }
 
-            Divider()
+                Rectangle()
+                    .fill(.quaternary)
+                    .frame(height: 0.5)
 
-            // Metrics row
-            HStack(spacing: 0) {
-                MetricCell(
-                    label: "Market Value",
-                    value: portfolio.totalMarketValue > 0
-                        ? portfolio.totalMarketValue.formatted(.currency(code: portfolio.currency))
-                        : "—"
-                )
-                Spacer()
-                MetricCell(
-                    label: "Monthly Income",
-                    value: portfolio.projectedMonthlyIncome > 0
-                        ? portfolio.projectedMonthlyIncome.formatted(.currency(code: portfolio.currency))
-                        : "—"
-                )
-                Spacer()
-                PerformanceCell(portfolio: portfolio)
+                // Metrics grid — 2x2
+                HStack(spacing: 0) {
+                    MetricCell(
+                        label: "Market Value",
+                        value: portfolio.totalMarketValue > 0
+                            ? portfolio.totalMarketValue.formatted(.currency(code: portfolio.currency))
+                            : "—"
+                    )
+                    Spacer()
+                    MetricCell(
+                        label: "Monthly Income",
+                        value: portfolio.projectedMonthlyIncome > 0
+                            ? portfolio.projectedMonthlyIncome.formatted(.currency(code: portfolio.currency))
+                            : "—"
+                    )
+                    Spacer()
+                    MetricCell(
+                        label: "Annual Income",
+                        value: portfolio.projectedAnnualIncome > 0
+                            ? portfolio.projectedAnnualIncome.formatted(.currency(code: portfolio.currency))
+                            : "—"
+                    )
+                    Spacer()
+                    PerformanceCell(portfolio: portfolio)
+                }
+
+                // Top 3 ticker chips
+                if !topHoldings.isEmpty {
+                    HStack(spacing: 6) {
+                        ForEach(topHoldings) { holding in
+                            if let ticker = holding.stock?.ticker {
+                                Text(ticker)
+                                    .font(.caption2.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(
+                                        Capsule()
+                                            .fill(Color(.tertiarySystemFill))
+                                    )
+                            }
+                        }
+                        if portfolio.holdings.count > 3 {
+                            Text("+\(portfolio.holdings.count - 3)")
+                                .font(.caption2.weight(.medium))
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                }
             }
+            .padding(isActive ? .init(top: 16, leading: 12, bottom: 16, trailing: 16) : .init(top: 16, leading: 16, bottom: 16, trailing: 16))
         }
-        .padding()
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(tint, lineWidth: 2)
-                .opacity(isActive ? 1 : 0)
-        )
+        .glassCard()
         .accessibilityElement(children: .combine)
     }
 }
@@ -179,9 +263,10 @@ private struct MetricCell: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .textStyle(.rowDetail)
+                .textStyle(.statLabel)
             Text(value)
-                .font(.subheadline.bold())
+                .textStyle(.statValue)
+                .monospacedDigit()
                 .foregroundStyle(.primary)
         }
     }
@@ -202,14 +287,15 @@ private struct PerformanceCell: View {
     var body: some View {
         VStack(alignment: .trailing, spacing: 2) {
             Text("Gain / Loss")
-                .textStyle(.rowDetail)
+                .textStyle(.statLabel)
             if let pct = gainPercent {
                 Text(percentString(pct))
-                    .font(.subheadline.bold())
+                    .textStyle(.statValue)
+                    .monospacedDigit()
                     .foregroundStyle(color)
             } else {
                 Text("—")
-                    .font(.subheadline.bold())
+                    .textStyle(.statValue)
                     .foregroundStyle(.secondary)
             }
         }
@@ -268,9 +354,10 @@ struct PortfolioHoldingsView: View {
                                     )
                                 }
                             } label: {
-                                PortfolioHoldingRowView(holding: holding) {
-                                    holdingForFutureValue = holding
-                                }
+                                PortfolioHoldingRowView(
+                                    holding: holding,
+                                    currency: portfolio.currency
+                                )
                             }
                                 .contextMenu {
                                     Button {
@@ -297,6 +384,12 @@ struct PortfolioHoldingsView: View {
                                         Label("Edit", systemImage: "pencil")
                                     }
                                     .tint(.blue)
+                                    Button {
+                                        holdingForFutureValue = holding
+                                    } label: {
+                                        Label("Future Value", systemImage: "chart.line.uptrend.xyaxis")
+                                    }
+                                    .tint(.purple)
                                 }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button(role: .destructive) {
@@ -360,7 +453,7 @@ struct PortfolioHoldingsView: View {
 
 private struct PortfolioHoldingRowView: View {
     let holding: Holding
-    var onShowGrowth: () -> Void
+    var currency: String = "USD"
     @Environment(\.massiveService) private var massive
 
     private var ticker: String { holding.stock?.ticker ?? "—" }
@@ -382,21 +475,45 @@ private struct PortfolioHoldingRowView: View {
                 size: 36
             )
             VStack(alignment: .leading, spacing: 2) {
-                Text(ticker).textStyle(.tickerSymbol)
+                HStack(spacing: 6) {
+                    Text(ticker).textStyle(.tickerSymbol)
+                    // Yield-on-cost badge
+                    if holding.yieldOnCost > 0 {
+                        Text(String(format: "%.2f%% YoC", (holding.yieldOnCost as NSDecimalNumber).doubleValue))
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(.orange)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
+                            .background(
+                                Capsule()
+                                    .fill(Color.orange.opacity(0.12))
+                            )
+                    }
+                }
                 if !companyName.isEmpty {
                     Text(companyName).textStyle(.rowDetail).lineLimit(1)
                 }
-                Text("\(holding.shares.formatted()) shares")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                HStack(spacing: 6) {
+                    Text("\(holding.shares.formatted()) shares")
+                        .textStyle(.microLabel)
+                    if holding.projectedMonthlyIncome > 0 {
+                        Text(holding.projectedMonthlyIncome.formatted(.currency(code: currency)) + "/mo")
+                            .textStyle(.microLabel)
+                            .foregroundStyle(.green)
+                    }
+                }
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
                 if holding.currentValue > 0 {
-                    Text(holding.currentValue.formatted(.currency(code: holding.currency)))
-                        .font(.subheadline.bold())
+                    Text(holding.currentValue.formatted(.currency(code: currency)))
+                        .textStyle(.statValue)
+                        .monospacedDigit()
+                        .foregroundStyle(gainColor != .secondary ? gainColor : .primary)
                 } else {
-                    Text("—").font(.subheadline.bold()).foregroundStyle(.secondary)
+                    Text("—")
+                        .textStyle(.statValue)
+                        .foregroundStyle(.secondary)
                 }
                 if let pct = holding.unrealizedGainPercent {
                     let prefix = pct >= 0 ? "+" : ""
@@ -405,20 +522,12 @@ private struct PortfolioHoldingRowView: View {
                         .formatted(.number.precision(.fractionLength(2)))
                     Text("\(prefix)\(formatted)%")
                         .font(.caption)
+                        .monospacedDigit()
                         .foregroundStyle(gainColor)
                 } else {
                     Text("—").textStyle(.rowDetail)
                 }
             }
-            Button {
-                onShowGrowth()
-            } label: {
-                Image(systemName: "chart.line.uptrend.xyaxis")
-                    .font(.subheadline)
-                    .foregroundStyle(Color.accentColor)
-            }
-            .buttonStyle(.borderless)
-            .accessibilityLabel("Growth projection for \(ticker)")
         }
         .padding(.vertical, 2)
         .accessibilityElement(children: .combine)

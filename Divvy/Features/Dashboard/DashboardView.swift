@@ -77,11 +77,6 @@ struct DashboardView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 16) {
-                    if let error = stockRefresh.lastRefreshError {
-                        RefreshErrorBannerView(message: error) {
-                            stockRefresh.dismissRefreshError()
-                        }
-                    }
                     IncomeHeroView(
                         metrics: metrics,
                         isRefreshing: stockRefresh.isRefreshing
