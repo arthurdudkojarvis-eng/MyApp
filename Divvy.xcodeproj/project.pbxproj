@@ -10,6 +10,7 @@
 		A060001122334455667788AA /* AIReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = A060001122334455667788AB /* AIReport.swift */; };
 		A060001122334455667788CC /* AIReportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A060001122334455667788CD /* AIReportService.swift */; };
 		A060001122334455667788EE /* ResearchReportCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A060001122334455667788EF /* ResearchReportCard.swift */; };
+		A060001122334455667799AA /* ResearchReportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A060001122334455667799AB /* ResearchReportSheet.swift */; };
 		A060001122334455667788GG /* AIReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A060001122334455667788GH /* AIReportTests.swift */; };
 		A059001122334455667788AA /* AnalystTargetCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A059001122334455667788AB /* AnalystTargetCard.swift */; };
 		A059001122334455667788CC /* PriceTargetCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A059001122334455667788CD /* PriceTargetCache.swift */; };
@@ -128,6 +129,7 @@
 		A060001122334455667788AB /* AIReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReport.swift; sourceTree = "<group>"; };
 		A060001122334455667788CD /* AIReportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReportService.swift; sourceTree = "<group>"; };
 		A060001122334455667788EF /* ResearchReportCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResearchReportCard.swift; sourceTree = "<group>"; };
+		A060001122334455667799AB /* ResearchReportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResearchReportSheet.swift; sourceTree = "<group>"; };
 		A060001122334455667788GH /* AIReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReportTests.swift; sourceTree = "<group>"; };
 		A059001122334455667788AB /* AnalystTargetCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalystTargetCard.swift; sourceTree = "<group>"; };
 		A059001122334455667788CD /* PriceTargetCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceTargetCache.swift; sourceTree = "<group>"; };
@@ -335,6 +337,7 @@
 			children = (
 				A059001122334455667788AB /* AnalystTargetCard.swift */,
 				A060001122334455667788EF /* ResearchReportCard.swift */,
+				A060001122334455667799AB /* ResearchReportSheet.swift */,
 				R061001122334455667788CD /* RiskFactorsCard.swift */,
 				5A1B2C3D4E5F6A7B8C9D0E20 /* SignalScreenerContentView.swift */,
 				5A1B2C3D4E5F6A7B8C9D0E10 /* SignalScreenerViewModel.swift */,
@@ -792,6 +795,7 @@
 				A060001122334455667788AA /* AIReport.swift in Sources */,
 				A060001122334455667788CC /* AIReportService.swift in Sources */,
 				A060001122334455667788EE /* ResearchReportCard.swift in Sources */,
+				A060001122334455667799AA /* ResearchReportSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

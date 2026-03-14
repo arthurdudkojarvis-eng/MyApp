@@ -726,7 +726,18 @@ struct StockDetailView: View {
                     indicatorsSection
                     analystTargetSection
                     RiskFactorsCard(factors: riskFactors)
-                    ResearchReportCard(ticker: result.ticker)
+                    ResearchReportCard(
+                        ticker: result.ticker,
+                        companyName: details?.name ?? result.name,
+                        marketCap: details?.marketCap,
+                        revenue: latestFinancial?.revenues,
+                        eps: latestFinancial?.dilutedEarningsPerShare,
+                        currentPrice: currentPrice,
+                        dividendYield: dividendYield,
+                        payoutRatio: payoutRatio,
+                        priceTarget: priceTarget,
+                        riskFactors: riskFactors
+                    )
                     if !relatedTickers.isEmpty {
                         relatedCompaniesSection
                     }

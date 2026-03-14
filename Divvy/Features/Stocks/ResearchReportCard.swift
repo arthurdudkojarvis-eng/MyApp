@@ -2,12 +2,23 @@ import SwiftUI
 
 struct ResearchReportCard: View {
     let ticker: String
+    var companyName: String = ""
+    var marketCap: Decimal?
+    var revenue: Decimal?
+    var eps: Decimal?
+    var currentPrice: Decimal?
+    var dividendYield: Decimal?
+    var payoutRatio: Decimal?
+    var priceTarget: FinnhubPriceTarget?
+    var riskFactors: [RiskFactor] = []
+
     @Environment(\.cacheStore) private var cacheStore
     @State private var report: AIReport?
     @State private var isLoading = false
     @State private var loadError = false
     @State private var bullExpanded = true
     @State private var bearExpanded = true
+    @State private var sheetData: ResearchReportData?
 
     private let service = AIReportService()
 
@@ -30,7 +41,33 @@ struct ResearchReportCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Research Report").textStyle(.sectionTitle)
+            HStack {
+                Text("Research Report").textStyle(.sectionTitle)
+                Spacer()
+                if let report {
+                    Button {
+                        sheetData = ResearchReportData(
+                            ticker: ticker,
+                            companyName: companyName,
+                            generatedAt: report.generatedAt,
+                            marketCap: marketCap,
+                            revenue: revenue,
+                            eps: eps,
+                            currentPrice: currentPrice,
+                            dividendYield: dividendYield,
+                            payoutRatio: payoutRatio,
+                            priceTarget: priceTarget,
+                            bullPoints: report.bullPoints,
+                            bearPoints: report.bearPoints,
+                            riskFactors: riskFactors
+                        )
+                    } label: {
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+            }
 
             if isLoading {
                 HStack {
@@ -105,6 +142,9 @@ struct ResearchReportCard: View {
         .padding()
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .sheet(item: $sheetData) { data in
+            ResearchReportSheet(data: data)
+        }
         .task(id: ticker) { await loadReport() }
     }
 
