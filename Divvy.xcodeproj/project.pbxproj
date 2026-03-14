@@ -20,6 +20,7 @@
 		1ED58B5C130C37C017765788 /* MassiveService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC36DA4D1479658B4AC9D33 /* MassiveService.swift */; };
 		1E5B9C3D7A4F2E8B6D0C1A9F /* CryptoBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F2A3C71D6E4B9A0F5C8D2E /* CryptoBrowserView.swift */; };
 		1F3A7B2C4E8D9A1F5B6C0D3E /* ETFBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E4F1B83C2D5A9E6F0B8D1C /* ETFBrowserView.swift */; };
+		9BBA3B2AE97485486195B05C /* AdvisorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF9A6A52DAA51459DB6BC87 /* AdvisorView.swift */; };
 		2219A3D66CC6A7AE4E870849 /* EditHoldingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8600F9CD4E0ECCF8DA305D42 /* EditHoldingView.swift */; };
 		2811D99258A809FCFBD5EBDB /* OnboardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B301CF32A5E5ECBF36F3E32 /* OnboardingTests.swift */; };
 		2B2F7F5FE6554DC6CBC1D8B0 /* StockBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBF85C275AC60329CD30EE9A /* StockBrowserView.swift */; };
@@ -91,6 +92,13 @@
 		F7F85D35EEA3D82A01CC3E83 /* ConcentrationRiskCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534D8F255F5EBC3D58670BD3 /* ConcentrationRiskCard.swift */; };
 		78E6D2DCF1936E4EB105EC1E /* DividendGrowthCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 913C66B1FE79AD4CCC9213B9 /* DividendGrowthCard.swift */; };
 		D4D2010CA69E4660E4E21812 /* HealthScoreCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B125BF53CB7E2709A2412172 /* HealthScoreCard.swift */; };
+		FB0156A1B2C3D4E5F6A7B001 /* FinnhubModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0156A1B2C3D4E5F6A7B001 /* FinnhubModels.swift */; };
+		FB0156A1B2C3D4E5F6A7B002 /* FinnhubService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0156A1B2C3D4E5F6A7B002 /* FinnhubService.swift */; };
+		FB0156A1B2C3D4E5F6A7B003 /* FinnhubEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0156A1B2C3D4E5F6A7B003 /* FinnhubEnvironment.swift */; };
+		FB0156A1B2C3D4E5F6A7B004 /* FinnhubRateLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0156A1B2C3D4E5F6A7B004 /* FinnhubRateLimiter.swift */; };
+		FB0156A1B2C3D4E5F6A7B005 /* FinnhubServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA0156A1B2C3D4E5F6A7B005 /* FinnhubServiceTests.swift */; };
+		S1G001122334455667788990A /* SignalScoreCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = S1G001122334455667788990B /* SignalScoreCalculator.swift */; };
+		S1G001122334455667788990C /* SignalScoreCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = S1G001122334455667788990D /* SignalScoreCalculatorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -148,6 +156,7 @@
 		84A74ED20A31232F6646A2A6 /* TaxSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxSummaryView.swift; sourceTree = "<group>"; };
 		8600F9CD4E0ECCF8DA305D42 /* EditHoldingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditHoldingView.swift; sourceTree = "<group>"; };
 		A7E4F1B83C2D5A9E6F0B8D1C /* ETFBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETFBrowserView.swift; sourceTree = "<group>"; };
+		9AF9A6A52DAA51459DB6BC87 /* AdvisorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvisorView.swift; sourceTree = "<group>"; };
 		B8F2A3C71D6E4B9A0F5C8D2E /* CryptoBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoBrowserView.swift; sourceTree = "<group>"; };
 		8675B04AE3DD90FFEDA27D5C /* LogPaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPaymentView.swift; sourceTree = "<group>"; };
 		87482738929F14A98BDD0FFE /* DividendCalendarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendCalendarTests.swift; sourceTree = "<group>"; };
@@ -191,6 +200,13 @@
 		534D8F255F5EBC3D58670BD3 /* ConcentrationRiskCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentrationRiskCard.swift; sourceTree = "<group>"; };
 		913C66B1FE79AD4CCC9213B9 /* DividendGrowthCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendGrowthCard.swift; sourceTree = "<group>"; };
 		B125BF53CB7E2709A2412172 /* HealthScoreCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthScoreCard.swift; sourceTree = "<group>"; };
+		FA0156A1B2C3D4E5F6A7B001 /* FinnhubModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinnhubModels.swift; sourceTree = "<group>"; };
+		FA0156A1B2C3D4E5F6A7B002 /* FinnhubService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinnhubService.swift; sourceTree = "<group>"; };
+		FA0156A1B2C3D4E5F6A7B003 /* FinnhubEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinnhubEnvironment.swift; sourceTree = "<group>"; };
+		FA0156A1B2C3D4E5F6A7B004 /* FinnhubRateLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinnhubRateLimiter.swift; sourceTree = "<group>"; };
+		FA0156A1B2C3D4E5F6A7B005 /* FinnhubServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinnhubServiceTests.swift; sourceTree = "<group>"; };
+		S1G001122334455667788990B /* SignalScoreCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalScoreCalculator.swift; sourceTree = "<group>"; };
+		S1G001122334455667788990D /* SignalScoreCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignalScoreCalculatorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -222,6 +238,17 @@
 				43AC62307FC0866810DDF20F /* DivvyApp.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		FC0156A1B2C3D4E5F6A7B001 /* Finnhub */ = {
+			isa = PBXGroup;
+			children = (
+				FA0156A1B2C3D4E5F6A7B003 /* FinnhubEnvironment.swift */,
+				FA0156A1B2C3D4E5F6A7B001 /* FinnhubModels.swift */,
+				FA0156A1B2C3D4E5F6A7B004 /* FinnhubRateLimiter.swift */,
+				FA0156A1B2C3D4E5F6A7B002 /* FinnhubService.swift */,
+			);
+			path = Finnhub;
 			sourceTree = "<group>";
 		};
 		3BEC3D0DA694EF5C0E131D34 /* Massive */ = {
@@ -261,6 +288,14 @@
 			path = ETFs;
 			sourceTree = "<group>";
 		};
+		9CD0E0D8620EC049A0903198 /* Advisor */ = {
+			isa = PBXGroup;
+			children = (
+				9AF9A6A52DAA51459DB6BC87 /* AdvisorView.swift */,
+			);
+			path = Advisor;
+			sourceTree = "<group>";
+		};
 		5C6AF1D56DD305A8A6443E15 /* Stocks */ = {
 			isa = PBXGroup;
 			children = (
@@ -287,6 +322,7 @@
 				3A1D5F8E2C7B4A6D9E0F3B5C /* Crypto */,
 				B87D0602EFCA0EE0BFD1C9A7 /* Dashboard */,
 				4D2E8A1F7B3C6D5E9A0F1B2C /* ETFs */,
+				9CD0E0D8620EC049A0903198 /* Advisor */,
 				6A8A1C3CDBBB7E6D8BB63F79 /* Holdings */,
 				6AD0BC9E2D66D93D0ABC0BD1 /* News */,
 				3DE49B8AEA0A9B5C1C851A08 /* Onboarding */,
@@ -406,12 +442,14 @@
 				10DAE0AC3A6D2BC5044E3789 /* DashboardMetricsTests.swift */,
 				87482738929F14A98BDD0FFE /* DividendCalendarTests.swift */,
 				14C8CC0191B4D2B353C92812 /* EditHoldingTests.swift */,
+				FA0156A1B2C3D4E5F6A7B005 /* FinnhubServiceTests.swift */,
 				3E3B95BDB50172AB02EE93A3 /* HoldingPerformanceTests.swift */,
 				F7030F6F406B0EE940606980 /* KeychainServiceTests.swift */,
 				C9AF13E5B9F14E0CDA9E3FC3 /* LogPaymentTests.swift */,
 				4B301CF32A5E5ECBF36F3E32 /* OnboardingTests.swift */,
 				70AD67C8B61F19099B90170A /* SchemaTests.swift */,
 				2332EC481425613D04D5FF2A /* SettingsStoreTests.swift */,
+				S1G001122334455667788990D /* SignalScoreCalculatorTests.swift */,
 				E7F8A9B0C1D2E3F4A5B6C7D8 /* StockBrowserFilterTests.swift */,
 				D4DD5B2B7954B51F161C848C /* StockRefreshServiceTests.swift */,
 			);
@@ -475,6 +513,8 @@
 				0E027B60436A61420ED999E3 /* AppColorScheme+SwiftUI.swift */,
 				41C018CC84BEF94F929B042E /* KeychainService.swift */,
 				39954C69C6016976D6D8707B /* SettingsStore.swift */,
+				S1G001122334455667788990B /* SignalScoreCalculator.swift */,
+				FC0156A1B2C3D4E5F6A7B001 /* Finnhub */,
 				3BEC3D0DA694EF5C0E131D34 /* Massive */,
 			);
 			path = Services;
@@ -608,6 +648,8 @@
 				F2698E6ACFD1D5447D656A7D /* SettingsStoreTests.swift in Sources */,
 				EC1F022BB2214D988676FC34 /* StockRefreshServiceTests.swift in Sources */,
 				C3D4E5F6A7B8C9D0E1F2A3B4 /* StockBrowserFilterTests.swift in Sources */,
+				FB0156A1B2C3D4E5F6A7B005 /* FinnhubServiceTests.swift in Sources */,
+				S1G001122334455667788990C /* SignalScoreCalculatorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -633,6 +675,7 @@
 				1E5B9C3D7A4F2E8B6D0C1A9F /* CryptoBrowserView.swift in Sources */,
 				2219A3D66CC6A7AE4E870849 /* EditHoldingView.swift in Sources */,
 				1F3A7B2C4E8D9A1F5B6C0D3E /* ETFBrowserView.swift in Sources */,
+				9BBA3B2AE97485486195B05C /* AdvisorView.swift in Sources */,
 				7DA91C0CF5A7B072841A77D8 /* Holding.swift in Sources */,
 				C738D64E338EA2ABBDCAFEF2 /* HoldingDetailView.swift in Sources */,
 				AA0C63AE826F5086197D0657 /* HoldingsView.swift in Sources */,
@@ -684,6 +727,11 @@
 				F7F85D35EEA3D82A01CC3E83 /* ConcentrationRiskCard.swift in Sources */,
 				78E6D2DCF1936E4EB105EC1E /* DividendGrowthCard.swift in Sources */,
 				D4D2010CA69E4660E4E21812 /* HealthScoreCard.swift in Sources */,
+				FB0156A1B2C3D4E5F6A7B001 /* FinnhubModels.swift in Sources */,
+				FB0156A1B2C3D4E5F6A7B002 /* FinnhubService.swift in Sources */,
+				FB0156A1B2C3D4E5F6A7B003 /* FinnhubEnvironment.swift in Sources */,
+				FB0156A1B2C3D4E5F6A7B004 /* FinnhubRateLimiter.swift in Sources */,
+				S1G001122334455667788990A /* SignalScoreCalculator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

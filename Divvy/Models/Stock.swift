@@ -10,6 +10,8 @@ final class Stock {
     var currency: String        // ISO 4217 — ready for multi-currency
     var lastUpdated: Date
     var externalId: String?     // broker/data-provider ID — required for future sync
+    var signalScore: Int?
+    var signalScoreUpdatedAt: Date?
 
     @Relationship(deleteRule: .cascade, inverse: \DividendSchedule.stock)
     var dividendSchedules: [DividendSchedule] = []
