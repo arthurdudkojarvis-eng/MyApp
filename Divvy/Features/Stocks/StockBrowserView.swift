@@ -502,6 +502,8 @@ struct StockDetailView: View {
     @State private var relatedTickers: [String] = []
     @State private var splits: [MassiveSplit] = []
     @State private var indicators: IndicatorData = .empty
+    @State private var priceTarget: FinnhubPriceTarget?
+    @Environment(\.finnhubService) private var finnhub
     @State private var isLoading = true
     @State private var loadError: String?
     @State private var showDescription = false
@@ -614,6 +616,7 @@ struct StockDetailView: View {
                     priceChartSection
                     criteriaGrid
                     indicatorsSection
+                    analystTargetSection
                     if !relatedTickers.isEmpty {
                         relatedCompaniesSection
                     }
@@ -873,6 +876,15 @@ struct StockDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    // MARK: - Analyst Targets (STORY-059)
+
+    @ViewBuilder
+    private var analystTargetSection: some View {
+        if let target = priceTarget, let price = currentPrice, target.targetMean > 0 {
+            AnalystTargetCard(target: target, currentPrice: price)
+        }
+    }
+
     // MARK: - Related Companies (STORY-030)
 
     private var relatedCompaniesSection: some View {
@@ -1054,9 +1066,12 @@ struct StockDetailView: View {
         async let indicatorsTask: IndicatorData = {
             await loadIndicators(api: api, ticker: ticker)
         }()
+        async let priceTargetTask: FinnhubPriceTarget? = {
+            await loadPriceTarget(ticker: ticker)
+        }()
 
-        (dividends, latestFinancial, splits, relatedTickers, indicators) =
-            await (dividendsTask, financialsTask, splitsTask, relatedTask, indicatorsTask)
+        (dividends, latestFinancial, splits, relatedTickers, indicators, priceTarget) =
+            await (dividendsTask, financialsTask, splitsTask, relatedTask, indicatorsTask, priceTargetTask)
 
         // Load initial price chart
         await loadPriceChart()
@@ -1101,6 +1116,67 @@ struct StockDetailView: View {
             predicate: #Predicate<Stock> { $0.ticker == ticker }
         )
         existingStock = try? modelContext.fetch(descriptor).first
+    }
+
+    // MARK: - Price Target Cache (STORY-059)
+
+    private static let lastUpdatedParser: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(identifier: "UTC")
+        return f
+    }()
+
+    private func loadPriceTarget(ticker: String) async -> FinnhubPriceTarget? {
+        // Check SwiftData cache first (normalise to uppercase to match stored keys)
+        let t = ticker.uppercased()
+        let descriptor = FetchDescriptor<PriceTargetCache>(
+            predicate: #Predicate<PriceTargetCache> { $0.ticker == t }
+        )
+        if let cached = try? modelContext.fetch(descriptor).first, !cached.isExpired {
+            return FinnhubPriceTarget(
+                targetHigh: cached.targetHigh,
+                targetLow: cached.targetLow,
+                targetMean: cached.targetMean,
+                targetMedian: cached.targetMedian,
+                lastUpdated: Self.lastUpdatedParser.string(from: cached.lastUpdated)
+            )
+        }
+        do {
+            let target = try await finnhub.service.fetchPriceTarget(ticker: ticker)
+            savePriceTargetCache(ticker: ticker, target: target)
+            return target
+        } catch {
+            detailLogger.warning("Price target fetch failed: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    private func savePriceTargetCache(ticker: String, target: FinnhubPriceTarget) {
+        let lastUpdated = Self.lastUpdatedParser.date(from: target.lastUpdated) ?? .now
+        let t = ticker.uppercased()
+        let descriptor = FetchDescriptor<PriceTargetCache>(
+            predicate: #Predicate<PriceTargetCache> { $0.ticker == t }
+        )
+        if let existing = try? modelContext.fetch(descriptor).first {
+            existing.targetHigh = target.targetHigh
+            existing.targetLow = target.targetLow
+            existing.targetMean = target.targetMean
+            existing.targetMedian = target.targetMedian
+            existing.lastUpdated = lastUpdated
+            existing.fetchedAt = .now
+        } else {
+            let cache = PriceTargetCache(
+                ticker: ticker,
+                targetHigh: target.targetHigh,
+                targetLow: target.targetLow,
+                targetMean: target.targetMean,
+                targetMedian: target.targetMedian,
+                lastUpdated: lastUpdated
+            )
+            modelContext.insert(cache)
+        }
     }
 
     // MARK: - Helpers

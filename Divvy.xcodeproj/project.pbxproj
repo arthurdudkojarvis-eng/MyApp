@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A059001122334455667788AA /* AnalystTargetCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A059001122334455667788AB /* AnalystTargetCard.swift */; };
+		A059001122334455667788CC /* PriceTargetCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A059001122334455667788CD /* PriceTargetCache.swift */; };
 		02BAE726E22BFFEDC7EF0414 /* AddPortfolioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */; };
 		05C95DE266286E5F2EFFF206 /* AppColorScheme+SwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E027B60436A61420ED999E3 /* AppColorScheme+SwiftUI.swift */; };
 		0673AA4E6EB71D63D290E8FE /* DRIPSimulatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 278F70129F8930EDBEC972D3 /* DRIPSimulatorView.swift */; };
@@ -112,6 +114,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A059001122334455667788AB /* AnalystTargetCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalystTargetCard.swift; sourceTree = "<group>"; };
+		A059001122334455667788CD /* PriceTargetCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceTargetCache.swift; sourceTree = "<group>"; };
 		01BD360246A6F91A42303E1A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		047526A7CB59A2CEC408D324 /* MassiveModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MassiveModels.swift; sourceTree = "<group>"; };
 		059E338DA8E0E4E6ADFF964C /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -299,6 +303,7 @@
 		5C6AF1D56DD305A8A6443E15 /* Stocks */ = {
 			isa = PBXGroup;
 			children = (
+				A059001122334455667788AB /* AnalystTargetCard.swift */,
 				CBF85C275AC60329CD30EE9A /* StockBrowserView.swift */,
 				SC001122334455667788990B /* StockScreenerView.swift */,
 				DD2233445566778899001122 /* StockTipsView.swift */,
@@ -537,7 +542,8 @@
 				CDB2A6E31CD31D98D7365571 /* Holding.swift */,
 				AF2A840CEFA0C7ED8794E479 /* Portfolio.swift */,
 				1337F25AFB67ACEE25AF311F /* Stock.swift */,
-				545032ABA0D6C2F77F79D93C /* WatchlistItem.swift */,
+				A059001122334455667788CD /* PriceTargetCache.swift */,
+			545032ABA0D6C2F77F79D93C /* WatchlistItem.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -732,6 +738,8 @@
 				FB0156A1B2C3D4E5F6A7B003 /* FinnhubEnvironment.swift in Sources */,
 				FB0156A1B2C3D4E5F6A7B004 /* FinnhubRateLimiter.swift in Sources */,
 				S1G001122334455667788990A /* SignalScoreCalculator.swift in Sources */,
+				A059001122334455667788AA /* AnalystTargetCard.swift in Sources */,
+				A059001122334455667788CC /* PriceTargetCache.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
