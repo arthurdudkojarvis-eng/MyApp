@@ -9,7 +9,8 @@ extension ModelContainer {
         DividendSchedule.self,
         DividendPayment.self,
         WatchlistItem.self,
-        PriceTargetCache.self
+        PriceTargetCache.self,
+        AIReport.self
     ])
 
     /// Persistent on-disk container used by the production app.

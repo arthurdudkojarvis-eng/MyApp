@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A060001122334455667788AA /* AIReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = A060001122334455667788AB /* AIReport.swift */; };
+		A060001122334455667788CC /* AIReportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A060001122334455667788CD /* AIReportService.swift */; };
+		A060001122334455667788EE /* ResearchReportCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A060001122334455667788EF /* ResearchReportCard.swift */; };
+		A060001122334455667788GG /* AIReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A060001122334455667788GH /* AIReportTests.swift */; };
 		A059001122334455667788AA /* AnalystTargetCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A059001122334455667788AB /* AnalystTargetCard.swift */; };
 		A059001122334455667788CC /* PriceTargetCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A059001122334455667788CD /* PriceTargetCache.swift */; };
 		02BAE726E22BFFEDC7EF0414 /* AddPortfolioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */; };
@@ -106,6 +110,8 @@
 		R061001122334455667788AA /* RiskRuleEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = R061001122334455667788AB /* RiskRuleEngine.swift */; };
 		R061001122334455667788CC /* RiskFactorsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = R061001122334455667788CD /* RiskFactorsCard.swift */; };
 		R061001122334455667788EE /* RiskRuleEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = R061001122334455667788EF /* RiskRuleEngineTests.swift */; };
+		C062001122334455667788AA /* CacheStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C062001122334455667788AB /* CacheStore.swift */; };
+		C062001122334455667788CC /* CacheStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C062001122334455667788CD /* CacheStoreTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -119,11 +125,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A060001122334455667788AB /* AIReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReport.swift; sourceTree = "<group>"; };
+		A060001122334455667788CD /* AIReportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReportService.swift; sourceTree = "<group>"; };
+		A060001122334455667788EF /* ResearchReportCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResearchReportCard.swift; sourceTree = "<group>"; };
+		A060001122334455667788GH /* AIReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIReportTests.swift; sourceTree = "<group>"; };
 		A059001122334455667788AB /* AnalystTargetCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalystTargetCard.swift; sourceTree = "<group>"; };
 		A059001122334455667788CD /* PriceTargetCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceTargetCache.swift; sourceTree = "<group>"; };
 		R061001122334455667788AB /* RiskRuleEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiskRuleEngine.swift; sourceTree = "<group>"; };
 		R061001122334455667788CD /* RiskFactorsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiskFactorsCard.swift; sourceTree = "<group>"; };
 		R061001122334455667788EF /* RiskRuleEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiskRuleEngineTests.swift; sourceTree = "<group>"; };
+		C062001122334455667788AB /* CacheStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStore.swift; sourceTree = "<group>"; };
+		C062001122334455667788CD /* CacheStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStoreTests.swift; sourceTree = "<group>"; };
 		01BD360246A6F91A42303E1A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		047526A7CB59A2CEC408D324 /* MassiveModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MassiveModels.swift; sourceTree = "<group>"; };
 		059E338DA8E0E4E6ADFF964C /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -254,6 +266,14 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		A060001122334455667788GR /* AIReport */ = {
+			isa = PBXGroup;
+			children = (
+				A060001122334455667788CD /* AIReportService.swift */,
+			);
+			path = AIReport;
+			sourceTree = "<group>";
+		};
 		FC0156A1B2C3D4E5F6A7B001 /* Finnhub */ = {
 			isa = PBXGroup;
 			children = (
@@ -314,6 +334,7 @@
 			isa = PBXGroup;
 			children = (
 				A059001122334455667788AB /* AnalystTargetCard.swift */,
+				A060001122334455667788EF /* ResearchReportCard.swift */,
 				R061001122334455667788CD /* RiskFactorsCard.swift */,
 				5A1B2C3D4E5F6A7B8C9D0E20 /* SignalScreenerContentView.swift */,
 				5A1B2C3D4E5F6A7B8C9D0E10 /* SignalScreenerViewModel.swift */,
@@ -455,7 +476,9 @@
 			isa = PBXGroup;
 			children = (
 				72B38DB100EF154D74149F3C /* AddHoldingTests.swift */,
+				A060001122334455667788GH /* AIReportTests.swift */,
 				8FD54720865592A1AEC28DBC /* AddPortfolioTests.swift */,
+				C062001122334455667788CD /* CacheStoreTests.swift */,
 				67CCEAC201176AF06A2EEE86 /* CoverageMeterTests.swift */,
 				10DAE0AC3A6D2BC5044E3789 /* DashboardMetricsTests.swift */,
 				87482738929F14A98BDD0FFE /* DividendCalendarTests.swift */,
@@ -530,10 +553,12 @@
 			isa = PBXGroup;
 			children = (
 				0E027B60436A61420ED999E3 /* AppColorScheme+SwiftUI.swift */,
+				C062001122334455667788AB /* CacheStore.swift */,
 				41C018CC84BEF94F929B042E /* KeychainService.swift */,
 				R061001122334455667788AB /* RiskRuleEngine.swift */,
 				39954C69C6016976D6D8707B /* SettingsStore.swift */,
 				S1G001122334455667788990B /* SignalScoreCalculator.swift */,
+				A060001122334455667788GR /* AIReport */,
 				FC0156A1B2C3D4E5F6A7B001 /* Finnhub */,
 				3BEC3D0DA694EF5C0E131D34 /* Massive */,
 			);
@@ -551,6 +576,7 @@
 		D275A7B4BC9B3268B9F6002D /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				A060001122334455667788AB /* AIReport.swift */,
 				0C74261CC2EEDEDF87E15DF9 /* DividendFrequency.swift */,
 				168A87450CDF38FF8E2931A6 /* DividendPayment.swift */,
 				76B968D0039281DB8983FA03 /* DividendSchedule.swift */,
@@ -655,8 +681,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A060001122334455667788GG /* AIReportTests.swift in Sources */,
 				B43D07CBDB44FDFC98364027 /* AddHoldingTests.swift in Sources */,
 				02BAE726E22BFFEDC7EF0414 /* AddPortfolioTests.swift in Sources */,
+				C062001122334455667788CC /* CacheStoreTests.swift in Sources */,
 				302708F25D08CD1BCE76FC2D /* CoverageMeterTests.swift in Sources */,
 				F0273F9FDBE894B9F8823926 /* DashboardMetricsTests.swift in Sources */,
 				BDFA051B3BB6B86108D01568 /* DividendCalendarTests.swift in Sources */,
@@ -758,8 +786,12 @@
 				S1G001122334455667788990A /* SignalScoreCalculator.swift in Sources */,
 				A059001122334455667788AA /* AnalystTargetCard.swift in Sources */,
 				A059001122334455667788CC /* PriceTargetCache.swift in Sources */,
+				C062001122334455667788AA /* CacheStore.swift in Sources */,
 				R061001122334455667788AA /* RiskRuleEngine.swift in Sources */,
 				R061001122334455667788CC /* RiskFactorsCard.swift in Sources */,
+				A060001122334455667788AA /* AIReport.swift in Sources */,
+				A060001122334455667788CC /* AIReportService.swift in Sources */,
+				A060001122334455667788EE /* ResearchReportCard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -726,6 +726,7 @@ struct StockDetailView: View {
                     indicatorsSection
                     analystTargetSection
                     RiskFactorsCard(factors: riskFactors)
+                    ResearchReportCard(ticker: result.ticker)
                     if !relatedTickers.isEmpty {
                         relatedCompaniesSection
                     }
