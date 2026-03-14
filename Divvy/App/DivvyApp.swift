@@ -30,6 +30,7 @@ struct DivvyApp: App {
                 }
         }
         .modelContainer(.app)
+        .environment(\.cacheStore, CacheStore(modelContext: ModelContainer.app.mainContext))
     }
 
     private func rescheduleWeeklyQuote() {

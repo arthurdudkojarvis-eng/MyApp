@@ -26,3 +26,7 @@ final class PriceTargetCache {
         Date.now.timeIntervalSince(fetchedAt) > 86400 // 24h TTL
     }
 }
+
+extension PriceTargetCache: Cacheable {
+    static let defaultTTL: TimeInterval = 86400 // 24 hours
+}
