@@ -33,6 +33,17 @@ enum MarketCapRange: String, CaseIterable, Identifiable {
     }
 }
 
+// MARK: - PopularCategory
+
+private struct PopularCategory: Identifiable {
+    let name: String
+    let icon: String
+    let color: Color
+    let subtitle: String
+    let stocks: [MassiveTickerSearchResult]
+    var id: String { name }
+}
+
 // MARK: - StockBrowserView
 
 struct StockBrowserView: View {
@@ -146,39 +157,166 @@ struct StockBrowserView: View {
         return vm
     }
 
-    // MARK: - Popular Stocks & ETFs
+    // MARK: - Popular Stocks by Category
 
-    private static let popularStocks: [MassiveTickerSearchResult] = [
-        MassiveTickerSearchResult(ticker: "AAPL", name: "Apple Inc.", market: "stocks", type: "CS", primaryExchange: "XNAS"),
-        MassiveTickerSearchResult(ticker: "MSFT", name: "Microsoft Corporation", market: "stocks", type: "CS", primaryExchange: "XNAS"),
-        MassiveTickerSearchResult(ticker: "JNJ", name: "Johnson & Johnson", market: "stocks", type: "CS", primaryExchange: "XNYS"),
-        MassiveTickerSearchResult(ticker: "KO", name: "The Coca-Cola Company", market: "stocks", type: "CS", primaryExchange: "XNYS"),
-        MassiveTickerSearchResult(ticker: "PG", name: "Procter & Gamble Company", market: "stocks", type: "CS", primaryExchange: "XNYS"),
-        MassiveTickerSearchResult(ticker: "O", name: "Realty Income Corporation", market: "stocks", type: "CS", primaryExchange: "XNYS"),
-        MassiveTickerSearchResult(ticker: "MCD", name: "McDonald's Corporation", market: "stocks", type: "CS", primaryExchange: "XNYS"),
-        MassiveTickerSearchResult(ticker: "PEP", name: "PepsiCo, Inc.", market: "stocks", type: "CS", primaryExchange: "XNAS"),
-        MassiveTickerSearchResult(ticker: "CVX", name: "Chevron Corporation", market: "stocks", type: "CS", primaryExchange: "XNYS"),
-        MassiveTickerSearchResult(ticker: "XOM", name: "Exxon Mobil Corporation", market: "stocks", type: "CS", primaryExchange: "XNYS"),
-        MassiveTickerSearchResult(ticker: "ABT", name: "Abbott Laboratories", market: "stocks", type: "CS", primaryExchange: "XNYS"),
-        MassiveTickerSearchResult(ticker: "WMT", name: "Walmart Inc.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
-        MassiveTickerSearchResult(ticker: "T", name: "AT&T Inc.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
-        MassiveTickerSearchResult(ticker: "VZ", name: "Verizon Communications Inc.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
-        MassiveTickerSearchResult(ticker: "MMM", name: "3M Company", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+    private static let popularCategories: [PopularCategory] = [
+        PopularCategory(
+            name: "Dividend Aristocrats",
+            icon: "crown.fill",
+            color: .purple,
+            subtitle: "25+ years of consecutive dividend increases",
+            stocks: [
+                MassiveTickerSearchResult(ticker: "KO", name: "The Coca-Cola Company", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+                MassiveTickerSearchResult(ticker: "PG", name: "Procter & Gamble Company", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+                MassiveTickerSearchResult(ticker: "PEP", name: "PepsiCo, Inc.", market: "stocks", type: "CS", primaryExchange: "XNAS"),
+                MassiveTickerSearchResult(ticker: "ABT", name: "Abbott Laboratories", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+                MassiveTickerSearchResult(ticker: "MCD", name: "McDonald's Corporation", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+            ]
+        ),
+        PopularCategory(
+            name: "Blue Chip Leaders",
+            icon: "building.columns.fill",
+            color: .blue,
+            subtitle: "Large-cap companies with strong fundamentals",
+            stocks: [
+                MassiveTickerSearchResult(ticker: "AAPL", name: "Apple Inc.", market: "stocks", type: "CS", primaryExchange: "XNAS"),
+                MassiveTickerSearchResult(ticker: "MSFT", name: "Microsoft Corporation", market: "stocks", type: "CS", primaryExchange: "XNAS"),
+                MassiveTickerSearchResult(ticker: "JNJ", name: "Johnson & Johnson", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+                MassiveTickerSearchResult(ticker: "WMT", name: "Walmart Inc.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+                MassiveTickerSearchResult(ticker: "MMM", name: "3M Company", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+            ]
+        ),
+        PopularCategory(
+            name: "Income Powerhouses",
+            icon: "flame.fill",
+            color: .orange,
+            subtitle: "High-yield stocks for steady income",
+            stocks: [
+                MassiveTickerSearchResult(ticker: "T", name: "AT&T Inc.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+                MassiveTickerSearchResult(ticker: "VZ", name: "Verizon Communications Inc.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+                MassiveTickerSearchResult(ticker: "O", name: "Realty Income Corporation", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+                MassiveTickerSearchResult(ticker: "CVX", name: "Chevron Corporation", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+                MassiveTickerSearchResult(ticker: "XOM", name: "Exxon Mobil Corporation", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+            ]
+        ),
     ]
 
+    // MARK: - Popular Stocks List
+
     private var popularStocksList: some View {
-        List {
-            Section("Popular Dividend Stocks") {
-                ForEach(Self.popularStocks) { result in
-                    NavigationLink {
-                        StockDetailView(result: result)
-                    } label: {
-                        StockSearchRowView(result: result)
-                    }
+        ScrollView {
+            VStack(spacing: 20) {
+                // Header
+                VStack(spacing: 6) {
+                    Image(systemName: "star.fill")
+                        .font(.title2)
+                        .foregroundStyle(.yellow)
+                    Text("Popular Dividend Stocks")
+                        .textStyle(.rowTitle)
+                    Text("Explore top picks by category")
+                        .textStyle(.rowDetail)
+                }
+                .padding(.top, 8)
+
+                // Category cards
+                ForEach(Self.popularCategories) { category in
+                    popularCategoryCard(category)
                 }
             }
+            .padding(.horizontal)
+            .padding(.bottom, 16)
         }
-        .listStyle(.plain)
+    }
+
+    // MARK: - Category Card
+
+    private func popularCategoryCard(_ category: PopularCategory) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Category header
+            HStack(spacing: 8) {
+                Image(systemName: category.icon)
+                    .foregroundStyle(category.color)
+                    .font(.title3)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(category.name)
+                        .textStyle(.rowTitle)
+                    Text(category.subtitle)
+                        .textStyle(.rowDetail)
+                }
+            }
+
+            // Stock rows
+            ForEach(category.stocks) { result in
+                NavigationLink {
+                    StockDetailView(result: result)
+                } label: {
+                    popularStockRow(result, accentColor: category.color)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding()
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.regularMaterial)
+                LinearGradient(
+                    colors: [category.color.opacity(0.08), .clear],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(color: .black.opacity(0.08), radius: 16, y: 6)
+        .shadow(color: .black.opacity(0.03), radius: 2, y: 1)
+    }
+
+    // MARK: - Popular Stock Row
+
+    private func popularStockRow(_ result: MassiveTickerSearchResult, accentColor: Color) -> some View {
+        HStack(spacing: 10) {
+            // Accent bar
+            RoundedRectangle(cornerRadius: 2)
+                .fill(accentColor)
+                .frame(width: 3, height: 40)
+
+            CompanyLogoView(
+                branding: nil,
+                ticker: result.ticker,
+                service: massive.service,
+                size: 40
+            )
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(result.ticker)
+                    .textStyle(.tickerSymbol)
+                if !result.name.isEmpty {
+                    Text(result.name)
+                        .textStyle(.rowDetail)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer()
+
+            // Explore pill
+            HStack(spacing: 3) {
+                Image(systemName: "arrow.right.circle.fill")
+                    .font(.system(size: 10))
+                Text("Explore")
+                    .font(.system(size: 10, weight: .semibold))
+            }
+            .foregroundStyle(accentColor)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                Capsule()
+                    .strokeBorder(accentColor.opacity(0.4), lineWidth: 1)
+            )
+        }
+        .padding(.vertical, 4)
     }
 
     // MARK: - Results List
