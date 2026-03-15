@@ -39,34 +39,65 @@ struct ResearchReportCard: View {
         return Date.now.timeIntervalSince(report.fetchedAt) > AIReport.defaultTTL
     }
 
+    private var verdict: Verdict? {
+        guard let report else { return nil }
+        let bullCount = report.bullPoints.count
+        let bearCount = report.bearPoints.count
+        guard bullCount + bearCount > 0 else { return nil }
+        let ratio = Double(bullCount) / Double(bullCount + bearCount)
+        if ratio >= 0.65 { return .buy }
+        if ratio <= 0.35 { return .sell }
+        return .hold
+    }
+
+    private enum Verdict {
+        case buy, hold, sell
+
+        var label: String {
+            switch self {
+            case .buy: "Bullish"
+            case .hold: "Mixed"
+            case .sell: "Bearish"
+            }
+        }
+
+        var color: Color {
+            switch self {
+            case .buy: .green
+            case .hold: .orange
+            case .sell: .red
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .buy: "arrow.up.right"
+            case .hold: "equal"
+            case .sell: "arrow.down.right"
+            }
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Research Report").textStyle(.sectionTitle)
-                Spacer()
-                if let report {
-                    Button {
-                        sheetData = ResearchReportData(
-                            ticker: ticker,
-                            companyName: companyName,
-                            generatedAt: report.generatedAt,
-                            marketCap: marketCap,
-                            revenue: revenue,
-                            eps: eps,
-                            currentPrice: currentPrice,
-                            dividendYield: dividendYield,
-                            payoutRatio: payoutRatio,
-                            priceTarget: priceTarget,
-                            bullPoints: report.bullPoints,
-                            bearPoints: report.bearPoints,
-                            riskFactors: riskFactors
-                        )
-                    } label: {
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
+                if let v = verdict {
+                    HStack(spacing: 4) {
+                        Image(systemName: v.icon)
+                            .font(.system(size: 9, weight: .bold))
+                        Text(v.label)
+                            .font(.system(size: 10, weight: .bold))
                     }
+                    .foregroundStyle(v.color)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(v.color.opacity(0.12))
+                    )
                 }
+                Spacer()
             }
 
             if isLoading {
@@ -116,26 +147,60 @@ struct ResearchReportCard: View {
                         .foregroundStyle(.red)
                 }
 
-                if isStale {
-                    VStack(spacing: 6) {
-                        Text("This report is \(Self.relativeFormatter.localizedString(for: report.generatedAt, relativeTo: .now)) old")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-
-                        Button {
-                            Task { await loadReport(forceRefresh: true) }
-                        } label: {
-                            Text("Refresh Report")
+                // Full Report button + timestamp
+                VStack(spacing: 8) {
+                    Button {
+                        sheetData = ResearchReportData(
+                            ticker: ticker,
+                            companyName: companyName,
+                            generatedAt: report.generatedAt,
+                            marketCap: marketCap,
+                            revenue: revenue,
+                            eps: eps,
+                            currentPrice: currentPrice,
+                            dividendYield: dividendYield,
+                            payoutRatio: payoutRatio,
+                            priceTarget: priceTarget,
+                            bullPoints: report.bullPoints,
+                            bearPoints: report.bearPoints,
+                            riskFactors: riskFactors
+                        )
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "doc.text.magnifyingglass")
+                                .font(.caption)
+                            Text("Full Report")
                                 .font(.caption.bold())
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
+                        .foregroundStyle(Color.accentColor)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(Color.accentColor.opacity(0.1))
+                        )
                     }
-                    .frame(maxWidth: .infinity)
-                } else {
-                    Text("Generated \(Self.relativeFormatter.localizedString(for: report.generatedAt, relativeTo: .now))")
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
+                    .buttonStyle(.plain)
+
+                    if isStale {
+                        HStack(spacing: 4) {
+                            Text("Report is \(Self.relativeFormatter.localizedString(for: report.generatedAt, relativeTo: .now)) old")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                            Button {
+                                Task { await loadReport(forceRefresh: true) }
+                            } label: {
+                                Text("Refresh")
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(Color.accentColor)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    } else {
+                        Text("Generated \(Self.relativeFormatter.localizedString(for: report.generatedAt, relativeTo: .now))")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
                 }
             }
         }

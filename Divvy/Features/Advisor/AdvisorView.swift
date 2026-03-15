@@ -1,6 +1,49 @@
 import SwiftUI
 import SwiftData
 
+// MARK: - Sector Opportunity Data
+
+private struct SectorOpportunity: Identifiable {
+    let sector: String
+    let tickers: [MassiveTickerSearchResult]
+    var id: String { sector }
+}
+
+private let sectorSuggestions: [String: [MassiveTickerSearchResult]] = [
+    "Utilities": [
+        MassiveTickerSearchResult(ticker: "NEE", name: "NextEra Energy", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "DUK", name: "Duke Energy", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "SO", name: "Southern Company", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+    ],
+    "Healthcare": [
+        MassiveTickerSearchResult(ticker: "ABBV", name: "AbbVie Inc.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "PFE", name: "Pfizer Inc.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "MRK", name: "Merck & Co.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+    ],
+    "Consumer Defensive": [
+        MassiveTickerSearchResult(ticker: "KO", name: "Coca-Cola Company", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "PG", name: "Procter & Gamble", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "CL", name: "Colgate-Palmolive", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+    ],
+    "Real Estate": [
+        MassiveTickerSearchResult(ticker: "O", name: "Realty Income Corp.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "AMT", name: "American Tower", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "SPG", name: "Simon Property Group", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+    ],
+    "Energy": [
+        MassiveTickerSearchResult(ticker: "XOM", name: "Exxon Mobil", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "CVX", name: "Chevron Corp.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "EPD", name: "Enterprise Products", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+    ],
+    "Financial Services": [
+        MassiveTickerSearchResult(ticker: "JPM", name: "JPMorgan Chase", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "BLK", name: "BlackRock Inc.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "TROW", name: "T. Rowe Price", market: "stocks", type: "CS", primaryExchange: "XNAS"),
+    ],
+]
+
+// MARK: - AdvisorView
+
 struct AdvisorView: View {
     @Query(sort: \Portfolio.createdAt) private var portfolios: [Portfolio]
     @Environment(\.massiveService) private var massive
@@ -10,7 +53,7 @@ struct AdvisorView: View {
     @State private var results: [MassiveTickerSearchResult] = []
     @State private var isSearching = false
     @State private var searchTask: Task<Void, Never>?
-    @State private var selectedResult: MassiveTickerSearchResult?
+    @State private var expandedSector: String?
 
     private var allHoldings: [Holding] { portfolios.flatMap(\.holdings) }
 
@@ -37,11 +80,16 @@ struct AdvisorView: View {
             .map { $0 }
     }
 
+    private var missingSectors: [String] {
+        let sectors = Set(allHoldings.compactMap { $0.stock?.sector }.filter { !$0.isEmpty })
+        return ["Utilities", "Healthcare", "Consumer Defensive", "Real Estate", "Energy", "Financial Services"]
+            .filter { !sectors.contains($0) }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Search bar
                     searchBar
 
                     if !query.isEmpty {
@@ -188,20 +236,24 @@ struct AdvisorView: View {
                 if !undervaluedPicks.isEmpty {
                     advisorSection(
                         title: "Buy the Dip",
-                        subtitle: "Holdings down >10% from your cost basis",
+                        subtitle: "Holdings down >10% — consider adding more",
                         icon: "arrow.down.right.circle.fill",
-                        iconColor: .red
+                        iconColor: .red,
+                        accentGradient: [.red.opacity(0.15), .clear]
                     ) {
                         ForEach(undervaluedPicks.prefix(5)) { holding in
                             if let stock = holding.stock {
-                                advisorRow(
+                                actionRow(
                                     ticker: stock.ticker,
                                     name: stock.companyName,
-                                    detail: percentLabel(holding.unrealizedGainPercent),
-                                    detailColor: .red,
+                                    metric: percentLabel(holding.unrealizedGainPercent),
+                                    metricColor: .red,
                                     badge: holding.yieldOnCost > 0
                                         ? String(format: "%.1f%% YoC", (holding.yieldOnCost as NSDecimalNumber).doubleValue)
                                         : nil,
+                                    action: "Add More",
+                                    actionIcon: "plus.circle.fill",
+                                    actionColor: .red,
                                     stock: stock
                                 )
                             }
@@ -213,20 +265,24 @@ struct AdvisorView: View {
                 if !highYieldPicks.isEmpty {
                     advisorSection(
                         title: "Top Yielders",
-                        subtitle: "Your highest yield-on-cost holdings",
+                        subtitle: "Your best income producers — double down",
                         icon: "flame.fill",
-                        iconColor: .orange
+                        iconColor: .orange,
+                        accentGradient: [.orange.opacity(0.15), .clear]
                     ) {
                         ForEach(highYieldPicks) { holding in
                             if let stock = holding.stock {
-                                advisorRow(
+                                actionRow(
                                     ticker: stock.ticker,
                                     name: stock.companyName,
-                                    detail: String(format: "%.2f%% YoC", (holding.yieldOnCost as NSDecimalNumber).doubleValue),
-                                    detailColor: .orange,
+                                    metric: String(format: "%.2f%% YoC", (holding.yieldOnCost as NSDecimalNumber).doubleValue),
+                                    metricColor: .orange,
                                     badge: holding.projectedMonthlyIncome > 0
                                         ? holding.projectedMonthlyIncome.formatted(.currency(code: holding.currency)) + "/mo"
                                         : nil,
+                                    action: "Review",
+                                    actionIcon: "chart.line.uptrend.xyaxis",
+                                    actionColor: .orange,
                                     stock: stock
                                 )
                             }
@@ -234,52 +290,147 @@ struct AdvisorView: View {
                     }
                 }
 
-                // Portfolio gaps
-                portfolioGapsSection
+                // Missing sectors — tappable chips
+                if !missingSectors.isEmpty {
+                    portfolioGapsSection
+                }
+
+                // Discovery — dividend opportunities in missing sectors
+                if !missingSectors.isEmpty {
+                    dividendOpportunitiesSection
+                }
             }
         }
     }
 
-    // MARK: - Portfolio Gaps
+    // MARK: - Portfolio Gaps (Tappable Chips)
 
     private var portfolioGapsSection: some View {
-        let sectors = Set(allHoldings.compactMap { $0.stock?.sector }.filter { !$0.isEmpty })
-        let missingSectors = ["Utilities", "Healthcare", "Consumer Defensive", "Real Estate", "Energy", "Financial Services"]
-            .filter { !sectors.contains($0) }
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "puzzle.piece.fill")
+                    .foregroundStyle(.blue)
+                    .font(.title3)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Missing Sectors")
+                        .textStyle(.rowTitle)
+                    Text("Tap a sector to explore dividend stocks")
+                        .textStyle(.rowDetail)
+                }
+            }
+
+            FlowLayout(spacing: 8) {
+                ForEach(missingSectors, id: \.self) { sector in
+                    Button {
+                        withAnimation(.spring(response: 0.3)) {
+                            expandedSector = expandedSector == sector ? nil : sector
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(sector)
+                                .font(.caption.weight(.medium))
+                            Image(systemName: expandedSector == sector ? "chevron.up" : "chevron.right")
+                                .font(.system(size: 8, weight: .bold))
+                        }
+                        .foregroundStyle(expandedSector == sector ? .white : .blue)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule()
+                                .fill(expandedSector == sector ? Color.blue : Color.blue.opacity(0.12))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            // Inline expansion showing stocks for selected sector
+            if let sector = expandedSector, let suggestions = sectorSuggestions[sector] {
+                VStack(spacing: 6) {
+                    ForEach(suggestions) { result in
+                        NavigationLink {
+                            StockDetailView(result: result)
+                        } label: {
+                            sectorSuggestionRow(result: result)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.top, 4)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(.regularMaterial)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(color: .black.opacity(0.08), radius: 16, y: 6)
+        .shadow(color: .black.opacity(0.03), radius: 2, y: 1)
+    }
+
+    // MARK: - Dividend Opportunities Discovery
+
+    private var dividendOpportunitiesSection: some View {
+        let opportunities = missingSectors.prefix(3).compactMap { sector -> SectorOpportunity? in
+            guard let tickers = sectorSuggestions[sector] else { return nil }
+            // Filter out stocks user already owns
+            let filtered = tickers.filter { !ownedTickers.contains($0.ticker) }
+            guard !filtered.isEmpty else { return nil }
+            return SectorOpportunity(sector: sector, tickers: Array(filtered.prefix(2)))
+        }
 
         return Group {
-            if !missingSectors.isEmpty {
+            if !opportunities.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(spacing: 8) {
-                        Image(systemName: "puzzle.piece.fill")
-                            .foregroundStyle(.blue)
+                        Image(systemName: "sparkles")
+                            .foregroundStyle(.purple)
                             .font(.title3)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Missing Sectors")
+                            Text("Dividend Opportunities")
                                 .textStyle(.rowTitle)
-                            Text("Consider diversifying into these sectors")
+                            Text("Top picks for your missing sectors")
                                 .textStyle(.rowDetail)
                         }
                     }
 
-                    FlowLayout(spacing: 8) {
-                        ForEach(missingSectors, id: \.self) { sector in
-                            Text(sector)
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(.blue)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
+                    ForEach(opportunities) { opp in
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(opp.sector.uppercased())
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(.purple)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
                                 .background(
                                     Capsule()
-                                        .fill(Color.blue.opacity(0.12))
+                                        .fill(Color.purple.opacity(0.12))
                                 )
+
+                            ForEach(opp.tickers) { result in
+                                NavigationLink {
+                                    StockDetailView(result: result)
+                                } label: {
+                                    discoveryRow(result: result)
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
                     }
                 }
                 .padding()
                 .background(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .fill(.regularMaterial)
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .fill(.regularMaterial)
+                        LinearGradient(
+                            colors: [.purple.opacity(0.08), .clear],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    }
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                 .shadow(color: .black.opacity(0.08), radius: 16, y: 6)
@@ -288,13 +439,153 @@ struct AdvisorView: View {
         }
     }
 
-    // MARK: - Helpers
+    // MARK: - Unique Advisor Rows
+
+    private func actionRow(
+        ticker: String,
+        name: String,
+        metric: String,
+        metricColor: Color,
+        badge: String?,
+        action: String,
+        actionIcon: String,
+        actionColor: Color,
+        stock: Stock
+    ) -> some View {
+        NavigationLink {
+            StockDetailView(result: MassiveTickerSearchResult(
+                ticker: stock.ticker,
+                name: stock.companyName,
+                market: nil,
+                type: nil,
+                primaryExchange: nil
+            ))
+        } label: {
+            HStack(spacing: 10) {
+                // Colored accent bar
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(metricColor)
+                    .frame(width: 3, height: 40)
+
+                CompanyLogoView(
+                    branding: nil,
+                    ticker: ticker,
+                    service: massive.service,
+                    size: 40
+                )
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(ticker)
+                        .font(.subheadline.bold())
+                    if !name.isEmpty {
+                        Text(name)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(metric)
+                        .font(.subheadline.bold().monospacedDigit())
+                        .foregroundStyle(metricColor)
+                    if let badge {
+                        Text(badge)
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                // Action pill
+                HStack(spacing: 3) {
+                    Image(systemName: actionIcon)
+                        .font(.system(size: 10))
+                    Text(action)
+                        .font(.system(size: 10, weight: .semibold))
+                }
+                .foregroundStyle(actionColor)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .strokeBorder(actionColor.opacity(0.4), lineWidth: 1)
+                )
+            }
+            .padding(.vertical, 6)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func sectorSuggestionRow(result: MassiveTickerSearchResult) -> some View {
+        HStack(spacing: 10) {
+            CompanyLogoView(
+                branding: nil,
+                ticker: result.ticker,
+                service: massive.service,
+                size: 28
+            )
+            VStack(alignment: .leading, spacing: 1) {
+                Text(result.ticker)
+                    .font(.caption.bold())
+                Text(result.name)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            Spacer()
+            Text("Explore")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.blue)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(
+                    Capsule()
+                        .strokeBorder(Color.blue.opacity(0.4), lineWidth: 1)
+                )
+        }
+        .padding(.vertical, 2)
+    }
+
+    private func discoveryRow(result: MassiveTickerSearchResult) -> some View {
+        HStack(spacing: 10) {
+            CompanyLogoView(
+                branding: nil,
+                ticker: result.ticker,
+                service: massive.service,
+                size: 36
+            )
+            VStack(alignment: .leading, spacing: 2) {
+                Text(result.ticker)
+                    .font(.subheadline.bold())
+                Text(result.name)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            Spacer()
+            HStack(spacing: 3) {
+                Image(systemName: "arrow.right.circle.fill")
+                    .font(.system(size: 10))
+                Text("Research")
+                    .font(.system(size: 10, weight: .semibold))
+            }
+            .foregroundStyle(.purple)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                Capsule()
+                    .strokeBorder(Color.purple.opacity(0.4), lineWidth: 1)
+            )
+        }
+        .padding(.vertical, 4)
+    }
+
+    // MARK: - Section Container
 
     private func advisorSection<Content: View>(
         title: String,
         subtitle: String,
         icon: String,
         iconColor: Color,
+        accentGradient: [Color] = [.clear, .clear],
         @ViewBuilder content: () -> Content
     ) -> some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -314,64 +605,23 @@ struct AdvisorView: View {
         }
         .padding()
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(.regularMaterial)
+            ZStack {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.regularMaterial)
+                LinearGradient(
+                    colors: accentGradient,
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            }
         )
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .shadow(color: .black.opacity(0.08), radius: 16, y: 6)
         .shadow(color: .black.opacity(0.03), radius: 2, y: 1)
     }
 
-    private func advisorRow(
-        ticker: String,
-        name: String,
-        detail: String,
-        detailColor: Color,
-        badge: String?,
-        stock: Stock
-    ) -> some View {
-        NavigationLink {
-            StockDetailView(result: MassiveTickerSearchResult(
-                ticker: stock.ticker,
-                name: stock.companyName,
-                market: nil,
-                type: nil,
-                primaryExchange: nil
-            ))
-        } label: {
-            HStack(spacing: 10) {
-                CompanyLogoView(
-                    branding: nil,
-                    ticker: ticker,
-                    service: massive.service,
-                    size: 32
-                )
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(ticker)
-                        .textStyle(.tickerSymbol)
-                    if !name.isEmpty {
-                        Text(name)
-                            .textStyle(.rowDetail)
-                            .lineLimit(1)
-                    }
-                }
-                Spacer()
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(detail)
-                        .textStyle(.statValue)
-                        .monospacedDigit()
-                        .foregroundStyle(detailColor)
-                    if let badge {
-                        Text(badge)
-                            .font(.system(size: 9, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-            .padding(.vertical, 4)
-        }
-        .buttonStyle(.plain)
-    }
+    // MARK: - Helpers
 
     private func percentLabel(_ value: Decimal?) -> String {
         guard let value else { return "—" }
