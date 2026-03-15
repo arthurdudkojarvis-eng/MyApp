@@ -23,8 +23,14 @@ struct ResearchReportSheet: View {
 
     private static let dateFormatter: DateFormatter = {
         let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
+
+    private static let displayDateFormatter: DateFormatter = {
+        let f = DateFormatter()
         f.dateStyle = .medium
-        f.timeStyle = .short
         return f
     }()
 
@@ -33,18 +39,20 @@ struct ResearchReportSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     headerSection
-                    metricsRow
                     if let target = data.priceTarget, let price = data.currentPrice {
                         priceTargetSection(target: target, currentPrice: price)
                     }
-                    bullCaseSection
-                    bearCaseSection
+                    if let target = data.priceTarget {
+                        bearCaseSection(target: target)
+                        bullCaseSection(target: target)
+                    }
                     riskFactorsSection
                     disclaimerFooter
                 }
                 .padding()
             }
             .background(Color(.systemGroupedBackground))
+            .navigationTitle("\(data.ticker) Research")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -57,153 +65,142 @@ struct ResearchReportSheet: View {
             }
         }
         .presentationDetents([.large])
+        .preferredColorScheme(.dark)
     }
 
     // MARK: - Header
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(data.ticker)
-                .font(.caption.bold())
-                .foregroundStyle(.white)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
-                .background(.blue)
-                .clipShape(Capsule())
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(data.ticker)
+                    .font(.title2.bold())
+                Spacer()
+                Text(Self.displayDateFormatter.string(from: data.generatedAt))
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
 
             if !data.companyName.isEmpty {
                 Text(data.companyName)
-                    .font(.title2.bold())
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
 
-            Text("AI Research Report")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            Text("Generated \(Self.dateFormatter.string(from: data.generatedAt))")
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
-        }
-    }
-
-    // MARK: - Key Metrics
-
-    private var metricsRow: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: 16) {
                 if let cap = data.marketCap {
-                    metricCapsule("Mkt Cap", formatMarketCap(cap))
+                    Text("Mkt Cap: $\(formatMarketCap(cap))")
                 }
                 if let rev = data.revenue {
-                    metricCapsule("Revenue", formatMarketCap(rev))
-                }
-                if let eps = data.eps {
-                    metricCapsule("EPS", formatCurrency(eps))
-                }
-                if let yield = data.dividendYield {
-                    metricCapsule("Yield", formatPercent(yield))
-                }
-                if let payout = data.payoutRatio {
-                    metricCapsule("Payout", formatPercent(payout))
+                    Text("Rev: $\(formatMarketCap(rev))")
                 }
             }
+            .font(.caption)
+            .foregroundStyle(.tertiary)
         }
-    }
-
-    private func metricCapsule(_ label: String, _ value: String) -> some View {
-        VStack(spacing: 2) {
-            Text(label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-            Text(value)
-                .font(.caption.bold())
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(Color(.tertiarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
     // MARK: - Price Target
 
     private func priceTargetSection(target: FinnhubPriceTarget, currentPrice: Decimal) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Price Target").textStyle(.sectionTitle)
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(formatCurrency(currentPrice))
+                    .font(.largeTitle.bold())
+
+                if currentPrice > 0 {
+                    let pct = ((target.targetMean - currentPrice) / currentPrice) * 100
+                    let pctValue = (pct as NSDecimalNumber).doubleValue
+                    let isUpside = pctValue >= 0
+                    Text("\(isUpside ? "+" : "")\(String(format: "%.1f", pctValue))% to consensus")
+                        .font(.caption.bold())
+                        .foregroundStyle(isUpside ? .green : .red)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background((isUpside ? Color.green : Color.red).opacity(0.15))
+                        .clipShape(Capsule())
+                }
+            }
 
             let isSingleEstimate = target.targetHigh == target.targetLow
 
             if isSingleEstimate {
-                Text(formatCurrency(target.targetMean))
-                    .font(.title3.bold())
-                    .frame(maxWidth: .infinity)
-                Text("1 analyst estimate")
+                Text("1 analyst estimate — \(formatCurrency(target.targetMean))")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
             } else {
-                // Mean label above bar
-                Text(formatCurrency(target.targetMean))
-                    .font(.caption.bold())
-                    .frame(maxWidth: .infinity)
-
-                // Gradient bar with current price tick
+                // Gradient bar with circle marker and current price tooltip
                 GeometryReader { geo in
                     let barWidth = geo.size.width
-                    let tickPos = tickPosition(
+                    let pos = tickPosition(
                         current: currentPrice,
                         low: target.targetLow,
                         high: target.targetHigh
                     )
+                    let markerX = pos * barWidth
 
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(
-                                LinearGradient(
-                                    colors: [.red, .gray, .green],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .frame(height: 12)
-
-                        Rectangle()
-                            .fill(.primary)
-                            .frame(width: 2, height: 20)
-                            .offset(x: tickPos * barWidth - 1)
-                    }
-                }
-                .frame(height: 20)
-
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text("Low")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                        Text(formatCurrency(target.targetLow))
-                            .font(.caption2.bold())
-                    }
-                    Spacer()
-                    VStack {
-                        Text("Current")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                    VStack(spacing: 4) {
+                        // Current price tooltip above marker
                         Text(formatCurrency(currentPrice))
                             .font(.caption2.bold())
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color(.tertiarySystemBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                            .position(x: markerX, y: 10)
+
+                        ZStack(alignment: .leading) {
+                            // Gradient bar
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [.red, .yellow, .green],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .frame(height: 12)
+
+                            // White circle marker
+                            Circle()
+                                .fill(.white)
+                                .frame(width: 16, height: 16)
+                                .shadow(color: .black.opacity(0.3), radius: 2, y: 1)
+                                .position(x: markerX, y: 6)
+                        }
+                        .frame(height: 16)
                     }
+                }
+                .frame(height: 40)
+
+                // BEAR / TARGET / BULL labels
+                HStack(alignment: .top) {
+                    targetLabel(title: "BEAR", price: target.targetLow, color: .red)
                     Spacer()
-                    VStack(alignment: .trailing) {
-                        Text("High")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                        Text(formatCurrency(target.targetHigh))
-                            .font(.caption2.bold())
-                    }
+                    targetLabel(title: "TARGET", price: target.targetMean, color: .blue)
+                    Spacer()
+                    targetLabel(title: "BULL", price: target.targetHigh, color: .green, alignment: .trailing)
                 }
             }
         }
         .padding()
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(Color(.tertiarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private func targetLabel(title: String, price: Decimal, color: Color, alignment: HorizontalAlignment = .leading) -> some View {
+        VStack(alignment: alignment, spacing: 2) {
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(color)
+                    .frame(width: 6, height: 6)
+                Text(title)
+                    .font(.caption2.bold())
+                    .foregroundStyle(.secondary)
+            }
+            Text(formatCurrency(price))
+                .font(.caption2.bold())
+        }
     }
 
     private func tickPosition(current: Decimal, low: Decimal, high: Decimal) -> CGFloat {
@@ -214,36 +211,27 @@ struct ResearchReportSheet: View {
         return CGFloat((clamped as NSDecimalNumber).doubleValue)
     }
 
-    // MARK: - Bull Case
-
-    private var bullCaseSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Label("Bull Case", systemImage: "arrow.up.right")
-                .font(.headline)
-                .foregroundStyle(.green)
-
-            if data.bullPoints.isEmpty {
-                Text("No bull case points available.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            } else {
-                ForEach(Array(data.bullPoints.enumerated()), id: \.offset) { index, point in
-                    numberedRow(index + 1, text: point, color: .green)
-                }
-            }
-        }
-        .padding()
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-    }
-
     // MARK: - Bear Case
 
-    private var bearCaseSection: some View {
+    private func bearCaseSection(target: FinnhubPriceTarget) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("Bear Case", systemImage: "arrow.down.right")
-                .font(.headline)
-                .foregroundStyle(.red)
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(.red)
+                    .frame(width: 8, height: 8)
+                Text("BEAR CASE")
+                    .font(.caption.bold())
+                    .foregroundStyle(.red)
+            }
+
+            Text(formatCurrency(target.targetLow))
+                .font(.title2.bold())
+
+            if let date = Self.dateFormatter.date(from: target.lastUpdated) {
+                Text("Updated \(Self.displayDateFormatter.string(from: date))")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
 
             if data.bearPoints.isEmpty {
                 Text("No bear case points available.")
@@ -256,7 +244,44 @@ struct ResearchReportSheet: View {
             }
         }
         .padding()
-        .background(Color(.secondarySystemGroupedBackground))
+        .background(Color.red.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    // MARK: - Bull Case
+
+    private func bullCaseSection(target: FinnhubPriceTarget) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(.green)
+                    .frame(width: 8, height: 8)
+                Text("BULL CASE")
+                    .font(.caption.bold())
+                    .foregroundStyle(.green)
+            }
+
+            Text(formatCurrency(target.targetHigh))
+                .font(.title2.bold())
+
+            if let date = Self.dateFormatter.date(from: target.lastUpdated) {
+                Text("Updated \(Self.displayDateFormatter.string(from: date))")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+
+            if data.bullPoints.isEmpty {
+                Text("No bull case points available.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(Array(data.bullPoints.enumerated()), id: \.offset) { index, point in
+                    numberedRow(index + 1, text: point, color: .green)
+                }
+            }
+        }
+        .padding()
+        .background(Color.green.opacity(0.12))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 

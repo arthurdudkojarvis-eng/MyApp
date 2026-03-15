@@ -11,6 +11,7 @@ struct SignalScreenerContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Portfolio.createdAt) private var portfolios: [Portfolio]
     @Query private var watchlistItems: [WatchlistItem]
+    @State private var showScoreInfo = false
 
     var body: some View {
         Group {
@@ -27,7 +28,8 @@ struct SignalScreenerContentView: View {
                 screenerList
             }
         }
-        .navigationTitle("Screener")
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
         .task {
             viewModel.loadIfNeeded(
                 portfolios: portfolios,
@@ -43,7 +45,6 @@ struct SignalScreenerContentView: View {
 
     private var screenerList: some View {
         VStack(spacing: 0) {
-            searchField
             columnHeaders
             List {
                 ForEach(viewModel.displayedRows) { row in
@@ -66,26 +67,6 @@ struct SignalScreenerContentView: View {
         }
     }
 
-    // MARK: - Search Field
-
-    private var searchField: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.secondary)
-            TextField("Filter stocks…", text: $viewModel.searchQuery)
-                .textFieldStyle(.plain)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.characters)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .padding(.horizontal)
-        .padding(.top, 8)
-        .padding(.bottom, 4)
-    }
-
     // MARK: - Column Headers
 
     private var columnHeaders: some View {
@@ -94,11 +75,22 @@ struct SignalScreenerContentView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             headerButton("Mkt Cap", column: .marketCap, alignment: .trailing)
                 .frame(width: 80, alignment: .trailing)
-            headerButton("Score", column: .signalScore, alignment: .trailing)
-                .frame(width: 70, alignment: .trailing)
+            HStack(spacing: 2) {
+                headerButton("Score", column: .signalScore, alignment: .trailing)
+                Button { showScoreInfo = true } label: {
+                    Image(systemName: "info.circle")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+            .frame(width: 90, alignment: .trailing)
         }
         .padding(.horizontal)
         .padding(.vertical, 6)
+        .sheet(isPresented: $showScoreInfo) {
+            scoreInfoSheet
+        }
     }
 
     private func headerButton(_ title: String, column: ScreenerSortColumn, alignment: Alignment) -> some View {
@@ -175,6 +167,88 @@ struct SignalScreenerContentView: View {
         .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(row.ticker), \(row.companyName), score \(row.signalScore.map { "\($0)" } ?? "unavailable")")
+    }
+
+    // MARK: - Score Info Sheet
+
+    private var scoreInfoSheet: some View {
+        NavigationStack {
+            List {
+                criteriaRow(
+                    icon: "percent",
+                    color: .blue,
+                    title: "Dividend Yield",
+                    weight: "20%",
+                    description: "Scores the annual dividend yield. Sweet spot is 4-6%. Yields above 8% are penalized as potential yield traps."
+                )
+                criteriaRow(
+                    icon: "shield.checkered",
+                    color: .green,
+                    title: "Payout Safety",
+                    weight: "25%",
+                    description: "Evaluates dividend sustainability via payout ratio. Below 60% is safe, 60-80% is moderate, above 80% is risky."
+                )
+                criteriaRow(
+                    icon: "chart.line.uptrend.xyaxis",
+                    color: .mint,
+                    title: "Dividend Growth",
+                    weight: "20%",
+                    description: "Rewards consistent dividend payment history. 10+ years scores highest, signaling a reliable dividend payer."
+                )
+                criteriaRow(
+                    icon: "person.3.fill",
+                    color: .purple,
+                    title: "Analyst Consensus",
+                    weight: "20%",
+                    description: "Weighted average of analyst recommendations (Strong Buy to Strong Sell). More buy ratings = higher score."
+                )
+                criteriaRow(
+                    icon: "waveform.path.ecg",
+                    color: .orange,
+                    title: "Historical Volatility",
+                    weight: "15%",
+                    description: "Annualized price volatility from 1 year of daily returns. Lower volatility scores higher — stable prices are better for income investing."
+                )
+            }
+            .navigationTitle("Signal Score")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showScoreInfo = false } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                            .font(.title3)
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private func criteriaRow(icon: String, color: Color, title: String, weight: String, description: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.body)
+                .foregroundStyle(.white)
+                .frame(width: 32, height: 32)
+                .background(color)
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack {
+                    Text(title)
+                        .font(.subheadline.bold())
+                    Spacer()
+                    Text(weight)
+                        .font(.caption.bold())
+                        .foregroundStyle(.secondary)
+                }
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 4)
     }
 
     // MARK: - Helpers
