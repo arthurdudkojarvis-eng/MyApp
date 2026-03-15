@@ -32,7 +32,6 @@ struct PortfoliosView: View {
     @State private var showAddPortfolio = false
     @State private var showStrategies = false
     @State private var portfolioToDelete: Portfolio?
-    @State private var cardsAppeared = false
 
     private var activePortfolioID: String {
         settings.lastActivePortfolioID
@@ -50,7 +49,7 @@ struct PortfoliosView: View {
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 16) {
-                            ForEach(Array(portfolios.enumerated()), id: \.element.id) { index, portfolio in
+                            ForEach(portfolios) { portfolio in
                                 NavigationLink {
                                     PortfolioHoldingsView(portfolio: portfolio)
                                 } label: {
@@ -70,13 +69,6 @@ struct PortfoliosView: View {
                                         Label("Delete", systemImage: "trash")
                                     }
                                 }
-                                .opacity(cardsAppeared ? 1 : 0)
-                                .offset(y: cardsAppeared ? 0 : 20)
-                                .animation(
-                                    .spring(response: 0.5, dampingFraction: 0.8)
-                                        .delay(Double(index) * 0.08),
-                                    value: cardsAppeared
-                                )
                             }
                         }
                         .padding(.horizontal)
@@ -138,8 +130,6 @@ struct PortfoliosView: View {
                 if portfolios.count == 1, settings.lastActivePortfolioID.isEmpty {
                     settings.lastActivePortfolioID = portfolios[0].id.uuidString
                 }
-                guard !cardsAppeared else { return }
-                cardsAppeared = true
             }
             .task { await stockRefresh.refreshStaleStocks() }
         }

@@ -46,31 +46,27 @@ struct StockBrowserView: View {
     @State private var searchTask: Task<Void, Never>?
     @State private var showTips = false
     @State private var showScreener = false
-    @State private var stocksPage = 0
+    @State private var selectedPage = 0
     @State private var screenerViewModel: SignalScreenerViewModel?
 
     var body: some View {
         ZStack {
             Color(.systemGroupedBackground).ignoresSafeArea()
-            TabView(selection: $stocksPage) {
-                searchPage.tag(0)
+            TabView(selection: $selectedPage) {
+                stocksSearchPage.tag(0)
                 screenerPage.tag(1)
             }
             .tabViewStyle(.page(indexDisplayMode: .automatic))
         }
     }
 
-    // MARK: - Search Page
+    // MARK: - Stocks Search Page
 
-    private var searchPage: some View {
+    private var stocksSearchPage: some View {
         NavigationStack {
             Group {
                 if query.isEmpty {
-                    ContentUnavailableView(
-                        "Search Stocks",
-                        systemImage: "magnifyingglass",
-                        description: Text("Type a ticker or company name to look up a stock.")
-                    )
+                    popularStocksList
                 } else if isSearching {
                     ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -150,6 +146,41 @@ struct StockBrowserView: View {
         return vm
     }
 
+    // MARK: - Popular Stocks & ETFs
+
+    private static let popularStocks: [MassiveTickerSearchResult] = [
+        MassiveTickerSearchResult(ticker: "AAPL", name: "Apple Inc.", market: "stocks", type: "CS", primaryExchange: "XNAS"),
+        MassiveTickerSearchResult(ticker: "MSFT", name: "Microsoft Corporation", market: "stocks", type: "CS", primaryExchange: "XNAS"),
+        MassiveTickerSearchResult(ticker: "JNJ", name: "Johnson & Johnson", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "KO", name: "The Coca-Cola Company", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "PG", name: "Procter & Gamble Company", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "O", name: "Realty Income Corporation", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "MCD", name: "McDonald's Corporation", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "PEP", name: "PepsiCo, Inc.", market: "stocks", type: "CS", primaryExchange: "XNAS"),
+        MassiveTickerSearchResult(ticker: "CVX", name: "Chevron Corporation", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "XOM", name: "Exxon Mobil Corporation", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "ABT", name: "Abbott Laboratories", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "WMT", name: "Walmart Inc.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "T", name: "AT&T Inc.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "VZ", name: "Verizon Communications Inc.", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+        MassiveTickerSearchResult(ticker: "MMM", name: "3M Company", market: "stocks", type: "CS", primaryExchange: "XNYS"),
+    ]
+
+    private var popularStocksList: some View {
+        List {
+            Section("Popular Dividend Stocks") {
+                ForEach(Self.popularStocks) { result in
+                    NavigationLink {
+                        StockDetailView(result: result)
+                    } label: {
+                        StockSearchRowView(result: result)
+                    }
+                }
+            }
+        }
+        .listStyle(.plain)
+    }
+
     // MARK: - Results List
 
     @ViewBuilder
@@ -178,7 +209,9 @@ struct StockBrowserView: View {
             )
             guard !Task.isCancelled else { return }
             let upper = query.uppercased()
-            results = fetched.sorted { a, b in
+            results = fetched
+                .filter { $0.type?.uppercased() != "ETF" }
+                .sorted { a, b in
                 let aExact = a.ticker == upper
                 let bExact = b.ticker == upper
                 if aExact != bExact { return aExact }

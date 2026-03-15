@@ -61,11 +61,7 @@ struct ETFBrowserView: View {
         NavigationStack {
             Group {
                 if query.isEmpty {
-                    ContentUnavailableView(
-                        "Search ETFs",
-                        systemImage: "chart.pie",
-                        description: Text("Type an ETF ticker or name to look up exchange-traded funds.")
-                    )
+                    popularETFsList
                 } else if isSearching {
                     ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -140,6 +136,36 @@ struct ETFBrowserView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Popular ETFs
+
+    private static let popularETFs: [MassiveTickerSearchResult] = [
+        MassiveTickerSearchResult(ticker: "SCHD", name: "Schwab U.S. Dividend Equity ETF", market: "stocks", type: "ETF", primaryExchange: "ARCX"),
+        MassiveTickerSearchResult(ticker: "VYM", name: "Vanguard High Dividend Yield ETF", market: "stocks", type: "ETF", primaryExchange: "ARCX"),
+        MassiveTickerSearchResult(ticker: "HDV", name: "iShares Core High Dividend ETF", market: "stocks", type: "ETF", primaryExchange: "ARCX"),
+        MassiveTickerSearchResult(ticker: "DVY", name: "iShares Select Dividend ETF", market: "stocks", type: "ETF", primaryExchange: "ARCX"),
+        MassiveTickerSearchResult(ticker: "VIG", name: "Vanguard Dividend Appreciation ETF", market: "stocks", type: "ETF", primaryExchange: "ARCX"),
+        MassiveTickerSearchResult(ticker: "DGRO", name: "iShares Core Dividend Growth ETF", market: "stocks", type: "ETF", primaryExchange: "ARCX"),
+        MassiveTickerSearchResult(ticker: "JEPI", name: "JPMorgan Equity Premium Income ETF", market: "stocks", type: "ETF", primaryExchange: "ARCX"),
+        MassiveTickerSearchResult(ticker: "JEPQ", name: "JPMorgan Nasdaq Equity Premium Income ETF", market: "stocks", type: "ETF", primaryExchange: "ARCX"),
+        MassiveTickerSearchResult(ticker: "SDY", name: "SPDR S&P Dividend ETF", market: "stocks", type: "ETF", primaryExchange: "ARCX"),
+        MassiveTickerSearchResult(ticker: "PFF", name: "iShares Preferred & Income Securities ETF", market: "stocks", type: "ETF", primaryExchange: "ARCX"),
+    ]
+
+    private var popularETFsList: some View {
+        List {
+            Section("Popular Dividend ETFs") {
+                ForEach(Self.popularETFs) { result in
+                    NavigationLink {
+                        StockDetailView(result: result)
+                    } label: {
+                        ETFSearchRowView(result: result)
+                    }
+                }
+            }
+        }
+        .listStyle(.plain)
     }
 
     // MARK: - Results List
