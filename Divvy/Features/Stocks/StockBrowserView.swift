@@ -206,18 +206,6 @@ struct StockBrowserView: View {
     private var popularStocksList: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Header
-                VStack(spacing: 6) {
-                    Image(systemName: "star.fill")
-                        .font(.title2)
-                        .foregroundStyle(.yellow)
-                    Text("Popular Dividend Stocks")
-                        .textStyle(.rowTitle)
-                    Text("Explore top picks by category")
-                        .textStyle(.rowDetail)
-                }
-                .padding(.top, 8)
-
                 // Category cards
                 ForEach(Self.popularCategories) { category in
                     popularCategoryCard(category)

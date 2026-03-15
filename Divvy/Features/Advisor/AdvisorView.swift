@@ -420,7 +420,7 @@ struct AdvisorView: View {
                 .symbolEffect(.pulse)
 
             Text("No Holdings to Analyze")
-                .font(.title3.bold())
+                .textStyle(.cardTitle)
 
             Text("Add holdings to your portfolios and the advisor will suggest purchase opportunities.")
                 .textStyle(.rowDetail)
@@ -488,7 +488,7 @@ struct AdvisorView: View {
                                     .font(.system(size: 10))
                             }
                             Text(sector)
-                                .font(.caption.weight(.medium))
+                                .textStyle(.captionBold)
                             Image(systemName: expandedSector == sector ? "chevron.up" : "chevron.right")
                                 .font(.system(size: 8, weight: .bold))
                         }
@@ -576,7 +576,7 @@ struct AdvisorView: View {
                                         .foregroundStyle(.purple)
                                 }
                                 Text(opp.sector.uppercased())
-                                    .font(.system(size: 10, weight: .bold))
+                                    .textStyle(.smallCaption)
                                     .foregroundStyle(.purple)
                             }
                             .padding(.horizontal, 8)
@@ -656,22 +656,21 @@ struct AdvisorView: View {
                 )
                 VStack(alignment: .leading, spacing: 2) {
                     Text(ticker)
-                        .font(.subheadline.bold())
+                        .textStyle(.tickerSymbol)
                     if !name.isEmpty {
                         Text(name)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .textStyle(.rowDetail)
                             .lineLimit(1)
                     }
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 4) {
                     Text(metric)
-                        .font(.subheadline.bold().monospacedDigit())
+                        .textStyle(.statValue)
                         .foregroundStyle(metricColor)
                     if let badge {
                         Text(badge)
-                            .font(.system(size: 9, weight: .semibold))
+                            .textStyle(.microBadge)
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -680,7 +679,7 @@ struct AdvisorView: View {
                     Image(systemName: actionIcon)
                         .font(.system(size: 10))
                     Text(action)
-                        .font(.system(size: 10, weight: .semibold))
+                        .textStyle(.microBadge)
                 }
                 .foregroundStyle(actionColor)
                 .padding(.horizontal, 8)
@@ -705,15 +704,14 @@ struct AdvisorView: View {
             )
             VStack(alignment: .leading, spacing: 1) {
                 Text(result.ticker)
-                    .font(.caption.bold())
+                    .textStyle(.captionBold)
                 Text(result.name)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.statLabel)
                     .lineLimit(1)
             }
             Spacer()
             Text("Explore")
-                .font(.system(size: 10, weight: .semibold))
+                .textStyle(.microBadge)
                 .foregroundStyle(.blue)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
@@ -735,10 +733,9 @@ struct AdvisorView: View {
             )
             VStack(alignment: .leading, spacing: 2) {
                 Text(result.ticker)
-                    .font(.subheadline.bold())
+                    .textStyle(.tickerSymbol)
                 Text(result.name)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .textStyle(.rowDetail)
                     .lineLimit(1)
             }
             Spacer()
@@ -746,7 +743,7 @@ struct AdvisorView: View {
                 Image(systemName: "arrow.right.circle.fill")
                     .font(.system(size: 10))
                 Text("Research")
-                    .font(.system(size: 10, weight: .semibold))
+                    .textStyle(.microBadge)
             }
             .foregroundStyle(.purple)
             .padding(.horizontal, 8)
