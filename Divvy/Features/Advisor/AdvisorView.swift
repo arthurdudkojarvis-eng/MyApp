@@ -42,6 +42,17 @@ private let sectorSuggestions: [String: [MassiveTickerSearchResult]] = [
     ],
 ]
 
+// MARK: - Sector Icon Mapping
+
+private let sectorIcons: [String: String] = [
+    "Utilities": "bolt.fill",
+    "Healthcare": "cross.case.fill",
+    "Consumer Defensive": "cart.fill",
+    "Real Estate": "building.2.fill",
+    "Energy": "fuelpump.fill",
+    "Financial Services": "banknote.fill",
+]
+
 // MARK: - AdvisorView
 
 struct AdvisorView: View {
@@ -54,6 +65,7 @@ struct AdvisorView: View {
     @State private var isSearching = false
     @State private var searchTask: Task<Void, Never>?
     @State private var expandedSector: String?
+    @State private var appeared = false
 
     private var allHoldings: [Holding] { portfolios.flatMap(\.holdings) }
 
@@ -86,6 +98,17 @@ struct AdvisorView: View {
             .filter { !sectors.contains($0) }
     }
 
+    private var sectorCount: Int {
+        Set(allHoldings.compactMap { $0.stock?.sector }.filter { !$0.isEmpty }).count
+    }
+
+    private var avgYieldOnCost: Decimal {
+        let totalCost = allHoldings.reduce(Decimal.zero) { $0 + $1.averageCostBasis * $1.shares }
+        guard totalCost > 0 else { return 0 }
+        let totalAnnual = allHoldings.reduce(Decimal.zero) { $0 + $1.projectedAnnualIncome }
+        return (totalAnnual / totalCost) * 100
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -104,6 +127,10 @@ struct AdvisorView: View {
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Advisor")
             .navigationBarTitleDisplayMode(.large)
+            .onAppear {
+                guard !appeared else { return }
+                appeared = true
+            }
         }
     }
 
@@ -225,13 +252,14 @@ struct AdvisorView: View {
     private var advisorContent: some View {
         VStack(spacing: 16) {
             if allHoldings.isEmpty {
-                ContentUnavailableView(
-                    "No Holdings to Analyze",
-                    systemImage: "lightbulb",
-                    description: Text("Add holdings to your portfolios and the advisor will suggest purchase opportunities.")
-                )
-                .padding(.top, 40)
+                richEmptyState
             } else {
+                // Portfolio summary hero card
+                portfolioSummaryHero
+                    .opacity(appeared ? 1 : 0)
+                    .offset(y: appeared ? 0 : 20)
+                    .animation(.spring(response: 0.55, dampingFraction: 0.78).delay(0), value: appeared)
+
                 // Undervalued opportunities
                 if !undervaluedPicks.isEmpty {
                     advisorSection(
@@ -239,9 +267,11 @@ struct AdvisorView: View {
                         subtitle: "Holdings down >10% — consider adding more",
                         icon: "arrow.down.right.circle.fill",
                         iconColor: .red,
+                        count: undervaluedPicks.prefix(5).count,
                         accentGradient: [.red.opacity(0.15), .clear]
                     ) {
-                        ForEach(undervaluedPicks.prefix(5)) { holding in
+                        let items = Array(undervaluedPicks.prefix(5))
+                        ForEach(Array(items.enumerated()), id: \.element.id) { offset, holding in
                             if let stock = holding.stock {
                                 actionRow(
                                     ticker: stock.ticker,
@@ -256,9 +286,15 @@ struct AdvisorView: View {
                                     actionColor: .red,
                                     stock: stock
                                 )
+                                if offset < items.count - 1 {
+                                    Divider().opacity(0.3)
+                                }
                             }
                         }
                     }
+                    .opacity(appeared ? 1 : 0)
+                    .offset(y: appeared ? 0 : 20)
+                    .animation(.spring(response: 0.55, dampingFraction: 0.78).delay(0.1), value: appeared)
                 }
 
                 // Highest yielding — double down
@@ -268,9 +304,11 @@ struct AdvisorView: View {
                         subtitle: "Your best income producers — double down",
                         icon: "flame.fill",
                         iconColor: .orange,
+                        count: highYieldPicks.count,
                         accentGradient: [.orange.opacity(0.15), .clear]
                     ) {
-                        ForEach(highYieldPicks) { holding in
+                        let items = highYieldPicks
+                        ForEach(Array(items.enumerated()), id: \.element.id) { offset, holding in
                             if let stock = holding.stock {
                                 actionRow(
                                     ticker: stock.ticker,
@@ -285,22 +323,129 @@ struct AdvisorView: View {
                                     actionColor: .orange,
                                     stock: stock
                                 )
+                                if offset < items.count - 1 {
+                                    Divider().opacity(0.3)
+                                }
                             }
                         }
                     }
+                    .opacity(appeared ? 1 : 0)
+                    .offset(y: appeared ? 0 : 20)
+                    .animation(.spring(response: 0.55, dampingFraction: 0.78).delay(0.2), value: appeared)
                 }
 
                 // Missing sectors — tappable chips
                 if !missingSectors.isEmpty {
                     portfolioGapsSection
+                        .opacity(appeared ? 1 : 0)
+                        .offset(y: appeared ? 0 : 20)
+                        .animation(.spring(response: 0.55, dampingFraction: 0.78).delay(0.3), value: appeared)
                 }
 
                 // Discovery — dividend opportunities in missing sectors
                 if !missingSectors.isEmpty {
                     dividendOpportunitiesSection
+                        .opacity(appeared ? 1 : 0)
+                        .offset(y: appeared ? 0 : 20)
+                        .animation(.spring(response: 0.55, dampingFraction: 0.78).delay(0.4), value: appeared)
                 }
             }
         }
+    }
+
+    // MARK: - Portfolio Summary Hero Card
+
+    private var portfolioSummaryHero: some View {
+        VStack(spacing: 16) {
+            HStack(spacing: 0) {
+                Spacer()
+                VStack(spacing: 6) {
+                    Image(systemName: "briefcase.fill")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                    Text("\(allHoldings.count)")
+                        .textStyle(.cardHero)
+                    Text("Holdings")
+                        .textStyle(.microLabel)
+                }
+                Spacer()
+                VStack(spacing: 6) {
+                    Image(systemName: "chart.pie.fill")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                    Text("\(sectorCount)")
+                        .textStyle(.cardHero)
+                    Text("Sectors")
+                        .textStyle(.microLabel)
+                }
+                Spacer()
+                VStack(spacing: 6) {
+                    Image(systemName: "percent")
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                    Text(String(format: "%.1f%%", (avgYieldOnCost as NSDecimalNumber).doubleValue))
+                        .textStyle(.cardHero)
+                    Text("Avg Yield")
+                        .textStyle(.microLabel)
+                }
+                Spacer()
+            }
+        }
+        .padding(.vertical, 20)
+        .padding(.horizontal)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.regularMaterial)
+                LinearGradient(
+                    colors: [Color.accentColor.opacity(0.25), Color.accentColor.opacity(0)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(color: .black.opacity(0.08), radius: 16, y: 6)
+        .shadow(color: .black.opacity(0.03), radius: 2, y: 1)
+    }
+
+    // MARK: - Rich Empty State
+
+    private var richEmptyState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "lightbulb.fill")
+                .font(.system(size: 44))
+                .foregroundStyle(.yellow)
+                .symbolEffect(.pulse)
+
+            Text("No Holdings to Analyze")
+                .font(.title3.bold())
+
+            Text("Add holdings to your portfolios and the advisor will suggest purchase opportunities.")
+                .textStyle(.rowDetail)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 8)
+        }
+        .padding(.vertical, 32)
+        .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(.regularMaterial)
+                LinearGradient(
+                    colors: [Color.accentColor.opacity(0.15), Color.accentColor.opacity(0)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(color: .black.opacity(0.08), radius: 16, y: 6)
+        .shadow(color: .black.opacity(0.03), radius: 2, y: 1)
+        .padding(.top, 40)
     }
 
     // MARK: - Portfolio Gaps (Tappable Chips)
@@ -312,8 +457,19 @@ struct AdvisorView: View {
                     .foregroundStyle(.blue)
                     .font(.title3)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Missing Sectors")
-                        .textStyle(.rowTitle)
+                    HStack(spacing: 6) {
+                        Text("Missing Sectors")
+                            .textStyle(.rowTitle)
+                        Text("\(missingSectors.count)")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(.blue)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(
+                                Capsule()
+                                    .fill(Color.blue.opacity(0.12))
+                            )
+                    }
                     Text("Tap a sector to explore dividend stocks")
                         .textStyle(.rowDetail)
                 }
@@ -327,6 +483,10 @@ struct AdvisorView: View {
                         }
                     } label: {
                         HStack(spacing: 4) {
+                            if let icon = sectorIcons[sector] {
+                                Image(systemName: icon)
+                                    .font(.system(size: 10))
+                            }
                             Text(sector)
                                 .font(.caption.weight(.medium))
                             Image(systemName: expandedSector == sector ? "chevron.up" : "chevron.right")
@@ -389,8 +549,19 @@ struct AdvisorView: View {
                             .foregroundStyle(.purple)
                             .font(.title3)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Dividend Opportunities")
-                                .textStyle(.rowTitle)
+                            HStack(spacing: 6) {
+                                Text("Dividend Opportunities")
+                                    .textStyle(.rowTitle)
+                                Text("\(opportunities.count)")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundStyle(.purple)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(
+                                        Capsule()
+                                            .fill(Color.purple.opacity(0.12))
+                                    )
+                            }
                             Text("Top picks for your missing sectors")
                                 .textStyle(.rowDetail)
                         }
@@ -398,23 +569,33 @@ struct AdvisorView: View {
 
                     ForEach(opportunities) { opp in
                         VStack(alignment: .leading, spacing: 6) {
-                            Text(opp.sector.uppercased())
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundStyle(.purple)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.purple.opacity(0.12))
-                                )
+                            HStack(spacing: 4) {
+                                if let icon = sectorIcons[opp.sector] {
+                                    Image(systemName: icon)
+                                        .font(.system(size: 9))
+                                        .foregroundStyle(.purple)
+                                }
+                                Text(opp.sector.uppercased())
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundStyle(.purple)
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(
+                                Capsule()
+                                    .fill(Color.purple.opacity(0.12))
+                            )
 
-                            ForEach(opp.tickers) { result in
+                            ForEach(Array(opp.tickers.enumerated()), id: \.element.ticker) { offset, result in
                                 NavigationLink {
                                     StockDetailView(result: result)
                                 } label: {
                                     discoveryRow(result: result)
                                 }
                                 .buttonStyle(.plain)
+                                if offset < opp.tickers.count - 1 {
+                                    Divider().opacity(0.3)
+                                }
                             }
                         }
                     }
@@ -585,6 +766,7 @@ struct AdvisorView: View {
         subtitle: String,
         icon: String,
         iconColor: Color,
+        count: Int? = nil,
         accentGradient: [Color] = [.clear, .clear],
         @ViewBuilder content: () -> Content
     ) -> some View {
@@ -594,8 +776,21 @@ struct AdvisorView: View {
                     .foregroundStyle(iconColor)
                     .font(.title3)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .textStyle(.rowTitle)
+                    HStack(spacing: 6) {
+                        Text(title)
+                            .textStyle(.rowTitle)
+                        if let count {
+                            Text("\(count)")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(iconColor)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(
+                                    Capsule()
+                                        .fill(iconColor.opacity(0.12))
+                                )
+                        }
+                    }
                     Text(subtitle)
                         .textStyle(.rowDetail)
                 }
