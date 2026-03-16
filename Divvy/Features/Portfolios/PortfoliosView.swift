@@ -327,26 +327,32 @@ struct PortfolioHoldingsView: View {
                 List {
                     Section {
                         ForEach(sortedHoldings) { holding in
-                            NavigationLink {
-                                if let stock = holding.stock {
-                                    StockDetailView(result: MassiveTickerSearchResult(
-                                        ticker: stock.ticker,
-                                        name: stock.companyName,
-                                        market: nil,
-                                        type: nil,
-                                        primaryExchange: nil
-                                    ))
-                                } else {
-                                    ContentUnavailableView(
-                                        "Stock Unavailable",
-                                        systemImage: "questionmark.circle",
-                                        description: Text("This holding's stock data is not yet available.")
-                                    )
+                            ZStack {
+                                NavigationLink {
+                                    if let stock = holding.stock {
+                                        StockDetailView(result: MassiveTickerSearchResult(
+                                            ticker: stock.ticker,
+                                            name: stock.companyName,
+                                            market: nil,
+                                            type: nil,
+                                            primaryExchange: nil
+                                        ))
+                                    } else {
+                                        ContentUnavailableView(
+                                            "Stock Unavailable",
+                                            systemImage: "questionmark.circle",
+                                            description: Text("This holding's stock data is not yet available.")
+                                        )
+                                    }
+                                } label: {
+                                    EmptyView()
                                 }
-                            } label: {
+                                .opacity(0)
+
                                 PortfolioHoldingRowView(
                                     holding: holding,
-                                    currency: portfolio.currency
+                                    currency: portfolio.currency,
+                                    onShowGrowth: { holdingForFutureValue = holding }
                                 )
                             }
                                 .contextMenu {
@@ -374,12 +380,6 @@ struct PortfolioHoldingsView: View {
                                         Label("Edit", systemImage: "pencil")
                                     }
                                     .tint(.blue)
-                                    Button {
-                                        holdingForFutureValue = holding
-                                    } label: {
-                                        Label("Future Value", systemImage: "chart.line.uptrend.xyaxis")
-                                    }
-                                    .tint(.purple)
                                 }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button(role: .destructive) {
@@ -444,6 +444,7 @@ struct PortfolioHoldingsView: View {
 private struct PortfolioHoldingRowView: View {
     let holding: Holding
     var currency: String = "USD"
+    var onShowGrowth: (() -> Void)?
     @Environment(\.massiveService) private var massive
 
     private var ticker: String { holding.stock?.ticker ?? "—" }
@@ -517,6 +518,17 @@ private struct PortfolioHoldingRowView: View {
                 } else {
                     Text("—").textStyle(.rowDetail)
                 }
+            }
+            if let onShowGrowth {
+                Button {
+                    onShowGrowth()
+                } label: {
+                    Image(systemName: "chart.line.uptrend.xyaxis")
+                        .font(.subheadline)
+                        .foregroundStyle(Color.accentColor)
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel("Growth projection for \(ticker)")
             }
         }
         .padding(.vertical, 2)
