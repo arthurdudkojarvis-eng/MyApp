@@ -121,6 +121,17 @@
 		UI0105112233445566778899 /* ETFBrowserUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI0305112233445566778899 /* ETFBrowserUITests.swift */; };
 		UI0106112233445566778899 /* CryptoBrowserUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI0306112233445566778899 /* CryptoBrowserUITests.swift */; };
 		UI0107112233445566778899 /* SettingsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI0307112233445566778899 /* SettingsUITests.swift */; };
+		UI0108112233445566778899 /* DividendCalendarUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI0308112233445566778899 /* DividendCalendarUITests.swift */; };
+		UI0109112233445566778899 /* WatchlistUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI0309112233445566778899 /* WatchlistUITests.swift */; };
+		UI010A112233445566778899 /* NewsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI030A112233445566778899 /* NewsUITests.swift */; };
+		UI010B112233445566778899 /* AlertsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI030B112233445566778899 /* AlertsUITests.swift */; };
+		UI010C112233445566778899 /* IncomeForecastUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI030C112233445566778899 /* IncomeForecastUITests.swift */; };
+		UI010D112233445566778899 /* SectorAllocationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI030D112233445566778899 /* SectorAllocationUITests.swift */; };
+		UI010E112233445566778899 /* DRIPSimulatorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI030E112233445566778899 /* DRIPSimulatorUITests.swift */; };
+		UI010F112233445566778899 /* DividendSafetyUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI030F112233445566778899 /* DividendSafetyUITests.swift */; };
+		UI0110112233445566778899 /* TaxSummaryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI0310112233445566778899 /* TaxSummaryUITests.swift */; };
+		UI0111112233445566778899 /* AddPortfolioFormUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI0311112233445566778899 /* AddPortfolioFormUITests.swift */; };
+		UI0112112233445566778899 /* AddHoldingFormUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UI0312112233445566778899 /* AddHoldingFormUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -258,6 +269,17 @@
 		UI0305112233445566778899 /* ETFBrowserUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETFBrowserUITests.swift; sourceTree = "<group>"; };
 		UI0306112233445566778899 /* CryptoBrowserUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoBrowserUITests.swift; sourceTree = "<group>"; };
 		UI0307112233445566778899 /* SettingsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsUITests.swift; sourceTree = "<group>"; };
+		UI0308112233445566778899 /* DividendCalendarUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendCalendarUITests.swift; sourceTree = "<group>"; };
+		UI0309112233445566778899 /* WatchlistUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchlistUITests.swift; sourceTree = "<group>"; };
+		UI030A112233445566778899 /* NewsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsUITests.swift; sourceTree = "<group>"; };
+		UI030B112233445566778899 /* AlertsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertsUITests.swift; sourceTree = "<group>"; };
+		UI030C112233445566778899 /* IncomeForecastUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncomeForecastUITests.swift; sourceTree = "<group>"; };
+		UI030D112233445566778899 /* SectorAllocationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectorAllocationUITests.swift; sourceTree = "<group>"; };
+		UI030E112233445566778899 /* DRIPSimulatorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRIPSimulatorUITests.swift; sourceTree = "<group>"; };
+		UI030F112233445566778899 /* DividendSafetyUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DividendSafetyUITests.swift; sourceTree = "<group>"; };
+		UI0310112233445566778899 /* TaxSummaryUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaxSummaryUITests.swift; sourceTree = "<group>"; };
+		UI0311112233445566778899 /* AddPortfolioFormUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPortfolioFormUITests.swift; sourceTree = "<group>"; };
+		UI0312112233445566778899 /* AddHoldingFormUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddHoldingFormUITests.swift; sourceTree = "<group>"; };
 		UI0400112233445566778899 /* DivvyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DivvyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -630,14 +652,25 @@
 		UI0500112233445566778899 /* DivvyUITests */ = {
 			isa = PBXGroup;
 			children = (
+				UI0312112233445566778899 /* AddHoldingFormUITests.swift */,
+				UI0311112233445566778899 /* AddPortfolioFormUITests.swift */,
+				UI030B112233445566778899 /* AlertsUITests.swift */,
 				UI0306112233445566778899 /* CryptoBrowserUITests.swift */,
 				UI0302112233445566778899 /* DashboardUITests.swift */,
+				UI0308112233445566778899 /* DividendCalendarUITests.swift */,
+				UI030F112233445566778899 /* DividendSafetyUITests.swift */,
+				UI030E112233445566778899 /* DRIPSimulatorUITests.swift */,
 				UI0305112233445566778899 /* ETFBrowserUITests.swift */,
+				UI030C112233445566778899 /* IncomeForecastUITests.swift */,
+				UI030A112233445566778899 /* NewsUITests.swift */,
 				UI0300112233445566778899 /* PortfolioGrowthButtonUITests.swift */,
 				UI0303112233445566778899 /* PortfolioUITests.swift */,
+				UI030D112233445566778899 /* SectorAllocationUITests.swift */,
 				UI0307112233445566778899 /* SettingsUITests.swift */,
 				UI0304112233445566778899 /* StockBrowserUITests.swift */,
 				UI0301112233445566778899 /* TabNavigationUITests.swift */,
+				UI0310112233445566778899 /* TaxSummaryUITests.swift */,
+				UI0309112233445566778899 /* WatchlistUITests.swift */,
 			);
 			path = DivvyUITests;
 			sourceTree = "<group>";
@@ -863,14 +896,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				UI0112112233445566778899 /* AddHoldingFormUITests.swift in Sources */,
+				UI0111112233445566778899 /* AddPortfolioFormUITests.swift in Sources */,
+				UI010B112233445566778899 /* AlertsUITests.swift in Sources */,
 				UI0106112233445566778899 /* CryptoBrowserUITests.swift in Sources */,
 				UI0102112233445566778899 /* DashboardUITests.swift in Sources */,
+				UI0108112233445566778899 /* DividendCalendarUITests.swift in Sources */,
+				UI010F112233445566778899 /* DividendSafetyUITests.swift in Sources */,
+				UI010E112233445566778899 /* DRIPSimulatorUITests.swift in Sources */,
 				UI0105112233445566778899 /* ETFBrowserUITests.swift in Sources */,
+				UI010C112233445566778899 /* IncomeForecastUITests.swift in Sources */,
+				UI010A112233445566778899 /* NewsUITests.swift in Sources */,
 				UI0100112233445566778899 /* PortfolioGrowthButtonUITests.swift in Sources */,
 				UI0103112233445566778899 /* PortfolioUITests.swift in Sources */,
+				UI010D112233445566778899 /* SectorAllocationUITests.swift in Sources */,
 				UI0107112233445566778899 /* SettingsUITests.swift in Sources */,
 				UI0104112233445566778899 /* StockBrowserUITests.swift in Sources */,
 				UI0101112233445566778899 /* TabNavigationUITests.swift in Sources */,
+				UI0110112233445566778899 /* TaxSummaryUITests.swift in Sources */,
+				UI0109112233445566778899 /* WatchlistUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

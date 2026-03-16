@@ -130,6 +130,64 @@ final class DashboardUITests: XCTestCase {
         XCTAssertTrue(title.waitForExistence(timeout: 5), "Should navigate to News & Events")
     }
 
+    // MARK: - Features Sheet Content
+
+    func testFeaturesSheetHasAllLinks() {
+        openFeaturesMenu()
+        let expectedLinks = [
+            "Income Forecast", "Sector Allocation", "DRIP Simulator",
+            "Dividend Safety", "Tax Summary", "Watchlist",
+            "Alerts", "Dividend Calendar", "News & Events"
+        ]
+        // Wait once for sheet to fully render
+        let firstLink = app.staticTexts["Income Forecast"]
+        XCTAssertTrue(firstLink.waitForExistence(timeout: 5))
+        // All links are static content — just check existence
+        for link in expectedLinks {
+            XCTAssertTrue(
+                app.staticTexts[link].exists,
+                "Features sheet should contain '\(link)' link"
+            )
+        }
+    }
+
+    func testFeaturesSheetHasDoneButton() {
+        openFeaturesMenu()
+        let doneButton = app.buttons["Done"]
+        XCTAssertTrue(
+            doneButton.waitForExistence(timeout: 5),
+            "Features sheet should have Done button"
+        )
+    }
+
+    func testFeaturesSheetDismissesOnDone() {
+        openFeaturesMenu()
+        let doneButton = app.buttons["Done"]
+        XCTAssertTrue(doneButton.waitForExistence(timeout: 5))
+        doneButton.tap()
+
+        // Dashboard toolbar should be visible after dismissing
+        let featuresButton = app.buttons["Features menu"]
+        XCTAssertTrue(
+            featuresButton.waitForExistence(timeout: 5),
+            "Dashboard should be visible after dismissing features sheet"
+        )
+    }
+
+    // MARK: - Dashboard Empty State
+
+    func testDashboardShowsContent() {
+        navigateToDashboard()
+        // Dashboard should show either empty state or main content
+        let emptyTitle = app.staticTexts["No Holdings Yet"]
+        let scrollView = app.scrollViews.firstMatch
+        XCTAssertTrue(
+            emptyTitle.waitForExistence(timeout: 5)
+            || scrollView.waitForExistence(timeout: 5),
+            "Dashboard should show empty state or scrollable content"
+        )
+    }
+
     // MARK: - Helpers
 
     private func navigateToDashboard() {

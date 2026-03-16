@@ -66,6 +66,32 @@ final class ETFBrowserUITests: XCTestCase {
         )
     }
 
+    // MARK: - Screener Sheet
+
+    func testETFScreenerOpensSheet() {
+        navigateToETFs()
+        let screenerButton = app.buttons["ETF screener"]
+        XCTAssertTrue(screenerButton.waitForExistence(timeout: 5))
+        screenerButton.tap()
+
+        let content = app.scrollViews.firstMatch
+        XCTAssertTrue(
+            content.waitForExistence(timeout: 5),
+            "ETF screener sheet should appear"
+        )
+    }
+
+    // MARK: - Search
+
+    func testETFSearchFieldAcceptsInput() {
+        navigateToETFs()
+        let searchField = app.searchFields.firstMatch
+        XCTAssertTrue(searchField.waitForExistence(timeout: 5))
+        searchField.tap()
+        searchField.typeText("VYM")
+        XCTAssertEqual(searchField.value as? String, "VYM", "ETF search field should accept text input")
+    }
+
     // MARK: - Helpers
 
     private func navigateToETFs() {

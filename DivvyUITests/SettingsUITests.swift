@@ -70,6 +70,75 @@ final class SettingsUITests: XCTestCase {
         )
     }
 
+    // MARK: - Income Goal
+
+    func testSettingsHasMonthlyTargetField() {
+        openSettings()
+        let monthlyTarget = app.staticTexts["Monthly Target"]
+        XCTAssertTrue(
+            monthlyTarget.waitForExistence(timeout: 5),
+            "Settings should have Monthly Target label"
+        )
+    }
+
+    func testSettingsHasIncomeTargetTextField() {
+        openSettings()
+        let targetField = app.textFields["Monthly income target"]
+        XCTAssertTrue(
+            targetField.waitForExistence(timeout: 5),
+            "Settings should have monthly income target text field"
+        )
+    }
+
+    // MARK: - Notifications
+
+    func testSettingsHasWeeklyQuotesToggle() {
+        openSettings()
+        let toggle = app.switches["Weekly Investor Quotes"]
+        XCTAssertTrue(
+            toggle.waitForExistence(timeout: 5),
+            "Settings should have Weekly Investor Quotes toggle"
+        )
+    }
+
+    func testSettingsHasNotificationsSectionHeader() {
+        openSettings()
+        let header = app.staticTexts["Notifications"]
+        XCTAssertTrue(
+            header.waitForExistence(timeout: 5),
+            "Settings should have Notifications section header"
+        )
+    }
+
+    // MARK: - Appearance
+
+    func testSettingsHasColorSchemeSegments() {
+        openSettings()
+        // The segmented picker should expose System, Light, and Dark segments
+        let systemOption = app.buttons["System"]
+        XCTAssertTrue(
+            systemOption.waitForExistence(timeout: 5),
+            "Color scheme picker should have 'System' option"
+        )
+        XCTAssertTrue(
+            app.buttons["Light"].exists,
+            "Color scheme picker should have 'Light' option"
+        )
+        XCTAssertTrue(
+            app.buttons["Dark"].exists,
+            "Color scheme picker should have 'Dark' option"
+        )
+    }
+
+    func testSettingsHasFontThemeLabel() {
+        openSettings()
+        let fontTheme = app.staticTexts["Font Theme"]
+        XCTAssertTrue(
+            fontTheme.waitForExistence(timeout: 5),
+            "Settings should have Font Theme label"
+        )
+    }
+
     // MARK: - Helpers
 
     private func openSettings() {

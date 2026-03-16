@@ -112,6 +112,40 @@ final class PortfolioUITests: XCTestCase {
         )
     }
 
+    // MARK: - Holding Delete Swipe
+
+    func testHoldingDeleteSwipeActionExists() throws {
+        try navigateToFirstPortfolio()
+
+        let firstCell = app.cells.firstMatch
+        guard firstCell.waitForExistence(timeout: 5) else {
+            throw XCTSkip("No holdings found")
+        }
+
+        // Swipe left to reveal trailing delete action
+        firstCell.swipeLeft()
+        let deleteButton = app.buttons["Delete"]
+        XCTAssertTrue(
+            deleteButton.waitForExistence(timeout: 3),
+            "Delete swipe action should exist on holdings"
+        )
+    }
+
+    // MARK: - Empty State
+
+    func testPortfolioEmptyStateOrContent() {
+        navigateToPortfolios()
+        let firstPortfolio = app.cells.firstMatch
+        let emptyState = app.staticTexts.matching(
+            NSPredicate(format: "label CONTAINS[c] %@", "portfolio")
+        ).firstMatch
+        XCTAssertTrue(
+            firstPortfolio.waitForExistence(timeout: 5)
+            || emptyState.waitForExistence(timeout: 5),
+            "Portfolios tab should show portfolio list or empty state"
+        )
+    }
+
     // MARK: - Helpers
 
     private func navigateToPortfolios() {

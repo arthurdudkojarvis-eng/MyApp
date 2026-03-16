@@ -41,6 +41,17 @@ final class CryptoBrowserUITests: XCTestCase {
         )
     }
 
+    // MARK: - Search Input
+
+    func testCryptoSearchFieldAcceptsInput() {
+        navigateToCrypto()
+        let searchField = app.searchFields.firstMatch
+        XCTAssertTrue(searchField.waitForExistence(timeout: 5))
+        searchField.tap()
+        searchField.typeText("BTC")
+        XCTAssertEqual(searchField.value as? String, "BTC", "Crypto search field should accept text input")
+    }
+
     // MARK: - Helpers
 
     private func navigateToCrypto() {

@@ -89,6 +89,29 @@ final class StockBrowserUITests: XCTestCase {
         )
     }
 
+    // MARK: - Filters
+
+    func testStockFiltersIconExists() {
+        navigateToStocks()
+        let filtersButton = app.buttons["Filters"]
+        XCTAssertTrue(
+            filtersButton.waitForExistence(timeout: 5),
+            "Filters icon should exist on Stocks tab toolbar"
+        )
+    }
+
+    // MARK: - Search
+
+    func testStockSearchFieldAcceptsInput() {
+        navigateToStocks()
+        let searchField = app.searchFields.firstMatch
+        XCTAssertTrue(searchField.waitForExistence(timeout: 5))
+        searchField.tap()
+        searchField.typeText("AAPL")
+        // Verify text was entered
+        XCTAssertEqual(searchField.value as? String, "AAPL", "Search field should accept text input")
+    }
+
     // MARK: - Helpers
 
     private func navigateToStocks() {
