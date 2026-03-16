@@ -528,11 +528,12 @@ private struct PortfolioHoldingRowView: View {
                         .foregroundStyle(Color.accentColor)
                 }
                 .buttonStyle(.borderless)
+                .accessibilityIdentifier("growthProjectionButton_\(ticker)")
                 .accessibilityLabel("Growth projection for \(ticker)")
             }
         }
         .padding(.vertical, 2)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
     }
 }
 

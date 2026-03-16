@@ -34,6 +34,20 @@
                ReferencedContainer = "container:Divvy.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "UI0600112233445566778899"
+               BuildableName = "DivvyUITests.xctest"
+               BlueprintName = "DivvyUITests"
+               ReferencedContainer = "container:Divvy.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -59,6 +73,17 @@
                BlueprintIdentifier = "5104944F3E60EFD415650BB0"
                BuildableName = "DivvyTests.xctest"
                BlueprintName = "DivvyTests"
+               ReferencedContainer = "container:Divvy.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "UI0600112233445566778899"
+               BuildableName = "DivvyUITests.xctest"
+               BlueprintName = "DivvyUITests"
                ReferencedContainer = "container:Divvy.xcodeproj">
             </BuildableReference>
          </TestableReference>
