@@ -125,7 +125,7 @@ struct IncomeForecastView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Income Forecast")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     // MARK: - Summary Card

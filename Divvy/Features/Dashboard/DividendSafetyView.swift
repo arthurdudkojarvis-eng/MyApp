@@ -177,7 +177,7 @@ struct DividendSafetyView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Dividend Safety")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showScoreInfo) {
             SafetyScoreInfoSheet()
         }

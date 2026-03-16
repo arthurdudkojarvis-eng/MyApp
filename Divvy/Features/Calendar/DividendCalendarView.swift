@@ -99,7 +99,7 @@ struct DividendCalendarView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Calendar")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $selectedDay) { item in
             DividendDaySheet(events: item.events)
                 .presentationDetents([.medium, .large])

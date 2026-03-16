@@ -75,7 +75,7 @@ struct AlertsView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Alerts")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .task { await checkNotificationStatus() }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {

@@ -131,7 +131,7 @@ struct DRIPSimulatorView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("DRIP Simulator")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .onChange(of: years) { selectedYear = nil }
         .onChange(of: reinvestmentRate) { selectedYear = nil }
     }

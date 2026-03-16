@@ -47,7 +47,7 @@ struct WatchlistView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Watchlist")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

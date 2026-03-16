@@ -53,7 +53,7 @@ struct TaxSummaryView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Tax Summary")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     // MARK: - Sections

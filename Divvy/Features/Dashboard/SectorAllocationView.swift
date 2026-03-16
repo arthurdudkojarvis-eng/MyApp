@@ -114,7 +114,7 @@ struct SectorAllocationView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Sector Allocation")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .sensoryFeedback(.selection, trigger: selected?.id)
         .sheet(isPresented: $showInfo) {
             SectorAllocationInfoSheet()

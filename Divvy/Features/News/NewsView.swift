@@ -31,7 +31,7 @@ struct NewsView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("News & Events")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .task(id: selectedTicker) { await loadNews() }
         .refreshable { await loadNews() }
     }
